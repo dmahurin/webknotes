@@ -37,8 +37,8 @@ sub trtd_end
 sub table_begin
 {
    my($class, $props) = @_;
-   return "<table cellspacing=0 cellpadding=2 border=0><tr>" . 
-      "<td class=\"$class-border\"><table $props cellpadding=0 cellspacing=0 border=0 class=\"$class\">";
+   return "<table width=\"100\%\" cellspacing=0 cellpadding=2 border=0><tr>" . 
+      "<td class=\"$class-border\"><table width=\"100\%\" $props cellpadding=0 cellspacing=0 border=0 class=\"$class\">";
 }
 
 sub table_end
