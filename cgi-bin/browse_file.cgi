@@ -22,7 +22,7 @@ my($notes_path) = wkn::get_args();
 $notes_path = auth::path_check($notes_path);
 exit(0) unless(defined($notes_path));
 
-unless( auth::check_current_user_file_auth( $notes_path,'r' ) )
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
    exit(0);
