@@ -34,13 +34,21 @@ sub my_link_translate
       $text = $';
    }
 
-   if( $ref =~ m:^(mailto\:|[a-z]+\://)[^/]+:)
+   if( $ref =~ m:^[a-z]+\://[^/]+:)
    {
       unless(defined($text))
       {
          $text = $ref;
       }
       $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
+   }
+   elsif( $ref =~ m:^mailto\::)
+   {
+      unless(defined($text))
+      {
+         $text = $';
+      }
+      $link = sprintf("<a href=\"%s\">%s<\/a>", $ref, $text);
    }
    elsif( filedb::is_dir($path, $ref))
    {
