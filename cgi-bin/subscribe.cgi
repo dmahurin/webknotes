@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
+
 require 'auth_define.pl';
 require 'auth_lib.pl';
 
