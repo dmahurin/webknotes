@@ -7,7 +7,7 @@ STRING doc_wpath "Web document path" "${web_doc_root_wpath}/docs"
 BOOL default_browse_index "Default to browse using browser index"
 
 PACKAGE auth
-STRING default_permissions "Default permissions (see permissions.txt)" "a+rn,u+aM,o+mdc,v+S"
+STRING default_permissions "Default permissions (see permissions.txt)" "a+rni,u+aM,o+mdc,v+S"
 STRING allow_remote_user_auth "Trust REMOTE_USER auth"
 BOOL autoadd_remote_auth_users "Auto add REMOTE_USER users"
 
