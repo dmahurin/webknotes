@@ -12,7 +12,7 @@ require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
 
-my $wkn_version = "1.0";
+my $wkn_version = "1.0.2";
 
 my $wiki_name_pattern = '^([A-Z][a-z]+){2,}$';
 
