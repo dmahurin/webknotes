@@ -271,7 +271,7 @@ if(prompt_default("Generate top level index", "y", "(y|n)") eq "y")
 }
 
 my $wpath_prefix = 'localhost' if($wkn_cgi_wpath =~ m:^/:);
-print "\nhttp://$wpath_prefix$wkn_cgi_wpath/help_browse.cgi\n";
+print "\nhttp://$wpath_prefix$wkn_cgi_wpath/browse.cgi\n";
 print "http://$wpath_prefix$public_wpath/\n";
 
 sub prompt_default
