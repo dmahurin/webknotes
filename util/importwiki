@@ -40,17 +40,17 @@ sub extract_wiki
      next if(-f "${wiki}.skip");
      next if(-f "${wiki}.reject");
      
-     if(-f $wiki)
+     if(-f "${wiki}.wiki")
      {
         print "File exists: $wiki\n";
         local $/ = undef;
-        open(FILE, $wiki);
+        open(FILE, "${wiki}.wiki");
         $text = <FILE>;
         close(FILE); 
         if($text =~ m:^\s*(Describe $wiki here\.\s*)?$:s)
         {
            print "del empty\n";
-           unlink($wiki);
+           unlink("${wiki}.wiki");
            next;
         }
      }
@@ -93,7 +93,7 @@ sub extract_wiki
         else
         {
            write_file("${wiki}.tmp", $text);
-           rename("${wiki}.tmp", $wiki);
+           rename("${wiki}.tmp", "${wiki}.wiki");
         }
         sleep(1); #so they don't complain
      }
