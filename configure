@@ -277,7 +277,7 @@ sub parse_httpd
          {
             ($web_doc_root) = split_args($');
          }
-         if($line =~ m:^ScriptAlias\s+:)
+         if($line =~ m:^ScriptAlias\s+: && ! defined($script_alias))
          {
             ($script_alias, $script_root) = split_args($');
          }
