@@ -1,0 +1,88 @@
+The installation creates an installation tree as follows:
+
+What you need to get started:
+
+Perl5 - installed as /usr/bin/perl
+(if somewhere else, you need to modify all .cgi scripts using (util/perlpath) )
+
+CGI.pm - part of standard Perl 5 dist.
+
+To allow one user to own and modify all the notes(via the cgi scripts),
+you need one of these on your web server:
+    -setuid perl enabled(suidperl)
+       chmod u+s *.cgi
+    -cgi-wrap - http://www.unixtools.org/cgiwrap/
+    -setuid apache module(suEXEC) enabled.
+       http://www.apache.org/docs/suexec.html
+     -use setuid_wrapper that was available with perl4
+     -compile and use util/sperl_user.c
+       cd util
+       cc sperl_user -o sperl_`whoami`
+       chmod a+x,u+s sperl_`whoami`
+       using util/perlpath, change all cgi scripts to point to this exe.
+
+
+wkn/
+	example		- sample directory structure for WebKNotes
+	cgi-bin/wkn	- wkn cgi scripts
+        cgi-bin/auth    - auth cgi scripts
+	mail-bin/ 	- scripts that parse incoming mail and interface 
+			  with WKN.
+	procmailrc	- example .procmailrc file
+	rc.wkn	- example .procmail/rc.wkn file
+
+To get the basic WebKNotes system working you need to:
+(For the impatient, the next section has step by step commands)
+   - unpackage(gunzip < wkn.tgz | tar xvf -) wkn.
+   - link or move wkn and auth cgi-bin dirs to somewhere visible on web.
+   - Create a directory structure with public and private directories.
+     (similar to those in the example directory).
+   - The public directory should also be linked or moved to a location
+     visible on the web.
+   - cd cgi-bin/wkn && cp wkn_define_sample.pl wkn_define.pl
+   - modify cgi-bin/wkn/wkn_define.pl for your system.
+   - cd cgi-bin/auth && cp auth_define_sample.pl auth_define.pl
+   - modify cgi-bin/auth/auth_define.pl for your system.
+   - do whatever is require to have the cgi-scripts run as the owner of
+          the 'notes' directory.
+        setuid perl scripts. ( chmod u+s cgi-bin/wkn/*cgi cgi-bin/auth/*cgi
+        using cgi-wrap.
+        using setuid apache module.
+
+Here are the step by step commands that I can run to get wkn running from
+scratch on MY system:
+   cd ~
+   tar zxvf wkn.tgz 
+   cd wkn
+   mv example/* .
+   cd ..
+   mkdir -p public_html/cgi-bin 
+   ln -s ~/wkn/cgi-bin/* public_html/cgi-bin
+   ln -s ~/wkn/public/* public_html
+   cd wkn/cgi-bin/wkn
+   cp wkn_define_sample.pl wkn_define.pl
+   vi wkn_define.pl
+   cd ../auth
+   cp auth_define_sample.pl auth_define.pl
+   vi auth_define.pl
+   cd ../../..
+
+   lynx http://localhost/~dmahurin/cgi-bin/wkn/wkn_table.cgi
+   lynx http://localhost/~dmahurin/cgi-bin/wkn/wkn_index.cgi
+   ln -s ~/wkn/public/index.html public_html/newindex.html
+   lynx http://localhost/~dmahurin/newindex.html
+
+**********************************************************************
+****mail access is currently disabled.  INGORE below for now ****
+***********************************************
+To get the subscibe/unsubscribe part of WebKNotes working you need to:
+
+Determine an email address to use for the WeKNotes request.
+(This can already be used for something else)
+
+Install 'procmail' for this user, or for whole system.
+
+Customize rc.wkn to your system.
+Incorporate procmailrc into .procamailrc.
+Put rc.wkn into .procmail/
+

@@ -1,0 +1,61 @@
+This whole thing started because I wanted to store information in directories
+as plain text and have something that made it accessible via WWW.
+
+At first I made a simple Makefile, that looked at the extension and printed out
+an HTML fragment based on the extension. "file2htmlf.mk"
+Then I wrote a shell script, "dir2html.sh" that ran the makefile on every
+file in the dir and wrapped and HTML title and header on it, the outputting
+html went in '.index.html'.
+
+Then dirs2html.sh recursivly called dir2html and put .index.html in ever
+directory.
+
+This was slow to use make, so I abandanded it and just wrote dir2html.csh,
+that did a 'foreach' and switch.
+Faster, but csh is slow too.
+So next, it was dir2html.sh.
+
+Next I turned the thing into a CGI script and generated HTML on the fly, 
+for a directory passed to it.
+
+At some point, I renamed it to 'notes2html' since was it really was a way
+of accessing my notes about things, and not dirs in general.
+
+When I put the thing on my web page, I realized that I needed a better 
+way to control writes and to have the write suid, since CGI scripts run as
+WWW, or nobody. 'doncreate' then later 'faccess'. 'faccess' was a C program
+that restrited types of writes to directories, based on a faccess.conf file.
+I used it to write logs, counters, as well as notes. 'faccess' was made to
+be an suid Exec. This was now a very secure system, and I owned all the files
+that came in.
+
+Once the notes database had a few things in it, it was impossible to find
+things in it (at least for an outsider). A search mechanism was needed badly.
+At first, I wrote some ugly script that used 'find' and 'grep'. 
+This was slow. I needed something that did them both. I didnt want to write
+C code either, because that is something to recompile.
+
+I found a search utility written in perl, for searching HTML trees.
+Much hacking later, it work for notes2html.
+
+Now I had this cool searchable knowledge database system and needed a name.
+Knowledge Notes - KNOTES.
+
+later I converted all of notes2html to perl .. notes2html.pl
+Also, I added more perl scripts to subscribe/unscribe via email.
+
+Got rid of use of faccess, as I was running through cgiwrap.
+
+Then I cleaned it all up, modularized it a little, made all sysstem 
+dependent defines in one knotes-define.pl file.
+
+Then I finally put documentation with the thing.
+
+1998, rewrote search script, made all the scripts work as setuid scripts.
+
+----
+Update 1999, January 13:
+
+License is the Artistic License.
+Renamed To WebKNotes, so as not to be confused with KDE's Knotes.
+
