@@ -1,3 +1,5 @@
+- support and handle links correctly in deletion and searches.
+
 - subscribe.cgi.
 possibly subscription options stored in private_dir/subscriptions/USER/path_with_dots
 Options are:
