@@ -120,7 +120,7 @@ close(IN);
 
 if(prompt_default("Copy webknotes cgi-bin", $install ? "y" : "n", "(y|n)") eq "y")
 {
-   mkdir($wkn_cgi_dir, 0755);
+   mkpath($wkn_cgi_dir, 0755);
    system("cp -r cgi-bin/* $wkn_cgi_dir");
 
    print "Note: WebKNotes requires some sort of setuid mechanism. You have these coices:\n";
@@ -185,9 +185,15 @@ for my $pack (keys %symbols)
 }
 }
 
-unless(defined($filedb::define::doc_dir) and -d $filedb::define::doc_dir)
+unless(defined($filedb::define::doc_dir))
 {
-   print "Error creating directory: $filedb::define::doc_dir\n" unless(mkdir($filedb::define::doc_dir,0755));
+	print "Error doc dir is not defined\n";
+	exit(1);
+}
+
+unless( -d $filedb::define::doc_dir)
+{
+   print "Error creating directory: $filedb::define::doc_dir\n" unless(mkpath($filedb::define::doc_dir,0755));
    if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
    {
       system("cp -r 'sample_notes'/* $filedb::define::doc_dir");
@@ -199,14 +205,14 @@ unless(defined($filedb::define::doc_dir) and -d $filedb::define::doc_dir)
 if(prompt_default("Copy sample icons", ( $install )? "y" : "n",
    "(y|n)") eq "y")
 {
-   mkdir($view::define::icons_dir,0755);
+   mkpath($view::define::icons_dir,0755);
    system("cp -r 'icons'/* $view::define::icons_dir");
 }
 
 if(prompt_default("Copy sample themes", ( $install )? "y" : "n",
    "(y|n)") eq "y")
 {
-   mkdir($view::define::themes_dir,0755);
+   mkpath($view::define::themes_dir,0755);
    system("cp -r 'themes'/* $view::define::themes_dir");
 }
 
@@ -220,7 +226,7 @@ if(defined($auth::define::private_dir && !defined ($filedb::define::private_dir)
 if(prompt_default("Create private web dir",
 (-d $filedb::define::private_dir ) ? "n" : "y", "(y|n)") eq "y")
 {
-   mkdir($filedb::define::private_dir,0700);
+   mkpath($filedb::define::private_dir,0700);
    unless(
       mkdir("$filedb::define::private_dir/groups",0700) &&
       mkdir("$filedb::define::private_dir/users",0700) &&
@@ -369,4 +375,22 @@ sub eval_var
    elsif(defined(${"$var"}))
    { return ${"$var"} }
    else { return ();}
+}
+
+sub mkpath
+{
+   my($path, $mode) = @_;
+   my(@paths) = split(/\/+/, $path);
+   $path = '';
+   if(@paths and $paths[0] eq '')
+   {
+     $path = '/';
+     shift(@paths);
+   }
+   for my $dir (@paths)
+   {
+      $path .= $dir;
+      mkdir($path, $mode) if( ! -d $path);
+      $path .= '/';
+   }
 }
