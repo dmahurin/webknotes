@@ -107,9 +107,9 @@ sub AsAnchor
       my($path_encoded) = view::url_encode_path($path);
       my($topic) = view::url_encode_path($ref); 
       my($bprefix, $bsuffix) = &view::get_cgi_prefix("");
-      my($add_url) =  "${bprefix}add_topic.cgi?notes_path=${path_encoded}&text_type=wiki&topic_tag=$bsuffix";
+      my($add_url) =  "add_topic.cgi?notes_path=${path_encoded}&text_type=wiki&topic_tag=";
 
-      $link = "<a href=\"${add_url}$topic\">$text (?)<\/a>";
+      $link = "<a href=\"${bprefix}${add_url}$topic$bsuffix\">$text (?)<\/a>";
    }
    }
    return $link;

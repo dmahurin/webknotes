@@ -74,9 +74,11 @@ sub my_link_translate
 
       my($path_encoded) = view::url_encode_path($path);
       my($topic) = view::url_encode_path($ref); 
-      my($add_url) =  "add_topic.cgi?notes_path=${path_encoded}&text_type=htxt&topic_tag=";
+      my($bprefix, $bsuffix) = &view::get_cgi_prefix("");
 
-      $link = "<a href=\"${add_url}$topic\">$ref (?)<\/a>";
+      my($add_url) =  "add_topic.cgi?path=${path_encoded}&text_type=htxt&topic_tag=";
+
+      $link = "<a href=\"$bprefix${add_url}$topic$bsuffix\">$ref (?)<\/a>";
    }
    return $link;
 }
@@ -97,12 +99,11 @@ sub filter_file
    $textin =~ s:<:&lt;:g;
    $textin =~ s:>:&gt;:g;
    
-   # "htxt" process  [[ ]] markup
+   # convert raw URL to [[ ]]
+   $textin =~ s/\b((http|ftp|mailto):.*)(?=$)/[[$1]]/;
+   # process  htxt [[ ]] markup
    $textin =~ s/\[\[([^\]]+)\]\]/&my_link_translate($notes_path,$1)/gie;
    
-   # handle raw URL
-   $textin =~ s/((http|ftp|mailto):.*)($)/<a href=\"$1\">$1<\/a>$2/g;
-
    # mark each paragraph as either <p> or <pre>
    my($textout) = "";
    my($thistext, $type);
