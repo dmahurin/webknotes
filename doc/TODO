@@ -1,11 +1,14 @@
-Better documentation - INSTALL.
+- subscribe.cgi.
+possibly subscription options stored in private_dir/subscriptions/USER/path_with_dots
+Options are:
+  n - non-recursive
 
-Smarter configure script that learns better from your previous answers.
-configure should parse existing definitions and use those as defaults.
+- configure should save setup constants only used for configuaration in 
+setup_define.pl (in directory that configure is ran from).
 
-Have another level of users that get passwords via email.(to verify address)
+- Template page definition (that wraps around normal cgi)
 
-With email verified users, this could allow:
+possibilities for email verified:
 - Ability to Add topics via EMAIL
 - Email subscription.
   - auto-subscribe to topics that you create
@@ -14,15 +17,10 @@ With email verified users, this could allow:
 - Ability to reply to a knotes email and have it put in DB
 - Ability to subscribe to a flat dir or the dir tree.
 
-CVS - Allow the notes to sit in CVS
-
 MAYBE SOMEDAY::
 - Database backend
 - Abreviations for note paths.(KN:fvwm = KN:/X/window_managers/fvwm)
 - Ability to download the entire archive(as a tar.gz file) or part of it.
-
-DONE::
-Ability to set default theme and layout for user.
 
 Don Mahurin
 mailto:dmahurin@users.sourceforge.net
