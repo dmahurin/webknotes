@@ -7,10 +7,10 @@ Perl5 - installed as /usr/bin/perl
 
 CGI.pm - part of standard Perl 5 dist.
 
-A setuid mechanism (See setuid.txt). ./configure will also ask about this.
+A setuid mechanism (See setuid.txt). ./Configure will also ask about this.
 
 To configure and install, run:
-./configure
+./Configure
 This will create the define files, copy the cgi-bin directory and create an admin user.
 
 This starting point will be something like: httpd://localhost/cgi-bin/wkn/browse.cgi, depending on the location of your cgi-bin.

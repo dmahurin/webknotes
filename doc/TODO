@@ -5,8 +5,8 @@ possibly subscription options stored in private_dir/subscriptions/USER/path_with
 Options are:
   n - non-recursive
 
-- configure should save setup constants only used for configuaration in 
-setup_define.pl (in directory that configure is ran from).
+- Configure should save setup constants only used for configuaration in 
+setup_define.pl (in directory that Configure is ran from).
 
 - Template page definition (that wraps around normal cgi)
 
