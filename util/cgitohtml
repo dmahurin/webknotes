@@ -2,9 +2,11 @@
 use strict;
 # Run a cgi script, and strip off the content-type
 
-unless(@ARGV) { print "Usage: cgitohtml SCRIPT ARGS\n"; exit(1); }
+unless(@ARGV > 1) { print "Usage: cgitohtml SCRIPT_WEBPATH SCRIPT_PATH ARGS\n"; exit(1); }
 
+my $cgi_wpath = shift(@ARGV);
 open(SCRIPT, "-|") || exec @ARGV;
+#open(SCRIPT, "-|") || exec "perl", "-T", @ARGV;
 if(0){
    print "Failed to run script: @ARGV\n";
    exit(1);
@@ -12,7 +14,7 @@ if(0){
 
 unless(<SCRIPT> =~ m%^Content-type: text/html$%i and <SCRIPT> =~ m:^$: )
 {
-   print STDERR "Not a cgi script: $wkn::define::gen_index_script\n";
+   print STDERR "Not a cgi script.\n";
    print STDERR "Offending line: $_\n";
    close(SCRIPT);
    exit(1);
@@ -21,6 +23,8 @@ unless(<SCRIPT> =~ m%^Content-type: text/html$%i and <SCRIPT> =~ m:^$: )
 my $line;
 while(defined($line = <SCRIPT>))
 {
+   #prefix relative paths with the cgi path
+   $line =~ s#\b(href=\"|src=\")(?!http://|ftp://|/)#$1$cgi_wpath/$2#gi;
    print $line;
 }
 close(SCRIPT);

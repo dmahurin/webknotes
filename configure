@@ -1,0 +1,151 @@
+#!/usr/bin/perl
+
+
+$webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
+
+print "\nThese first few question are general questions about your web server setup\n\n";
+$public_html_dir= prompt_default("Public html directory", "$ENV{\"HOME\"}/public_html");
+unless(-d $public_html_dir)
+{
+   print "Public html directory does not exist\n";
+   exit(0);
+}
+$public_html_wpath=prompt_default("Public html url path", "/~$ENV{\"USER\"}");
+$public_cgi_dir= prompt_default("cgi-bin directory", "$public_html_dir/cgi-bin");
+$public_cgi_wpath= prompt_default("cgi-bin url path", 
+   $public_html_dir =~ ( m:^$public_html_dir/: )? "$public_html_wpath/$'" : 
+   "$public_html_wpath/cgi-bin");
+$private_web_dir= prompt_default("Private web data directory", "$ENV{\"HOME\"}/web/private");
+unless(-d $private_web_dir)
+{
+   if(mkdir($private_web_dir,0755))
+   {
+      mkdir("$private_web_dir/groups",0755);
+      mkdir("$private_web_dir/users",0755);
+      mkdir("$private_web_dir/sessions",0755);
+   }
+   else
+   {
+      print "Error making directory: $private_web_dir\n";
+   }
+}
+
+print "\nThe questions that follow allow changing the default webknotes sub paths\n\n";
+$doc_sub_path = prompt_default("Document sub path", "notes");
+$doc_dir = "$public_html_dir/$doc_sub_path";
+$doc_wpath = "$public_html_wpath/$doc_sub_path";
+
+if( ! -d $doc_dir )
+{
+   if(prompt_default("Create directory", "y", "(y|n)") eq "y")
+   {
+      print "Error creating director\n" unless(mkdir($doc_dir,0755));
+      if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
+      {
+	 system("cp -r '$webknotes_base/example/public/notes'/* $doc_dir");
+      }
+   }
+}
+
+$icons_sub_path = prompt_default("Icons sub path", "icons");
+$icons_dir = "$public_html_dir/icons";
+$icons_wpath = "$public_html_wpath/icons";
+
+   
+
+if( ! -d $icons_dir )
+{
+   if(prompt_default("Create icons directory", "y", "(y|n)") eq "y")
+   {
+      print "Error creating director\n" unless(mkdir($icons_dir,0755));
+      if(prompt_default("Copy sample icons", "y", "(y|n)") eq "y")
+      {
+	 system("cp -r '$webknotes_base/example/public/icons'/* $icons_dir");
+      }
+   }
+}
+
+$cgi_subpath = prompt_default("cgi-bin webknotes subpath", "wkn");
+$default = ( -d "$public_cgi_dir/$cgi_subpath" ) ? "n" : "y";
+
+if(prompt_default("Copy webknotes cgi-bin", $default, "(y|n)") eq "y")
+{
+   mkdir("$public_cgi_dir", 0755);
+   mkdir("$public_cgi_dir/$cgi_subpath", 0755);
+   system("cp -r $webknotes_base/cgi-bin/* $public_cgi_dir/$cgi_subpath");
+
+   if(prompt_default("Set Setuid on scripts", "y", "(y|n)") eq "y")
+   {
+      system("chmod a+x,u+s $public_cgi_dir/$cgi_subpath/*.cgi");
+   }
+}
+if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
+{
+   unlink("$public_cgi_dir/$cgi_subpath/auth_define.pl");
+   if(open(FILE, ">$public_cgi_dir/$cgi_subpath/auth_define.pl"))
+   {
+      print FILE
+"#!/usr/bin/perl
+
+package auth::define;
+
+\$private_dir = \"$private_web_dir\";
+\$doc_dir = \"$doc_dir\";
+\$doc_wpath = \"$doc_wpath\";
+
+\$path_permissions = { \"\" => \"+rn\"};
+
+1;
+";
+      close FILE;
+   }
+   unlink("$public_cgi_dir/$cgi_subpath/wkn_define.pl");
+   if(open(FILE, ">$public_cgi_dir/$cgi_subpath/wkn_define.pl"))
+   {
+      print FILE
+"package wkn::define;
+\$icons_wpath = \"$icons_wpath\";" , 
+'
+$mode = "table";
+$page_mode = "table";
+$frames_mode = "table";
+
+$max_depth = 3;
+
+$opened_icon = "fminus.gif";
+$opened_icon_text = "[-]";
+$closed_icon = "fplus.gif";
+$closed_icon_text = "[+]";
+$dir_icon = "folder.gif";
+$dir_icon_text = "[+]";
+$file_icon = "document.gif";
+$file_icon_text = "[.]";
+
+package wkn::attr;
+#html attributes for the main web knotes scripts.
+#These can set colors and/or set image backgrounds(background="image.gif")
+
+$body = \'bgcolor="#006374" link="#0033CC" vlink="#800080"\';
+$td_list = \'bgcolor="#AAAAAA"\'; #dir listing
+$td_highlight = \'bgcolor="#AACCCA"\'; # file info, note actions
+$td_description = \'bgcolor="#CCCCCC"\';
+$td_title = \'bgcolor="#006666"\';
+$font_table_title=\'face="arial,helvetica" color="#FFFFFF"\';
+';
+      close FILE;
+   }
+}
+
+
+sub prompt_default
+{
+   my($prompt, $default, $choices) = @_;
+      
+   print "$prompt $choices [$default]: ";
+   $line = <STDIN>;
+   chomp($line);
+   $line = $default if($line eq "");
+   
+   return $line;
+}
+
