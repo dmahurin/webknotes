@@ -37,6 +37,9 @@ sub extract_wiki
      
      print "$wiki\n";
 
+     next if(-f "${wiki}.skip");
+     next if(-f "${wiki}.reject");
+     
      if(-f $wiki)
      {
         print "File exists: $wiki\n";
@@ -75,7 +78,12 @@ sub extract_wiki
         
         if(defined($ENV{REQUIRED_WORDS}))
         {
-           next unless($text =~ m:\b($ENV{REQUIRED_WORDS})\b:i);
+           unless($text =~ m:\b($ENV{REQUIRED_WORDS})\b:i)
+           {
+              open(SKIP, ">${wiki}.skip");
+              close(SKIP);
+              next;
+           }
         }
            
         if($text =~ m:^\s*(Describe $wiki here\.\s*)?$:s)
@@ -92,19 +100,22 @@ sub extract_wiki
 
      while($text =~ m:\[\[([^\]]+)\]\]:)
      {
+        my $link = $1;
+        $link =~ s:\|.*::; # links in form [[ref|text]]
         unless(defined($processed{$1}))
         {
-           push(@topfiles, $1) ;
+           push(@topfiles, $link) ;
            $processed{$1} = 1;
         }
         $text = $';
      }
      while($text =~ m:\b(([A-Z][a-z]+){2,})\b:)
      {
-        unless(defined($processed{$1}))
+        my $link = $1;
+        unless(defined($processed{$link}))
         {
-           push(@topfiles, $1) ;
-           $processed{$1} = 1;
+           push(@topfiles, $link) ;
+           $processed{$link} = 1;
         }
         $text = $';
      }
