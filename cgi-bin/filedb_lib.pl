@@ -68,7 +68,7 @@ sub default_file
    }
    return () unless ( -d $dir);
 
-   for my $index ( "index.html", "index.htm", "FrontPage", "FrontPage.wiki", "HomePage", "README.html", "README", "README.txt", "README.htxt", "index.htxt" )
+   for my $index ( "index.html", "index.htm", "index.htxt", "FrontPage", "FrontPage.wiki", "HomePage", "README.html", "README", "README.txt", "README.htxt" )
    {
       return $index if (-f "$dir/$index");
    }
@@ -82,12 +82,12 @@ sub default_type
 
    return "html" if ( -f "$dir/index.html" );
    return "html" if ( -f "$dir/index.htm" );
+   return "htxt" if ( -f "$dir/index.htxt" );
    return "wiki" if ( -f "$dir/FrontPage" );
    return "wiki" if ( -f "$dir/FrontPage.wiki" );
    return "wiki" if ( -f "$dir/HomePage" );
    return "html" if ( -f "$dir/README.html" );
    return "htxtdir" if ( -f "$dir/README.htxt" );
-   return "htxt" if ( -f "$dir/index.htxt" );
    return "txt" if ( -f "$dir/README" );
    return "txt" if ( -f "$dir/README.txt" );
    return ();
