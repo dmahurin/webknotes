@@ -9,6 +9,8 @@ A [[setuid]] mechanism. ./Configure will also ask about this.
 
 To configure and install, run (in a terminal window):
 ./Configure
+( if you are upgrading webknotes, run ./Configure --cgi=/home/.../cgi-bin/wkn,
+to default to your previous definitions )
 
 This will create the define files, copy the cgi-bin directory and create an admin user.
 
