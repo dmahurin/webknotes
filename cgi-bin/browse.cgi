@@ -16,6 +16,15 @@ sub main
    view::content_header();
    my(@paths) = view::get_args();
 
+   if(@paths eq 1)
+   {
+     my $redirect_query = filedb::get_hidden_data($paths[0] , "redirect");
+     if(defined($redirect_query))
+     {
+     	@paths = view::strip_view_mode_args(view::url_unencode_paths(split(/&/, $redirect_query)));
+     }
+   }
+
    my $path;
    for $path (@paths)
    {

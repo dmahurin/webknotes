@@ -30,7 +30,7 @@ if(defined($frame))
    if($frame eq "header")
    {
       print "<html><head><BASE TARGET=\"_parent\">$head_tags</head>";
-      print ($view::define::index_header)
+      print $view::define::index_header
         if(defined($view::define::index_header));
       print "</html>\n";
    }
@@ -39,7 +39,7 @@ if(defined($frame))
       print "<html><head><BASE TARGET=\"body\">$head_tags</head><body class=\"topic-actions\">\n";
       if(defined($view::define::index_footer))
       {
-         print ($view::define::index_footer, "");
+         print $view::define::index_footer;
       }
       else
       {
