@@ -800,8 +800,8 @@ sub read_page_template
       close(F);
       if($text =~ m:<\%\$page\%/>:)
       {
-         $view::define::page_header .= $`;
-         $view::define::page_footer .= $';
+         $view::define::page_header = $`;
+         $view::define::page_footer = $';
       }
    }
 }
