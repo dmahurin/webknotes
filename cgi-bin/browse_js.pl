@@ -49,14 +49,10 @@ my ($this_bprefix, $this_bsuffix) = view::get_cgi_prefix();
 
 my ($script_prefix, $bsuffix) = view::get_cgi_prefix();
 
-my $OPENED_SYMBOL = &view::icon_tag('[-]', 
-                   $view::define::opened_icon);
-my $CLOSED_SYMBOL = &view::icon_tag('[+]', 
-                   $view::define::closed_icon);
-my $FILE_SYMBOL = &view::icon_tag('[o]', 
-                   $view::define::file_icon);
-my $DIR_SYMBOL = &view::icon_tag('[o]', 
-                   $view::define::dir_icon);
+my $OPENED_SYMBOL = &view::file_type_icon_tag('opened', '[-]'); 
+my $CLOSED_SYMBOL = &view::file_type_icon_tag('closed', '[+]'); 
+my $FILE_SYMBOL = &view::file_type_icon_tag('file', '[o]'); 
+my $DIR_SYMBOL = &view::file_type_icon_tag('dir', '[o]'); 
 
 print <<"EOT";
     <script language="JavaScript">

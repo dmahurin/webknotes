@@ -96,22 +96,52 @@ while(defined(my $line = <IN>))
   if($line =~ m:(\S+)\s+(\S+)(\s+\"([^\"]*)\")?(\s+\"([^\"]*)\")?:)
   {
      my ($type, $var, $prompt, $default) = ($1, $2, $4, $6);
+     my ($hashvar);
      if($type eq "PACKAGE") {
          $package = $var;
          if( -f "$wkn_cgi_dir/${package}_define.pl" ) { 
             require "$wkn_cgi_dir/${package}_define.pl";
+            if($package eq "view") { # compatibility with old defines
+               $view::define::file_icons->{"closed"} =
+                $view::define::closed_icon
+                if(defined($view::define::closed_icon));
+               $view::define::file_icons->{"opened"} =
+                $view::define::opened_icon
+                if(defined($view::define::opened_icon));
+               $view::define::file_icons->{"dir"} =
+                $view::define::dir_icon
+                if(defined($view::define::dir_icon));
+               $view::define::file_icons->{"file"} =
+                $view::define::file_icon
+                if(defined($view::define::file_icon));
+             }
          }
          next; 
      }
      next if($type eq "SUB"); # can't retrieve a sub from define file
+     if($var =~ m:\{([^\}]+)\}$:)
+     {
+        $var = $`;
+	$hashvar = $1;
+     }
            
-     if(defined(${"${package}::define::$var"})) { $default = ${"${package}::define::$var"}; }
+     my($varref);
+     if(defined($hashvar))
+     {
+         $varref = \${"${package}::define::$var"}->{$hashvar};
+     }
+     else
+     {
+        $varref = \${"${package}::define::$var"};
+     }
+     $default = $$varref if(defined($$varref));
+    
      next if(!defined($default)); # no default or previous user value
-     push(@{$symbols{$package}}, $var) if($package ne "main");
+     push(@{$symbols{$package}}, $var) if( ! defined($hashvar) and $package ne "main");
      next if($type eq "HASH"); # manually configured
      
      $default =~ s:\$\{([^\}]+)\}:&eval_var($1):ge;
-     ${"${package}::define::$var"} = type_prompt($type, $prompt,  $default);
+     $$varref = type_prompt($type, $prompt,  $default);
   }
 }
 close(IN);
@@ -166,10 +196,10 @@ for my $pack (keys %symbols)
    {
       if(ref ${"${pack}::define::$var"} eq "HASH")
       {
-         print DFILE "\$$var = {";
+         print DFILE "\$$var = \n{\n";
          for my $key (keys %${"${pack}::define::$var"})
          {
-            print DFILE  "'$key'=>'" . ${"${pack}::define::$var"}->{$key} . "',";
+            print DFILE  "'$key'=>'" . ${"${pack}::define::$var"}->{$key} . "',\n";
          }
          print DFILE "};\n";
    

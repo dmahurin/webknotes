@@ -164,8 +164,7 @@ if(-d $toppath)
              print "<a href=\"$this_script_prefix$notes_path_encoded". 
                 $this_bsuffix  . '&' .
                 join ('&' , view::url_encode_paths(flatten_tree($open_tree))) .
-                "\">". &view::icon_tag('[-]', 
-                   $view::define::opened_icon) .
+                "\">". &view::file_type_icon_tag('opened', '[-]') . 
                 "</a>$LITEM_START1\n";
              $dir_ref->{$filename} = $save_ref;
           }
@@ -174,8 +173,7 @@ if(-d $toppath)
 
              print "<table cellspacing=0 cellpadding=0 ><tr><td>" .
 #"<a href=\"browse_$mode.cgi?$encoded_subnotes_path\" $target>" .
-             &view::icon_tag('[+]',
-                $view::define::dir_icon) .
+             &view::file_type_icon_tag('dir', '[+]').
 #"</a>" .
                 "</td></tr></table>" .
                 "$LITEM_START1\n";
@@ -189,8 +187,7 @@ if(-d $toppath)
 
                 join ('&' , view::url_encode_paths(flatten_tree($open_tree))) .
                 "\">" .
-                &view::icon_tag('[+]', 
-                   $view::define::closed_icon) .
+                &view::file_type_icon_tag('closed', '[+]').
                 "</a>";
              print "</td></tr></table>";
              print "$LITEM_START1\n";
@@ -223,15 +220,14 @@ if(-d $toppath)
        elsif($name =~ m:\.(html|txt|wiki|htxt)$:)
        {
           $name = $`;
-          print &view::icon_tag('[o]', 
-                   $view::define::file_icon) .
+          print &view::file_type_icon_tag('file', '[o]'). 
               "$LITEM_START1<a $target href=\"${script_prefix}$encoded_subnotes_path${sub_bsuffix}\">$name</a>";
           print "$LITEM_END\n";
        }
        else
        {
-          print &view::icon_tag('[o]', 
-                   $view::define::file_icon) . "$LITEM_START1<a $target href=\"$filedb::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
+          print &view::file_type_icon_tag('file', '[o]'). 
+                   "$LITEM_START1<a $target href=\"$filedb::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
    }

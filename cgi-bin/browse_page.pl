@@ -94,7 +94,7 @@ sub show
       print $css_tables->trtd_begin("topic-text") . "\n";
 
       print "<table><tr>";
-      my $icon = view::get_icon($topic, $view::define::dir_icon);
+      my $icon = view::get_icon($topic, $view::define::file_icons->{"dir"});
       if( defined($icon) )
       {
          my($bprefix, $bsuffix) = &view::get_cgi_prefix();

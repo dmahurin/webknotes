@@ -114,8 +114,8 @@ if( ! defined($text) )
    $text =~ s#<#&lt;#g;
    $text =~ s#>#&gt;#g;
    print "<PRE>$text</PRE>\n";
-print "<hr>\n";
-print "<form><TEXTAREA NAME=\"text\" wrap=true rows=22 cols=65 >";
+print "<a name=\"text\"\><hr></a>\n";
+print "<form><TEXTAREA wrap=true rows=22 cols=65 >";
    print "<\/TEXTAREA>\n";
    print <<"EOT";
 <input type=hidden name=path value="$path">
@@ -169,11 +169,14 @@ my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $m
    my $url;
    if($filedb::define::default_browse_index)
    {
-      $url = "$filedb::define::doc_wpath/$encoded_path?$query";
+      $url = "$filedb::define::doc_wpath/";
+      $url .= "$encoded_path/" if($encoded_path ne "");
+      $url .= "?$query" if($query);
    }
    else
    {
-      $url = "browse.cgi?$encoded_path&$query";
+      $url = "browse.cgi?$encoded_path";
+      $url .= "&$query" if($query);
    }
 
    print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$url\"></head><html>\n";

@@ -12,7 +12,7 @@ require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
 
-my $wkn_version = "A.9";
+my $wkn_version = "1.0";
 
 my $wiki_name_pattern = '^([A-Z][a-z]+){2,}$';
 
@@ -135,7 +135,7 @@ sub strip_view_mode_args
 #      $arg = auth::path_check($arg);
       if($arg =~ /^(theme|layout|superlayout|target|frame|save)=/)
       {
-         $view::view_mode{$1} = $';
+         $view::view_mode{$1} = $' if($' ne '');
       }
 #some temporary hackery to make path= arg work
       elsif($arg =~ /^path=/)
@@ -285,7 +285,7 @@ sub print_link_html
               {
                  $link_type = "url";
                  $link = filedb::get_file($notes_path);
-		 $line =~ s:\n::g;
+		 $link =~ s:\n::g;
                  $link_text = $file_base;
                  last SWITCH;
               };
@@ -339,7 +339,7 @@ sub print_link_html
 	{
 		return 0 if($file =~ /^\..*/ );
 		
-		my($icon_image) = get_icon($notes_path, $view::define::dir_icon);
+		my($icon_image) = get_icon($notes_path, $view::define::file_icons->{dir});
 		if(defined($icon_image))
 		{
 			print '<A HREF="',
@@ -384,7 +384,7 @@ sub print_icon_img
 	{
 		return if($notes_path =~ /^\..*/ ); # needed?
 		
-		my($icon_image) = get_icon($notes_path, $view::define::dir_icon);
+		my($icon_image) = get_icon($notes_path, $view::define::file_icons->{dir});
                 if(defined($icon_image))
                 {
 #			$icon_image =~ m:([^/\.]*)[^/]*$:;
@@ -728,9 +728,9 @@ sub icon_tag
 
 sub file_type_icon_tag
 {
-   my($file_type) = @_;
+   my($file_type, $text) = @_;
    my($icon);
-   my($text) = "[${file_type}]";
+   $text = "[${file_type}]" unless(defined($text));
    
    if(defined($view::define::file_icons->{$file_type}))
    {
@@ -738,7 +738,7 @@ sub file_type_icon_tag
    }
    else
    {
-      $icon = $view::define::file_icon;
+      $icon = $view::define::file_icons->{"file"};
    }
    if(defined($icon))
    {
