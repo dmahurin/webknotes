@@ -2,8 +2,6 @@
 use strict;
 
 # plain version of the main WebKNotest script
-# formats a directory $ARGV[1] in a format like with dons_notes
-# different file extensions determine how a file is treated
 
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin
 # For information regarding the Copying policy read 'LICENSE'
@@ -24,9 +22,15 @@ require 'wkn_lib.pl';
 
 local($wkn::define::mode) = "plain";
 
-my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
+my($notes_path) = wkn::get_args();
+$notes_path = auth::path_check($notes_path);
 exit(0) unless(defined($notes_path));
+
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
 
 $notes_path =~ m:([^/]*)$:;
 my($notes_name) = $1;

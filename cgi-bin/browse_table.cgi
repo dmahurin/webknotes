@@ -14,16 +14,20 @@ require 'wkn_define.pl';
 require 'wkn_lib.pl';
 require 'css_tables.pl';
 
-$wkn::view_mode{"layout"} = "tables";
+$wkn::view_mode{"layout"} = "table";
 
-my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
-   
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
+my($notes_path) = wkn::get_args();
+$notes_path = auth::path_check($notes_path);
 exit(0) unless(defined($notes_path));
+
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
 
 $notes_path =~ m:([^/]*)$:;
 my($notes_name) = $1;
-
 
 my $style = wkn::get_style_header_string();
 

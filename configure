@@ -7,7 +7,7 @@ if($<)
 }
 else
 {
-   $user = "root";
+   $user = "www";
 }
 
 my ($doc_root, $cgi_root, $cgi_root_wpath,
@@ -50,20 +50,38 @@ unless($cgi_root)
 }
 $webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
 
-$private_web_dir= prompt_default("Private web data directory", $private_web_dir);
-unless(-d $private_web_dir)
+$wkn_cgi_subpath = "wkn";
+$wkn_cgi_dir = prompt_default("webknotes cgi-bin directory", "$cgi_root/$wkn_cgi_subpath");
+if($wkn_cgi_dir =~ m:^$cgi_root/:)
 {
-   if(mkdir($private_web_dir,0755))
+   $in_cgi_root = 1;
+   $wkn_cgi_subpath = $';
+}
+
+$wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
+
+mkdir($cgi_root,0755) if ($in_cgi_root);
+mkdir($wkn_cgi_dir, 0755);
+
+if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
+{
+   system("cp -r $webknotes_base/cgi-bin/* $wkn_cgi_dir");
+
+   print "Note: WebKNotes requires some sort of setuid mechanism. You have these coices:\n";
+   print "\tApache setuid_mod - if enabled, you do nothing\n";
+   print "\tcgiwrap - I don't know how you set it up\n";
+   print "\tsperl_user.c - \n" .
+      "\t\tcc -c util/sper_user.c -o $wkn_cgi_dir/sperl_$user\n" .
+      "\t\tutil/perlpath $wkn_cgi_dir/sperl_$user $wkn_cgi_dir/*.cgi\n";
+   print "\tsetuid .cgi - say Yes below\n";
+      
+   print "\n";
+   if(prompt_default("Set Setuid on scripts", "y", "(y|n)") eq "y")
    {
-      mkdir("$private_web_dir/groups",0755);
-      mkdir("$private_web_dir/users",0755);
-      mkdir("$private_web_dir/sessions",0755);
-   }
-   else
-   {
-      print "Error making directory: $private_web_dir\n";
+      system("chmod a+x,u+s $wkn_cgi_dir/*.cgi");
    }
 }
+
 
 $notes_subpath = "notes";
 $notes_dir = prompt_default("Notes file path", "$doc_root/$notes_subpath");
@@ -82,9 +100,20 @@ if( ! -d $notes_dir )
       print "Error creating director\n" unless(mkdir($notes_dir,0755));
       if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
       {
-	 system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
+         system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
       }
    }
+}
+
+$default_layout = "table";
+$default_theme = "don";
+
+if(prompt_default("Generate top level index", "y", "(y|n)") eq "y")
+{
+   $index_file = prompt_default("Name of index file", "$notes_dir/index.html");
+   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/browse_${default_layout}.cgi '' >$index_file";
+   print "Running command: $command\n\n";
+   system($command);
 }
 
 $icon_subpath = "icons";
@@ -125,28 +154,20 @@ if(prompt_default("Copy sample themes", ( -d $themes_dir )? "n" : "y",
    system("cp -r '$webknotes_base/themes'/* $themes_dir");
 }
 
-$wkn_cgi_subpath = "wkn";
-$wkn_cgi_dir = prompt_default("webknotes cgi-bin directory", "$cgi_root/$wkn_cgi_subpath");
-if($wkn_cgi_dir =~ m:^$cgi_root/:)
+$private_web_dir= prompt_default("Private web data directory", $private_web_dir);
+unless(-d $private_web_dir)
 {
-   $in_cgi_root = 1;
-   $wkn_cgi_subpath = $';
-}
-#$wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
-
-mkdir($cgi_root,0755) if ($in_cgi_root);
-mkdir($wkn_cgi_dir, 0755);
-
-if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
-{
-   system("cp -r $webknotes_base/cgi-bin/* $wkn_cgi_dir");
-
-   if(prompt_default("Set Setuid on scripts", "y", "(y|n)") eq "y")
+   if(mkdir($private_web_dir,0755))
    {
-      system("chmod a+x,u+s $wkn_cgi_dir/*.cgi");
+      mkdir("$private_web_dir/groups",0755);
+      mkdir("$private_web_dir/users",0755);
+      mkdir("$private_web_dir/sessions",0755);
+   }
+   else
+   {
+      print "Error making directory: $private_web_dir\n";
    }
 }
-
 
 $default = ( -f "$wkn_cgi_dir/auth_define.pl" ) ? "n" : "y";
 
@@ -214,7 +235,6 @@ package auth::define;
 '
 $default_layout = "table";
 $default_theme = "don";
-$frames_mode = "table";
 
 $max_depth = 3;
 
@@ -229,6 +249,9 @@ $file_icon_text = "[.]";
 ';
       close FILE;
    }
+}
+if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
+{
 }
 
 

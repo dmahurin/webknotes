@@ -1,5 +1,8 @@
 #!/usr/bin/perl -cw
 use strict;
+
+require 'auth_define.pl';
+
 # auth-lib - library used for user authentication for a web based system
 package auth;
 
@@ -8,7 +11,9 @@ package auth;
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-require 'auth_define.pl';
+# store current user and info, so we only get them once.
+my($current_user) = ();
+my($current_user_info) = ();
 
 sub init_private_dir()
 {
@@ -23,6 +28,7 @@ sub init_private_dir()
 
 sub get_user()
 {
+   return $current_user if(defined($current_user));
    my($chip,$value);
    my(%cookie);
    foreach (split(/; /, $ENV{'HTTP_COOKIE'}))
@@ -36,8 +42,12 @@ sub get_user()
       unless($auth::define::allow_remote_user_auth eq "any" or
          $auth::define::allow_remote_user_auth eq $ENV{AUTH_TYPE});
       return () unless defined(my $user = $ENV{REMOTE_USER});
-      return $user if( -f "$auth::define::private_dir/users/$user");
-      return $user unless($auth::define::autoadd_remote_auth_users);
+      if( -f "$auth::define::private_dir/users/$user" ||
+         ! $auth::define::autoadd_remote_auth_users)
+      {
+         $current_user = $user;
+         return $user;
+      }
       
       $user=auth::check_user_name($user);
       return () unless($user);
@@ -48,6 +58,7 @@ sub get_user()
 	    "FromHost"=>$ENV{REMOTE_HOST}, 
             "FromAddr"=>$ENV{REMOTE_ADDR}})
       );
+      $current_user = $user;
       return $user;
    }
    my($user, $vword) =  split(/:/,$cookie{sessionid});
@@ -70,6 +81,7 @@ sub get_user()
       print "mismatch of remote address and session address\n";
       return ();
    }
+   $current_user = $user;
    return $user;
 }
 
@@ -93,25 +105,25 @@ sub url_unencode_path
    return $path;
 }
 
+# check for evil hacks in a path ( '..')
 sub path_check
 {
-   my($notes_path) = @_;
+   my($path) = @_;
  
-   $notes_path =~ s:\\::g;
-   if ( $notes_path =~ m:(/|^)\.\.($|/):)
+   #take off leading and trailing /'s and remove \'s
+   $path =~ s:^/*::;
+   $path =~ s:/*$::;
+   $path =~ s:\\::g;
+   if ( $path =~ m:(/|^)\.\.($|/):)
    {
       print "illegal chars\n";
       return ();
    }
-   # else notes_path is ok. untaint it
-   $notes_path =~ m:^:;
-   $notes_path = $';
+   # else path is ok. untaint it
+   $path =~ m:^:;
+   $path = $';
 
-   #take off leading and trailing /'s and remove \'s
-   $notes_path =~ s:^/*::;
-   $notes_path =~ s:/*$::;
-
-   return $notes_path;
+   return $path;
 }
 
 
@@ -211,23 +223,39 @@ sub change_flags
    return $flags;
 }
 
+sub check_path_exists
+{
+   my($path) = @_;
+   
+   if( ! -e "$auth::define::doc_dir/$path" )
+   {
+     #     print "Note not found: $auth::define::doc_dir/$notes_path<br>\n";
+     #print "If you want, you can <a href=\"add_topic.cgi?notes_path=$notes_path_encoded\"> Add </a> the note yourself<br>\n";
+     return 0;
+   }
+   return 1;
+}
+
 sub check_file_auth
 {
-  my($user, $user_info, $check_flag, @filepaths) = @_;
-  my($file_path) = join('/', grep(/./, @filepaths));
+  my($user, $user_info, $check_flag, $file_path) = @_;
   #  my($auth_pass, $auth_path, ags, @other);
   
   return 1 if($user_info->{"Permissions"} =~ m:s:);
 
-  my($file_dir) = $file_path;
   my $have_auth_flags;
 
+  my($file_dir) = $file_path;
   if ( -f "$auth::define::doc_dir/$file_dir")
   {
      unless($file_dir =~ s:/[^/]*$::) #strip off file
      {
         $file_dir = "";
      }
+  }
+  if( ! -d "$auth::define::doc_dir/$file_dir" )
+  {
+     return 0;     
   }
   my(@path_permissions) = split(/,/, get_path_permissions($file_dir)) 
      or ();
@@ -293,8 +321,14 @@ sub check_file_auth
   }
   else
   {
-     return 0;
+     return (0, "no authorization");
   }
+}
+
+sub check_current_user_file_auth
+{
+   get_current_user_info(); # current user globals set
+   return check_file_auth($current_user, $current_user_info, @_);
 }
 
 sub user_exists
@@ -381,6 +415,13 @@ sub get_user_info
       close(UFILE);
    }
    return \%info;
+}
+
+sub get_current_user_info
+{
+   return $current_user_info if(defined($current_user_info));
+   get_user() unless(defined($current_user));
+   return get_user_info($current_user);
 }
 
 sub get_group_info

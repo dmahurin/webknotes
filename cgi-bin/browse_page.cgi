@@ -24,32 +24,19 @@ elsif(defined($wkn::define::files_wpath))
 
    
 
-my @cgi_args;
 my $theme;
 my $layout;
-if(defined($ENV{QUERY_STRING}))
-{
-   my($arg);
-   foreach $arg (split(/\&/, $ENV{QUERY_STRING}))
-   {
-      if($arg =~ m:^theme=:)
-      {
-         $wkn::view_mode{"theme"} = $';
-         next;
-      }
-      elsif($arg =~ m:^layout=:)
-      {
-         $wkn::view_mode{"layout"} = $';
-         next;
-      }
-      $arg = &wkn::path_check(wkn::url_unencode_path($arg));
-      push(@cgi_args, $arg) if ($arg);
-   }
 
-}
-elsif(@ARGV)
+my(@notes_paths) = wkn::get_args();
+@notes_paths = ( "/" ) unless(@notes_paths);
+
+for (@notes_paths)
 {
-  @cgi_args = @ARGV;
+   unless( auth::check_current_user_file_auth( 'r', $_ ) )
+   {
+      print "You are not authorized to access this path.\n";
+      exit(0);
+   }
 }
 
 my $style = wkn::get_style_header_string();
@@ -80,7 +67,7 @@ my $span = "";
 print "<tr>\n";
 my $arg;
 my $columns;
-foreach $arg (@cgi_args ? @cgi_args : "/")
+foreach $arg (@notes_paths)
 {
    if($arg =~ m:^columns=:)
    {

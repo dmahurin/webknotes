@@ -10,17 +10,21 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
 
-my $notes_path_encoded;
-my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
+my($notes_path) = wkn::get_args();
+$notes_path = auth::path_check($notes_path);
+exit(0) unless(defined($notes_path));
+
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
 
 my $target;
 if($wkn::view_mode{"target"})
 {
    $target = "target=\"$wkn::view_mode{\"target\"}\"";
 }
-
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
-exit(0) unless(defined($notes_path));
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
@@ -431,10 +435,14 @@ else
    $back_link = '[/]';
 }
 
+my($notes_query_string) = wkn::get_query_string();
+
+my $script_prefix = wkn::get_cgi_prefix();
+
 print <<"EOT";
 // End script hiding-->
    </script>
-${back_link}<a href="browse_plain.cgi?$notes_path_encoded">$notes_name</a><br>
+${back_link}<a href="$script_prefix$notes_query_string">$notes_name</a><br>
    <script language="JavaScript">
 <!-- Hide from browsers without js enabled;
 menu.display();

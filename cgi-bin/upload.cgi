@@ -25,7 +25,7 @@ if( ! auth::check_file_auth( $user, auth::get_user_info($user),
    print "You are not authorized to access this path.\n";
    exit(0);
 }
-$upload_path = wkn::path_check($upload_path);
+$upload_path = auth::path_check($upload_path);
 
 unless(defined(param('upload')))
 {

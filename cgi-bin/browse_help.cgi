@@ -11,24 +11,8 @@ print "<html><head>
 <H1>Other browse methods</H1>
 <body>";
 
-my $cgi_query_str = $ENV{QUERY_STRING};
-my($notes_path) = wkn::parse_view_mode($cgi_query_str);
-if ( $notes_path =~ m/\.\./ )
-{
-       print "illegal chars\n";
-       exit 0;
-}
-# else notes_path is ok. untaint it
-$notes_path =~ m:^:;
-$notes_path = $';
+my($cgi_query_str) = wkn::get_query_string();
 
-#take off leading and trailing /'s and remove \'s
-$notes_path =~ s:^/*::;
-$notes_path =~ s:/*$::;
-$notes_path =~ s:\\::g;
-
-
-#$notes_path=~s/%(..)/pack("c",hex($1))/ge;
 
 print "<h3>Theme</h3>\n";
 if($cgi_query_str =~ m:theme=([^&]*):)

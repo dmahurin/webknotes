@@ -6,7 +6,6 @@
 # dmahurin@users.sourceforge.net
 
 require 'wkn_define.pl';
-push(@INC, $wkn::define::auth_inc);
 require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
@@ -14,6 +13,8 @@ my $img_border = " border=0 hspace=3";
 package wkn;
 
 my %view_mode; # used to store layout, theme, and target of wkn sessions
+
+my @current_args; # 
 
 sub url_encode_path
 {
@@ -24,7 +25,7 @@ sub url_encode_path
       $path = $`;
       $skip = $&;
       $after = $';
-      return url_encode_path0($path) . $skip . $after;
+      return url_encode_path0($path) . $skip . url_encode_cgipath($after);
    }
    else
    {
@@ -45,12 +46,87 @@ sub url_encode_path0
   $name =~s/([^\w\.\~\-\_\/\#])/sprintf("%%%02lx", unpack('C',$1))/ge;
   return $name;
 }
+sub url_encode_cgipath
+{
+  my($name) = @_;
+  $name =~s/([^\&\w\.\~\-\_\/\#])/sprintf("%%%02lx", unpack('C',$1))/ge;
+  return $name;
+}
+
 
 sub url_unencode_path
 {
    my($path) = @_;
    $path=~s/%(..)/pack("c",hex($1))/ge;
    return $path;
+}
+
+sub url_encode_paths
+{
+   my(@out) = ();
+   foreach(@_)
+   {
+      push(@out,wkn::url_encode_path($_));
+   }
+   return @out;
+}
+
+sub url_unencode_paths
+{
+   my(@out) = ();
+   foreach(@_)
+   {
+      push(@out,wkn::url_unencode_path($_));
+   }
+   return @out;
+}
+
+sub get_query_string
+{
+   if(defined($ENV{QUERY_STRING}))
+   {
+      return $ENV{QUERY_STRING};
+   }
+   else
+   {
+      return join('&', url_encode_paths(@ARGV));
+   }
+}
+
+sub get_query_args
+{
+   if(defined($ENV{QUERY_STRING}))
+   {
+      return url_unencode_paths(split(/\&/, $ENV{QUERY_STRING}));
+   }
+   else
+   {
+      return @ARGV;
+   }
+}
+
+sub strip_view_mode_args
+{
+   my(@args);
+   my $arg;
+   foreach $arg (@_)
+   {
+      $arg = auth::path_check($arg);
+      if($arg =~ /^(theme|layout|target|frame)=/)
+      {
+         $wkn::view_mode{$1} = $';
+      }
+      else
+      {
+         push(@args, $arg);
+      }
+   }
+   return @args;
+}
+
+sub get_args
+{
+   return wkn::strip_view_mode_args(wkn::get_query_args());
 }
 
 sub actions1
@@ -60,9 +136,7 @@ sub actions1
 
 sub actions2
 {
-   my($notes_path, $user, $user_info) = @_;
-   $user = auth::get_user() unless(defined($user));
-   $user_info = auth::get_user_info($user) unless(defined($user_info));
+   my($notes_path) = @_;
 
    my($is_dir);
 
@@ -88,22 +162,22 @@ sub actions2
    if( $is_dir )
    {
       print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path}\">Add</A> ]\n";
-      #if(auth::check_file_auth($user, $user_info, 'd', $notes_path))
+      #if(auth::check_current_user_file_auth( 'd', $notes_path))
       #{
       #print "[ <A HREF=\"delete.cgi?$notes_path\">Delete</A> ]\n";
       #}
-      #if(auth::check_file_auth($user, $user_info, 'u', $notes_path))
+      #if(auth::check_current_user_file_auth('u', $notes_path))
       #{
       #print "[ <A HREF=\"upload.cgi?notes_path=${notes_path}\">Upload</A> ]\n";
       #}
-      #      if(auth::check_file_auth($user, $user_info, 'p', $notes_path))
+      #      if(auth::check_current_user_file_auth( 'p', $notes_path))
       #{
       #print "[ <A HREF=\"permissions.cgi?path=${notes_path}\">Access</A> ]\n";
       #}
    }
    
       print "[ Edit \n";
-   if(auth::check_file_auth($user, $user_info, 'm', $notes_path))
+   if(auth::check_current_user_file_auth('m', $notes_path))
    {
       print "<A HREF=\"edit.cgi?file=$dir_file\">File</a> | \n";
    }
@@ -828,20 +902,6 @@ sub get_cgi_prefix
    return $prefix;
 }
 
-# parse off the first part of the cgi args that define theme, layout, and
-# target
-sub parse_view_mode
-{
-   my($cgi_arg_str) = @_;
-   
-   while($cgi_arg_str =~ m:^(theme|layout|target|frame)=([^&]*)&?:)
-   {
-      $wkn::view_mode{$1} = $2;
-      $cgi_arg_str = $';
-   }
-   return $cgi_arg_str;
-}
-
 # return html to set style/css to current theme
 sub get_style_header_string
 {
@@ -850,40 +910,6 @@ sub get_style_header_string
    return "" unless(-f "$wkn::define::themes_dir/$theme.css");
    return "<LINK HREF=\"$wkn::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
       MEDIA=\"screen\" type=\"text/css\" >\n";
-}
-
-sub path_check
-{
-   my($notes_path, $user, $user_info) = @_;
-   $user = auth::get_user() unless(defined($user));
-   $user_info = auth::get_user_info($user) unless(defined($user_info));
- 
-   $notes_path =~ s:\\::g;
-   if ( $notes_path =~ m:(/|^)\.\.($|/): )
-   {
-      print "illegal chars\n";
-      return ();
-   }
-   # else notes_path is ok. untaint it
-   $notes_path =~ m:^:;
-   $notes_path = $';
-
-   #take off leading and trailing /'s and remove \'s
-   $notes_path =~ s:^/*::;
-   $notes_path =~ s:/*$::;
-
-   if( ! -e "$auth::define::doc_dir/$notes_path" )
-   {
-      print "Note not found: $auth::define::doc_dir/$notes_path<br>\n";
-      print "If you want, you can <a href=\"add_topic.cgi?notes_path=$notes_path_encoded\"> Add </a> the note yourself<br>\n";
-      return ();
-   }
-  unless( auth::check_file_auth( $user, $user_info, 'r', $notes_path ) )
-   {
-      print "You are not authorized to access this path.\n";
-      return ();
-   }
-   return $notes_path;
 }
 
 sub text_icon

@@ -17,16 +17,22 @@ else
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
 
-my $arg;
-my $cgi_arg = $ENV{QUERY_STRING};
-my $notes_path_encoded = wkn::parse_view_mode($ENV{QUERY_STRING});
+my($notes_path) = wkn::get_args();
+$notes_path = auth::path_check($notes_path);
+exit(0) unless(defined($notes_path));
+
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
+
+
+my $cgi_arg = wkn::get_query_string();
+my $notes_path_encoded = wkn::url_encode_path($notes_path);
+
 my $frame = $wkn::view_mode{"frame"};
-
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
-exit(0) unless(defined($notes_path));
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
-exit(0) unless(defined($notes_path));
-
+undef($wkn::view_mode{"frame"});
 
 if(defined($frame))
 {

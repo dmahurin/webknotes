@@ -47,15 +47,18 @@ my $CLOSED_SYMBOL = "[+]";
 my $OPENED_SYMBOL = "[-]";
 my $FILE_SYMBOL = "[.]";
 
-local $wkn::define::frames_mode = $wkn::define::mode
-  unless defined ($wkn::define::frames_mode);
-my $mode = $wkn::define::frames_mode;
-
-
 my ($arg);
 my($theme);
-my $notes_path_encoded;
-my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
+
+my($notes_path, @paths) = wkn::get_args();
+$notes_path = auth::path_check($notes_path);
+exit(0) unless(defined($notes_path));
+
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
 
 my $target;
 if($wkn::view_mode{"target"})
@@ -63,16 +66,12 @@ if($wkn::view_mode{"target"})
    $target = "target=\"$wkn::view_mode{\"target\"}\"";
 }
 
+my($notes_path_encoded)=wkn::url_encode_path($notes_path);
 my $this_script_prefix = wkn::get_cgi_prefix("browse_list2.cgi");
 undef($wkn::view_mode{"target"}); # don't want to pass target to main script
 my $script_prefix = wkn::get_cgi_prefix();
 
-my($notes_path_encoded, @paths) = split(/\&/, $notes_path_encoded);
-
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
-exit(0) unless(defined($notes_path));
-
-my $open_tree = unflatten_tree(unencode_paths(@paths));
+my $open_tree = unflatten_tree(wkn::url_unencode_paths(@paths));
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
@@ -172,7 +171,7 @@ if(-d $toppath)
              my $save_ref = $dir_ref->{$filename};
              undef($dir_ref->{$filename});
              print "<a href=\"$this_script_prefix$notes_path_encoded&". 
-                join ('&' , encode_paths(flatten_tree($open_tree))) .
+                join ('&' , wkn::url_encode_paths(flatten_tree($open_tree))) .
                 "\">". &wkn::text_icon($wkn::define::opened_icon_text, 
                    $wkn::define::opened_icon) .
                 "</a>$LITEM_START1\n";
@@ -194,7 +193,7 @@ if(-d $toppath)
              %{$dir_ref->{$filename}} = ();
              print "<table cellspacing=0 cellpadding=0 ><tr><td>";
              print "<a href=\"$this_script_prefix$notes_path_encoded&" . 
-                join ('&' , encode_paths(flatten_tree($open_tree))) .
+                join ('&' , wkn::url_encode_paths(flatten_tree($open_tree))) .
                 "\">" .
                 &wkn::text_icon($wkn::define::closed_icon_text, 
                    $wkn::define::closed_icon) .
@@ -232,7 +231,7 @@ if(-d $toppath)
           $name = $`;
           print &wkn::text_icon($wkn::define::file_icon_text, 
                    $wkn::define::file_icon) .
-              "$LITEM_START1<a $target href=\"browse_$mode.cgi?$encoded_subnotes_path\">$name</a>";
+              "$LITEM_START1<a $target href=\"${script_prefix}$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
        else
@@ -381,24 +380,4 @@ sub new_tree_itemref
   }
   %$tree_ref = ();
   return $tree_ref;
-}
-
-sub encode_paths
-{
-   my(@out) = ();
-   foreach(@_)
-   {
-      push(@out,wkn::url_encode_path($_));
-   }
-   return @out;
-}
-
-sub unencode_paths
-{
-   my(@out) = ();
-   foreach(@_)
-   {
-      push(@out,wkn::url_unencode_path($_));
-   }
-   return @out;
 }

@@ -14,24 +14,28 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
 
-$wkn::define::mode = "file";
+$wkn::view_mode{"layout"} = "file";
 
-my $notes_path_encoded = $ENV{QUERY_STRING};
 
-my($user) = auth::get_user();
-my($user_info) = auth::get_user_info($user);
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded), $user, $user_info);
+my($notes_path) = wkn::get_args();
+
+$notes_path = auth::path_check($notes_path);
 exit(0) unless(defined($notes_path));
+
+unless( auth::check_current_user_file_auth( $notes_path,'r' ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
+#unless(auth::check_path_exists($notes_path )
+#{
+#   print "Note not found: $auth::define::doc_dir/$notes_path<br>\n";
+#   print "If you want, you can <a href=\"add_topic.cgi?notes_path=$notes_path_encoded\"> Add </a> the note yourself<br>\n";
+#   exit(0);
+#}
 
 $notes_path =~ m:([^/]*)$:;
 my($notes_name) = $1;
-
-if( ! -e "$auth::define::doc_dir/$notes_path" )
-{
-   print "Note not found: $auth::define::doc_dir/$notes_path<br>\n";
-   print "If you want, you can <a href=\"add_topic.cgi?notes_path=$notes_path_encoded\"> Add </a> the note yourself<br>\n";
-   exit(0);
-}
 
 print <<"END";
 <HTML>
@@ -46,7 +50,7 @@ print "<hr>\n";
 print "<b>$notes_name</b> - ";
 wkn::print_modification($notes_path);
 print "<hr>\n";
-wkn::actions2($notes_path, $user, $user_info);
+wkn::actions2($notes_path);
 #wkn::log($notes_path);
 print "</BODY>\n";
 print "</HTML>\n";

@@ -17,19 +17,21 @@ else
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
 
-my $mode = defined ($wkn::define::frames_mode) ? $wkn::define::frames_mode :
-$wkn::define::mode;
-
-my(@args) = split('&', $ENV{QUERY_STRING});
-my($frame);
-my $notes_path_encoded = shift(@args);
-if( $notes_path_encoded =~ m:^frame=:) 
-{
-   $frame = $';
-   $notes_path_encoded = shift(@args);
-}
-my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
+my($notes_path) = wkn::get_args();
+$notes_path = auth::path_check($notes_path);
 exit(0) unless(defined($notes_path));
+
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
+
+my($notes_path_encoded) = wkn::url_encode_path($notes_path);
+
+my $frame = $wkn::view_mode{frame};
+undef $wkn::view_mode{frame};
+my $script_prefix = wkn::get_cgi_prefix();
 
 if(defined($frame))
 {
@@ -64,15 +66,15 @@ print <<EOT
 <title>$wkn::define::index_title</title>
   </head>
   <frameset rows = "60,*">
-    <frame src="$this_script?frame=header&$notes_path" name="header" noresize marginwidth="0"
+    <frame src="$this_script?frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
       marginheight="0" scrolling="no">
     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
-          <frame src="browse_js.cgi?target=body&$notes_path" name="menu" marginwidth="0" marginheight="0">
-          <frame src="$this_script?frame=footer&$notes_path" name="footer" marginwidth="0"
+          <frame src="browse_js.cgi?target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
+          <frame src="$this_script?frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
                  marginheight="0" scrolling="no">
         </frameset>
-      <frame src="browse_$mode.cgi?$notes_path" name="body" marginwidth="0" marginheight=
+      <frame src="$script_prefix$notes_path_encoded" name="body" marginwidth="0" marginheight=
 "0">
     </frameset>
   </frameset>

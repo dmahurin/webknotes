@@ -34,7 +34,7 @@ if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} 
    my $description;
    if(defined($in{'copy'}) and $in{copy} ne ""  && ! defined($in{'description'}))
    {
-      my $copyfile = &wkn::path_check("$notes_path/$in{'copy'}");
+      my $copyfile = &auth::path_check("$notes_path/$in{'copy'}");
       $description = "";
       if(open(COPYFILE, "$auth::define::doc_dir/$copyfile/README.html"))
       {
