@@ -49,7 +49,7 @@ sub url_encode_path0
 sub url_encode_cgipath
 {
   my($name) = @_;
-  $name =~s/([^\&\w\.\~\-\_\/\#])/sprintf("%%%02lx", unpack('C',$1))/ge;
+  $name =~s/([^\&\=\w\.\~\-\_\/\#])/sprintf("%%%02lx", unpack('C',$1))/ge;
   return $name;
 }
 
