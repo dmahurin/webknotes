@@ -34,7 +34,7 @@ sub my_link_translate
       $text = $';
    }
 
-   if( $ref =~ m:^[a-z]+\://[^/]+:)
+   if( $ref =~ m:^(mailto\:|[a-z]+\://)[^/]+:)
    {
       unless(defined($text))
       {
