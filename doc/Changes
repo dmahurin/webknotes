@@ -81,3 +81,18 @@ bug fixes
 
 
 0.6.08 - minor bug fix
+
+0.7.0 -
+-Restructured for simplification.
+-'auth' and 'wkn' cgi directories merged, and now toplevel is same for
+both.
+-Lots of configuration definitions disappeared as a result.
+-New 'configure' script to do a simple guess at setting up webknotes.
+-New extendable user and group file format.(Requires conversion of old
+files using util/ufile_convert)
+-New more straightforware permissions scheme.
+-New browse method that allows editing a directory. (This allows editing
+and deleting non-note files)
+-New uploade script to allow uploading none-note or binary items(if user
+has 'u' permission in dir).
+
