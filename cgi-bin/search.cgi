@@ -243,10 +243,8 @@ DIR: while (@dirs)
       print "searching $searchfile\n" if ($debug);
       open(SEARCHFILE, $searchfile);
       select(SEARCHFILE); $/ = undef; select(STDOUT);
-      while(<SEARCHFILE>)
+      while(defined($line=<SEARCHFILE>))
       {
-         $line = $_;
-
          # we have filled all keywords locate additional matches
          if($key_dir_depth)
          {
@@ -338,11 +336,11 @@ sub find_keywords
    if ( $exact_match )
    {
       $x = @$not_found_words - 1;
-      foreach $match_word (@$not_found_words)
+      foreach $match_word (reverse @$not_found_words)
       {
          if ( $line =~ /\b$match_word\b/i )
          {
-#   print "found:$match_word:$line\n";
+#   print "found:$match_word\n";
             splice(@$not_found_words, $x, 1);
          }
          $x--;
@@ -351,11 +349,11 @@ sub find_keywords
    else
    {
       $x = @$not_found_words - 1;
-      foreach $match_word (@$not_found_words)
+      foreach $match_word (reverse @$not_found_words)
       {
          if ($line =~ /$match_word/i)
          {
-#   print "found:$match_word:$line\n";
+#   print "found:$match_word:\n";
             splice(@$not_found_words,$x, 1);
          }
          $x--;
@@ -443,6 +441,7 @@ EOT
 sub print_footer_html
 {
     print <<EOT;
+</ul>
 <P>
 <HR>
 </CENTER> </BODY> </HTML>
@@ -502,8 +501,8 @@ sub print_input_form_html
 <hr>
 <B>Notes Subpath( optional ):</B> <INPUT TYPE="text" SIZE="30" NAME="notes_subpath" MAXLENGTH="80" VALUE="$notes_subpath" > <br>
 <p>
-<INPUT TYPE=checkbox NAME="exact_match"> Exact Match Search <br>
-<INPUT TYPE=radio NAME="search_contents" VALUE="off" checked> Search Topic Keywords only <br>
+<INPUT TYPE=checkbox NAME="exact_match"> Whole word match <br>
+<INPUT TYPE=radio NAME="search_contents" VALUE="off" checked> Search Topic Names only <br>
 <INPUT TYPE=radio NAME="search_contents" VALUE="on"> Examine Message Contents also <br>
 <hr>    
 <B>Date constraint:</B> <SELECT  WIDTH=33 NAME="days_old" >
