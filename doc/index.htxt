@@ -9,7 +9,7 @@ Pages can be viewed with different [[layouts and themes]].
 
 Users can [[subscribe]] to topics and recieve mail on modification.
 
-WebKNotes can serve as a web server [[browse index hander]],
+WebKNotes can serve as a web server [[browse index handler]],
 so that the web server natively uses webknotes to index directories and view files.
 
 
