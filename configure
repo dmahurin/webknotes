@@ -26,10 +26,6 @@ if(prompt_default("Install in web Root or User directory", $default, "(r|u)") eq
 {
    $web_doc_root = "/home/httpd/html"
       unless(defined($web_doc_root));
-   $cgi_root = "/home/httpd/cgi-bin"
-      unless(defined($cgi_root));
-   $cgi_root_wpath = "/cgi-bin"
-      unless(defined($cgi_root_wpath));
    my $web_doc_root_wpath = "";
 }
 else
@@ -47,8 +43,8 @@ else
    $web_doc_root_wpath = "/~$ENV{\"USER\"}";
 }
 
-my $web_doc_root = prompt_default("Web document root", $web_doc_root);
-my $web_doc_root_path = prompt_default("Web document root web path", $web_doc_root_wpath);
+$web_doc_root = prompt_default("Web document root", $web_doc_root);
+$web_doc_root_path = prompt_default("Web document root web path", $web_doc_root_wpath);
 
 
 unless($cgi_root)
