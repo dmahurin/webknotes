@@ -2,11 +2,20 @@
 
 #use strict;
 
+my $install = 1;
 my $wkn_cgi_dir;
 
-if(@ARGV and $ARGV[0] =~ m:^--cgi=:)
+for my $arg (@ARGV)
 {
-	$wkn_cgi_dir = $';
+   if($arg =~ m:^--cgi=:)
+   {
+      $wkn_cgi_dir = $';
+      shift(@ARGV);
+   }
+   elsif($arg eq "--setup-only")
+   {
+      $install = 0;
+   }
 }
 
 # need local for var_eval
@@ -68,7 +77,7 @@ else
 }
 
 $web_doc_root = prompt_default("Web document root", $web_doc_root);
-$web_doc_root_path = prompt_default("Web document root web path", $web_doc_root_wpath);
+$web_doc_root_wpath = prompt_default("Web document root web path", $web_doc_root_wpath);
 
 
 unless($cgi_root)
@@ -109,17 +118,7 @@ close(IN);
 
 #INSTALLATION follows
 
-my $default;
-if(-d $wkn_cgi_dir )
-{
-  $default = "n";
-}
-else
-{
-   $default = "y";
-}
-
-if(prompt_default("Copy webknotes cgi-bin", $default, "(y|n)") eq "y")
+if(prompt_default("Copy webknotes cgi-bin", $install ? "y" : "n", "(y|n)") eq "y")
 {
    mkdir($wkn_cgi_dir, 0755);
    system("cp -r cgi-bin/* $wkn_cgi_dir");
@@ -197,14 +196,14 @@ unless(defined($filedb::define::doc_dir) and -d $filedb::define::doc_dir)
    }
 }
 
-if(prompt_default("Copy sample icons", ( -d $view::define::icons_dir )? "n" : "y",
+if(prompt_default("Copy sample icons", ( $install )? "y" : "n",
    "(y|n)") eq "y")
 {
    mkdir($view::define::icons_dir,0755);
    system("cp -r 'icons'/* $view::define::icons_dir");
 }
 
-if(prompt_default("Copy sample themes", ( -d $view::define::themes_dir )? "n" : "y",
+if(prompt_default("Copy sample themes", ( $install )? "y" : "n",
    "(y|n)") eq "y")
 {
    mkdir($view::define::themes_dir,0755);
@@ -214,8 +213,8 @@ if(prompt_default("Copy sample themes", ( -d $view::define::themes_dir )? "n" : 
 # upgrade to 1.0
 if(defined($auth::define::private_dir && !defined ($filedb::define::private_dir)))
 {
-   $filedb::define::private_dir = $auth::define_private_dir;
-   undef $auth::define_private_dir;
+   $filedb::define::private_dir = $auth::define::private_dir;
+   undef $auth::define::private_dir;
 }
 
 if(prompt_default("Create private web dir",
