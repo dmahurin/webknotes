@@ -10,7 +10,7 @@ if(@ARGV and $ARGV[0] =~ m:^--cgi=:)
 }
 
 # need local for var_eval
-local($HOME) = $ENV{HOME};
+local($HOME); # = $ENV{HOME};
 
 my(%symbols);
 
@@ -26,21 +26,23 @@ unless(defined($wkn_cgi_dir) and -f "$wkn_cgi_dir/filedb_define.pl" and
 -f "$wkn_cgi_dir/view_define.pl")
 {
 
+($web_doc_root, $cgi_root, $cgi_root_wpath,
+   $user, $user_dir) =
+
+   &chomp_slashs(parse_httpd());
+
+
 if($<)
 {
    $user = getpwuid($<)
 }
-else
+elsif((!defined($user)) or $user eq "nobody")
 {
    $user = "www";
 }
-
-($web_doc_root, $cgi_root, $cgi_root_wpath,
-   $user_dir) =
-
-   &chomp_slashs(parse_httpd());
-
-print "$web_doc_root, $cgi_root, $cgi_root_wpath\n";
+my(@userinfo) = getpwnam($user);
+$HOME = $userinfo[7];
+$HOME="/home/httpd" unless(defined($HOME) and $HOME ne "/" and $HOME ne "");
 
 my $default = ( $< && $user ne "www") ? "u" : "r";
 
@@ -217,15 +219,13 @@ if(defined($auth::define::private_dir && !defined ($filedb::define::private_dir)
 }
 
 if(prompt_default("Create private web dir",
-(-d $filedb::define::private_dir ) ? "n" : "y", "(y|n)"))
+(-d $filedb::define::private_dir ) ? "n" : "y", "(y|n)") eq "y")
 {
-   if(mkdir($filedb::define::private_dir,0700))
-   {
-      mkdir("$filedb::define::private_dir/groups",0700);
-      mkdir("$filedb::define::private_dir/users",0700);
-      mkdir("$filedb::define::private_dir/sessions",0700);
-   }
-   else
+   mkdir($filedb::define::private_dir,0700);
+   unless(
+      mkdir("$filedb::define::private_dir/groups",0700) &&
+      mkdir("$filedb::define::private_dir/users",0700) &&
+      mkdir("$filedb::define::private_dir/sessions",0700))
    {
       print "Error making directory: $filedb::define::private_dir\n";
    }
@@ -266,7 +266,7 @@ if(prompt_default("Create private web dir",
 
 sub parse_httpd
 {
-   my($line, $web_doc_root, $script_root, $script_alias, $user_dir, $conf);
+   my($line, $web_doc_root, $script_root, $script_alias, $user, $user_dir, $conf);
 
    for $conf ( "/etc/httpd/conf/httpd.conf", "/etc/httpd/conf/srm.conf" )
    {
@@ -281,6 +281,10 @@ sub parse_httpd
          {
             ($script_alias, $script_root) = split_args($');
          }
+         if($line =~ m:^User\s+:)
+         {
+            ($user) = split_args($');
+         }
          if($line =~ m:^UserDir\s+:)
          {
             ($user_dir) = split_args($');
@@ -292,7 +296,7 @@ sub parse_httpd
    {
       print "Warning: http configuration not found\n";
    }
-   return ($web_doc_root, $script_root, $script_alias, $user_dir);
+   return ($web_doc_root, $script_root, $script_alias, $user, $user_dir);
 }
 
 
