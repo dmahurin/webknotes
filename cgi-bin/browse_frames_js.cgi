@@ -45,7 +45,7 @@ if(defined($frame))
       print "<html><head><BASE TARGET=\"body\"></head>\n";
       if(defined($wkn::define::index_footer))
       {
-         print $wkn::define::index_footer, "";
+         print $wkn::define::index_footer;
       }
       else
       {
