@@ -44,6 +44,7 @@ sub show
 
    $notes_path =~ m:([^/]*)$:;
    my($notes_name) = $1;
+   $notes_name =~ s:\.(html|htxt|wiki)$::g;
 
    print $css_tables->table_begin("topic-table") . "\n";
 
