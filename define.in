@@ -32,9 +32,11 @@ STRING closed_icon "Closed icon" "fplus.gif"
 STRING dir_icon "Directory icon" "folder.gif"
 STRING file_icon "File icon" "document.gif"
 HASH file_icons "Icons for specific file type"
-STRING head_tags
-STRING index_footer
+STRING head_tags "Tags included in <head> section"
+STRING page_header "Page header html"
+STRING page_footer "Page footer html"
 STRING index_header
+STRING index_footer
 STRING index_title
 
 PACKAGE mailer
