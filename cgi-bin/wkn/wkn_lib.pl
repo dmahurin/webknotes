@@ -155,6 +155,17 @@ sub print_link_html
 				'</A>(l)';
 				last SWITCH;
 			};
+                        $file_ext =~ /^\.(c|h|c\+\+|cxx|hxx|idl|java)$/ && do
+                        {
+                           print "<A HREF=\"$wkn::define::cgi_wpath/" .
+                              &wkn::mode_to_scriptprefix($wkn::define::mode) .
+                              $notes_wpath . '">';
+                           print &wkn::text_icon($wkn::define::file_icon_text, $wkn::define::file_icon);
+                           
+                           print $file, "</A>\n";
+
+                           last SWITCH;
+                        };
 			$file_ext =~ /^\.(txt|html)/ && do
                         {
                            print "<A HREF=\"$wkn::define::cgi_wpath/" .
@@ -166,6 +177,7 @@ sub print_link_html
                               #				print "<A HREF=\"",
                               #				"${web_path}",
                               #				"\">${file}</A>\n";
+
                               last SWITCH;
 			};
 
@@ -493,11 +505,19 @@ sub print_dir_file
 		{
 			wkn::print_hfile($notes_path);
 		}
+		elsif(defined(&wkn::define::code_filter) && 
+                $notes_path =~ /\.(c|h|c\+\+|cxx|hxx|idl|java)$/ )
+                {
+                   print '<pre>',
+                   &wkn::define::code_filter($1, get_file($notes_path)),
+                   '</pre>';
+
+ 	        }
 		else
 		{
 			wkn::print_tfile($notes_path);
 		}
-		return "file";
+		return $notes_path;
 	}
 
         chdir("$wkn::define::notes_dir/$notes_path") or return ();
@@ -558,6 +578,17 @@ $atime,$mtime,$ctime,$blksize,$blocks)
         }
         
 	print "<br>\n";
+}
+
+sub get_file
+{
+        my($notes_file) = @_;
+
+        open(MYFILE, "$wkn::define::notes_dir/$notes_file") || return 0;
+        local $/ = undef;
+        my($text) = <MYFILE>;
+        close(MYFILE);
+        return($text);
 }
 
 sub print_tfile

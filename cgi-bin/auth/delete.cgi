@@ -41,7 +41,6 @@ else
 }
 
 $file =~ s:^/+::;
-my $full_file = "$auth::define::doc_dir/$file";
 
 if( $file =~ m:$illegal_dir: )
 {
