@@ -137,7 +137,6 @@ $wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$
 mkdir($cgi_root,0755) if ($in_cgi_root);
 mkdir($wkn_cgi_dir, 0755);
 
-#$default = ( -d "$public_cgi_dir/$cgi_subpath" ) ? "n" : "y";
 if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
 {
    system("cp -r $webknotes_base/cgi-bin/* $wkn_cgi_dir");
@@ -192,7 +191,7 @@ package auth::define;
          }
          else { last };
       }
-      push(@INC, "$public_cgi_dir/$cgi_subpath");
+      push(@INC, "$wkn_cgi_dir/$cgi_subpath");
       require "auth_lib.pl";
       if(! auth::write_user_info($admin_user,
          { "PassKey"=>auth::pcrypt1($admin_password),
@@ -273,7 +272,7 @@ sub parse_httpd
    }
    if(!defined($doc_root))
    {                             
-      print "Warning: http configuration not found";
+      print "Warning: http configuration not found\n";
    }
    return ($doc_root, $script_root, $script_alias, $user_dir);
 }
