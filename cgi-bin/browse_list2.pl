@@ -223,15 +223,15 @@ if(-d $toppath)
        elsif($name =~ m:\.(html|txt)$:)
        {
           $name = $`;
-          print &view::text_icon('[o]', 
-                   $view::define::file_icons->{"file"}) .
+          print &view::icon_tag('[o]', 
+                   $view::define::file_icon) .
               "$LITEM_START1<a $target href=\"${script_prefix}$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
        else
        {
           print &view::icon_tag('[o]', 
-                   $view::define::file_icons->{"file"}) . "$LITEM_START1<a $target href=\"$filedb::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
+                   $view::define::file_icon) . "$LITEM_START1<a $target href=\"$filedb::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
    }
