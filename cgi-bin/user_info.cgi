@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-# show information on a user, using the auth-lib
+# edit information on a user, using the auth-lib
 
 # The auth-lib and all related scripts are part of WebKNotes
 # The WebKNotes system is Copyright 1996-1999 Don Mahurin.

@@ -24,8 +24,7 @@ if(prompt_default("Install in web Root or User directory", $default, "(r|u)") eq
       unless(defined($cgi_root));
    $cgi_root_wpath = "/cgi-bin"
       unless(defined($cgi_root_wpath));
-   $doc_root_wpath = "/";
-   $private_web_dir = "/home/httpd/private";
+   $doc_root_wpath = "";
 }
 else
 {
@@ -40,7 +39,10 @@ else
    undef $cgi_root;
    undef $cgi_root_wpath;
    $doc_root_wpath = "/~$ENV{\"USER\"}";
-   $private_web_dir = "$ENV{\"HOME\"}/web_private";
+}
+if($doc_root =~ m:[^/]+$:)
+{
+   $private_web_dir = "$`private";
 }
 
 unless($cgi_root)
@@ -52,15 +54,18 @@ $webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
 
 $wkn_cgi_subpath = "wkn";
 $wkn_cgi_dir = prompt_default("webknotes cgi-bin directory", "$cgi_root/$wkn_cgi_subpath");
+if($wkn_cgi_dir =~ m:^$doc_root/:)
+{
+   mkdir($doc_root, 0755);
+}
 if($wkn_cgi_dir =~ m:^$cgi_root/:)
 {
-   $in_cgi_root = 1;
+   mkdir($cgi_root, 0755);
    $wkn_cgi_subpath = $';
 }
 
 $wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
 
-mkdir($cgi_root,0755) if ($in_cgi_root);
 mkdir($wkn_cgi_dir, 0755);
 
 if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
@@ -69,77 +74,68 @@ if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
 
    print "Note: WebKNotes requires some sort of setuid mechanism. You have these coices:\n";
    print "\tApache setuid_mod - if enabled, you do nothing\n";
-   print "\tcgiwrap - I don't know how you set it up\n";
+   print "\tcgiwrap - Your cgi web path will be: /cgi-bin/cgiwrap/webuser/wkn\n";
    print "\tsperl_user.c - \n" .
       "\t\tcc -c util/sper_user.c -o $wkn_cgi_dir/sperl_$user\n" .
       "\t\tutil/perlpath $wkn_cgi_dir/sperl_$user $wkn_cgi_dir/*.cgi\n";
    print "\tsetuid .cgi - say Yes below\n";
+   print "\tChange User/Group in httpd.conf to owner of files (Not recommended if untrusted users)\n";
       
    print "\n";
-   if(prompt_default("Set Setuid on scripts", "y", "(y|n)") eq "y")
+   if(prompt_default("Set Setuid bit on scripts", "y", "(y|n)") eq "y")
    {
       system("chmod a+x,u+s $wkn_cgi_dir/*.cgi");
    }
 }
 
 
-$notes_subpath = "notes";
-$notes_dir = prompt_default("Notes file path", "$doc_root/$notes_subpath");
+$public_subpath = "wkn";
+$public_dir = prompt_default("WKN public html dir (where by default, notes, icons, and themes live)", "$doc_root/$public_subpath");
+if($public_dir =~ m:^$doc_root/:)
+{
+   $in_doc_root = 1;
+   $public_subpath = $';
+}
+$public_wpath = prompt_default("WKN public html web path", "$doc_root_wpath/$public_subpath");
+
+mkdir($doc_root, 0755) if($in_doc_root);
+mkdir($public_dir, 0755);
+
+$notes_subpath = "$public_subpath/notes";
+$notes_dir = prompt_default("Notes file path (this is where the document tree lives)", "$doc_root/$notes_subpath");
 if($notes_dir =~ m:^$doc_root/:)
 {
-   $in_doc_root=1;
+   $in_doc_root = 1;
    $notes_subpath = $';
 }
 $notes_wpath = prompt_default("Notes web path", "$doc_root_wpath/$notes_subpath");
 
-mkdir($doc_root,0755) if ($in_doc_root);
-if( ! -d $notes_dir )
+unless(-d $notes_dir)
 {
-   if(prompt_default("Create directory", "y", "(y|n)") eq "y")
+   print "Error creating directory: $notes_dir\n" unless(mkdir($notes_dir,0755));
+   if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
    {
-      print "Error creating director\n" unless(mkdir($notes_dir,0755));
-      if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
-      {
-         system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
-      }
+      system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
    }
 }
 
-$default_layout = "table";
-$default_theme = "don";
-
-if(prompt_default("Generate top level index", "y", "(y|n)") eq "y")
-{
-   $index_file = prompt_default("Name of index file", "$notes_dir/index.html");
-   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/browse_${default_layout}.cgi '' >$index_file";
-   print "Running command: $command\n\n";
-   system($command);
-}
-
-$icon_subpath = "icons";
-$theme_subpath = "themes";
+$icon_subpath = "$public_subpath/icons";
+$theme_subpath = "$public_subpath/themes";
 $icons_dir = prompt_default("Icons file path", "$doc_root/$icon_subpath");
 if($icons_dir =~ m:^$doc_root/:)
 {
-   $in_doc_root=1;
    $icon_subpath = $';
-   if($icon_subpath =~ m:/icons:)
-   {      
-      $theme_subpath = $`;
-   }
 }
 $icons_wpath = prompt_default("Icons web path", "$doc_root_wpath/$icon_subpath");
 
 $themes_dir = prompt_default("Themes file path", "$doc_root/$theme_subpath");
 if($themes_dir =~ m:^$doc_root/:)
 {
-   $in_doc_root=1;
    $theme_subpath = $';
 }
 $themes_wpath = prompt_default("Themes web path", "$doc_root_wpath/$theme_subpath");
 
 
-mkdir($doc_root,0755) if ($in_doc_root);
 if(prompt_default("Copy sample icons", ( -d $icons_dir )? "n" : "y",
    "(y|n)") eq "y")
 {
@@ -250,16 +246,32 @@ $file_icon_text = "[.]";
       close FILE;
    }
 }
-if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
+$default_layout = "table";
+$default_theme = "don";
+if(prompt_default("Generate top level index", "y", "(y|n)") eq "y")
 {
+   $index_file = prompt_default("Name of index file", "$public_dir/index.html");
+   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/browse_help.cgi '' >$index_file";
+   print "Running command: $command\n\n";
+   system($command);
 }
 
+$wpath_prefix = 'localhost' if($wkn_cgi_wpath =~ m:^/:);
+print "\nhttp://$wpath_prefix$wkn_cgi_wpath/browse_help.cgi\n";
+print "http://$wpath_prefix$public_wpath/\n";
 
 sub prompt_default
 {
    my($prompt, $default, $choices) = @_;
       
-   print "$prompt $choices [$default]: ";
+   if( length($prompt) + length($choices) + length($default) + 4 > 80)
+   {
+      print "$prompt $choices -\n  [$default]: ";
+   }
+   else
+   {
+      print "$prompt $choices [$default]: ";
+   }
    $line = <STDIN>;
    chomp($line);
    $line = $default if($line eq "");

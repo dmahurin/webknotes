@@ -5,10 +5,10 @@ require 'wkn_lib.pl';
 
 print "Content-Type: text/html\n\n";
 print "<html><head>
-<TITLE>Other WKN browse methods</TITLE>
+<TITLE>WKN browse methods</TITLE>
 <base target=\"_top\">
 </HEAD><BODY>
-<H1>Other browse methods</H1>
+<H1>WKN Browse methods</H1>
 <body>";
 
 my($cgi_query_str) = wkn::get_query_string();
