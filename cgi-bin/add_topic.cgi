@@ -79,7 +79,7 @@ elsif( $topic_tag eq "")
 else
 {
    $in{'description'} =~ s:\r\n:\n:g; # rid ourselves of the two char newlines
-   if( &view::add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
+   if( &add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
    {
 
       #view::browse_show_page($notes_path);
@@ -154,37 +154,6 @@ EOT
 
 #require 'send_email.pl';
 
-package wkn;
-
-sub make_dir
-{
-	my($notes_path) = @_;
-
-	if(!mkdir("$filedb::define::doc_dir/$notes_path", 0755 ))
-	{
-		return 0;
-	}
-#	print "${notes_bin}/faccess -d notes  $notes_path";
-#	system ("${notes_bin}/faccess -d notes  $notes_path 1>&2 > /dev/null");
-
-	return 1;
-}
-
-
-sub mkfile
-{
-	my($notes_filepath, $contents) = @_;
-
-	if(open(NFILE, "> $filedb::define::doc_dir/${notes_filepath}" ))
-        {
-	print NFILE $contents;
-	close(NFILE);
-	chmod 0644,"$filedb::define::doc_dir/$notes_filepath";
-        }
-
-	return 1;
-}
-
 sub add_topic
 {
 	my ( $parent_path, $topic, $text_type, $message, $source_details, $topic_type ) = @_;
@@ -237,7 +206,7 @@ $text_type= "wiki" if($text_type eq "wikidir");
 
 if($should_make_dir)
 {
-if( ! &view::make_dir($notes_path))
+if( ! &filedb::make_dir($notes_path))
 {
 #if ( -e "$filedb::define::doc_dir${notes_path}/README" )
 #	print("Notes path already exist. \nTopic not created\n");
@@ -264,27 +233,27 @@ else
 
 if( $text_type eq "text" )
 {
-   &view::mkfile(
+   &filedb::mkfile(
       $should_make_dir ? "$notes_path/README" : "$parent_path/${topic}.txt",
       $message);
 }
 elsif( $text_type eq "pre" )
 {
-   &view::mkfile(
+   &filedb::mkfile(
       $should_make_dir ? "$notes_path/README.html" :
          "$parent_path/${topic}.html",
     "<pre>\n" . $message . "</pre>\n");
 }
 elsif( $text_type eq "wiki" )
 {
-   &view::mkfile(
+   &filedb::mkfile(
       $should_make_dir ? "$notes_path/FrontPage.wiki" :
         "$parent_path/${topic}.wiki",
       $message);
 }
 else
 {
-   &view::mkfile("$notes_path/README.html",
+   &filedb::mkfile("$notes_path/README.html",
       $should_make_dir ? "$notes_path/README.html" :
         "$parent_path/${topic}.html",
       $message);
@@ -293,13 +262,13 @@ else
 #&view::mail_subscribers($notes_path);
 my $log = localtime;
 $log .= "\n$source_details\n";
-&view::mkfile("$notes_path/.create-log", $log );
-#&view::mkfile("$notes_path/.type", $topic_type);
+&filedb::mkfile("$notes_path/.create-log", $log );
+#&filedb::mkfile("$notes_path/.type", $topic_type);
 
 my($user) = auth::get_user();
 if( defined($user))
 {
-   &view::mkfile("$notes_path/.owner", $user);
+   &filedb::mkfile("$notes_path/.owner", $user);
 }
 
 return 1;

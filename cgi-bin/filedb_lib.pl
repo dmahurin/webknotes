@@ -67,3 +67,26 @@ sub get_file
    return($text);
 }
 
+sub mkfile
+{
+   my($notes_filepath, $contents) = @_;
+
+   if(open(NFILE, "> $filedb::define::doc_dir/${notes_filepath}" ))
+   {
+      print NFILE $contents;
+      close(NFILE);
+      chmod 0644,"$filedb::define::doc_dir/$notes_filepath";
+      return 1;
+   }
+}
+
+sub make_dir
+{
+   my($notes_path) = @_;
+
+   if(!mkdir("$filedb::define::doc_dir/$notes_path", 0755 ))
+   {
+      return 0;
+   }
+   return 1;
+}

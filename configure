@@ -241,7 +241,7 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
 \$themes_dir = \"$themes_dir\";" , 
 '
 $default_layout = "table";
-$default_theme = "don";
+$default_theme = "forge";
 
 $max_depth = 3;
 
