@@ -32,27 +32,30 @@ sub AsAnchor
 {
    my($path, $ref) = @_;
    my $link;
+   
+   my($text);
+   if($ref =~ m:\|:)
+   {
+      $ref = $`;
+      $text = $';
+   }
 
    if( $ref =~ m:^[a-z]+\://[^/]+:)
    {
-      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
-      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
-      $link = "<a href=\"$ref\">$ref</a>";
-   }
-   else
-   {
-      my($text);
-      if($ref =~ m:\|:)
+      unless(defined($text))
       {
-         $ref = $`;
-         $text = $';
+         $text = $ref;
       }
-   if( filedb::is_dir($path, $ref))
+      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
+      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
+      $link = "<a href=\"$ref\">$text</a>";
+   }
+   elsif( filedb::is_dir($path, $ref))
    {
       unless(defined($text))
       {
-      $ref =~ m:([^/]+)$:;
-      $text = $1; 
+         $ref =~ m:([^/]+)$:;
+         $text = $1;
       }
       $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
    }
@@ -63,11 +66,11 @@ sub AsAnchor
       unless(defined($text))
       { 
          $text = $file;
-      if($text =~ m:\.(htm?|txt|wiki|htxt|url)$:)
-      {
-         $text = $`;
-      }
-      }
+         if($text =~ m:\.(htm?|txt|wiki|htxt|url)$:)
+         {
+            $text = $`;
+         }
+      }	      
 
       if($file =~ m:\.(url)$:)
       {
@@ -84,8 +87,8 @@ sub AsAnchor
    {
       unless(defined($text))
       {
-      $ref =~ m:([^/]+)$:;
-      $text = $1;
+         $ref =~ m:([^/]+)$:;
+         $text = $1;
       }
       $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,"$ref.wiki"), $text);
    }
@@ -110,7 +113,6 @@ sub AsAnchor
       my($add_url) =  "add_topic.cgi?path=${path_encoded}&text_type=wiki&topic_tag=";
 
       $link = "<a href=\"${bprefix}${add_url}$topic$bsuffix\">$text (?)<\/a>";
-   }
    }
    return $link;
 }
