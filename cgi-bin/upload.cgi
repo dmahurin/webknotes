@@ -64,12 +64,12 @@ sub wkn_save_file
       print "No file uploaded.";
       return;
    }
-   print h2('File name'),$file;
+   print h2('File name'),$filename;
    print h2('File MIME type'),uploadInfo($file)->{'Content-Type'};
    {
       local $/ = undef;
 # TODO:: below should not be used with large files
-      filedb::put_file($upload_path, $file, <$file>);
+      filedb::put_file($upload_path, $filename, <$file>);
    }
 }
 
