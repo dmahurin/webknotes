@@ -253,7 +253,7 @@ elsif( $text_type eq "wiki" )
 }
 else
 {
-   &filedb::mkfile("$notes_path/README.html",
+   &filedb::mkfile(
       $should_make_dir ? "$notes_path/README.html" :
         "$parent_path/${topic}.html",
       $message);
