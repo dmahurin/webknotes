@@ -68,6 +68,7 @@ $message .= "--${boundary}--\n";
 	for my $user (@subscribers)
 	{
            my $user_info = auth::get_user_info($user);
+           next unless(auth::check_file_auth( $user, $user_info, 'S', $notes_path));
            if(defined($user_info) and defined($user_info->{Email}))
            {
 		&mailer::send_email( "WKN: ${notes_path_short}", $mailer::define::admin_email, $user_info->{Email},
