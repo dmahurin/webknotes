@@ -390,7 +390,8 @@ sub mkpath
    for my $dir (@paths)
    {
       $path .= $dir;
-      mkdir($path, $mode) if( ! -d $path);
+      return 0 unless ( -d $path or mkdir($path, $mode));
       $path .= '/';
    }
+   return 1;
 }
