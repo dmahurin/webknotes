@@ -20,6 +20,8 @@ sub filter_file
    $text =~ s:>:&gt;:g;
    #$text =~ s/((http|ftp|mailto):.*)($)/<a href=\"$1\">$1<\/a>$2/g;
 
+   if($text =~ m:\t:) { return "<pre>$text</pre>\n" };
+
    while($text =~ s:(^ *) :$1&nbsp\;:gm) {}
    $text =~ s:$:<br>:gm;
    return $text;
