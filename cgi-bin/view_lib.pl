@@ -207,7 +207,7 @@ unless(is_index($notes_path))
    }
       print "[ Raw \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
-   print "<A HREF=\"$filedb::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
+   print "<A HREF=\"$filedb::define::doc_wpath/${notes_path_encoded}/\">Directory</A> | \n";
       print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Access</a> ]\n";
 
    if ( $notes_path ne "" )
