@@ -38,6 +38,10 @@ PERMISSION: - What permissions are set or unset
    'S' - subscribe permission
    'M' - mail permission (send modification notification to subscribers)
 
+Note that usually when specifying directory permissions, you
+want to specify the inherit ('i') permission, so that sub-topics are
+created with the same permissions.
+
 Examples:
 
 Anyone can add and read notes, Owners can modify and delete notes:
