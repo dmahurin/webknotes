@@ -163,17 +163,7 @@ sub actions1
 sub actions2
 {
    my($notes_path) = @_;
-   if ( $notes_path ne "" )
-   {      
-      # /,non-/'s,/* 
-      my $parent_notes = $notes_path;
-      $parent_notes =~ s:(^|/)[^/]*/?$::;
 
-     my $parent_notes_ref = 
-      &view::get_cgi_prefix() .
-      $parent_notes;
-      print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
-   }
 
 #   my($dir_file) = filedb::path_file($notes_path);
 #print "dir file : $dir_file,$notes_path\n";
@@ -199,7 +189,18 @@ sub actions2
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
       print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Access</a> ]\n";
-   #   print "<br>\n";
+
+   if ( $notes_path ne "" )
+   {      
+      # /,non-/'s,/* 
+      my $parent_notes = $notes_path;
+      $parent_notes =~ s:(^|/)[^/]*/?$::;
+
+     my $parent_notes_ref = 
+      &view::get_cgi_prefix() .
+      $parent_notes;
+      print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
+   }
 }
 
 sub actions3
@@ -562,7 +563,8 @@ sub print_dir_file
             $file_type = $view::define::default_file_type;
          }
       }
-      if(defined($file_type) and -f "filter_${file_type}.pl" )
+      my $prefix = ( $0 =~ m:/[^/]*$: ) ? "$`/":"";
+      if(defined($file_type) and -f "${prefix}filter_${file_type}.pl" )
       {
          require "filter_${file_type}.pl";
          &{"filter_${file_type}::print_file"}($file);
