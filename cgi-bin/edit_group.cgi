@@ -1,4 +1,4 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 use strict;
 # CGI script to add a user, using the auth-lib.
 

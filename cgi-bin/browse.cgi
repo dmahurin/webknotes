@@ -1,4 +1,4 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 use strict;
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin
 # For information regarding the Copying policy read 'LICENSE'

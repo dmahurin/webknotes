@@ -1,4 +1,4 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 use strict;
 # CGI script to edit a file using auth-lib user verification
 

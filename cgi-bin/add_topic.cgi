@@ -1,4 +1,4 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 use strict;
 # script called by the add topic form. Adds topic, displays success.
 

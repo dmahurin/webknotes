@@ -1,4 +1,4 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 use strict;
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }

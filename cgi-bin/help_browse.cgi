@@ -1,4 +1,4 @@
-#!/usr/bin/perl -T
+#!/usr/bin/perl
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'view_define.pl';
 require 'view_lib.pl';
