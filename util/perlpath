@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+# tool to replace all !/perl lines at the top of perl scripts
+
+$perl = shift(@ARGV);
+unless(defined($perl) and $perl =~ m:perl: )
+{
+   print "Usage: perlpath NEW_PERL_LOC scripts ...\n";
+   exit(-1);
+}
+
+
+foreach $file (@ARGV)
+{
+   next unless (open(IFILE, $file) and defined($line = <IFILE>));
+
+   if( $line =~ m:^\#\!([\w/-]*perl[\w-]*([ \t*].*)?)$: )
+   {
+      if( $1 eq $perl )
+      {
+         print "$file: already using correct perl\n";
+         close IFILE;
+         next;
+      }
+      else
+      {
+         print "$file: changing $1 to $perl\n";
+         $line = "\#\!$perl\n";
+      }
+   }
+   else
+   {
+      print "$file: first line of file is not perl: $line\n";
+      close IFILE;
+      next;
+   }
+   if( ! open(OFILE, ">$file.pnew") )
+   {
+      print "$file: could not open output file\n";
+      close(IFILE);
+      next;
+   }
+   print OFILE $line;
+
+   while(defined($line = <IFILE>))
+   {
+      print OFILE $line;
+   }
+   close IFILE;
+   close OFILE;
+   if(rename( $file, "$file.bak"))
+   {
+      rename( "$file.pnew", $file);
+   }
+}
