@@ -341,3 +341,15 @@ sub cvs_command
    return $rtn;
 }
 
+# join paths with '/' ignoring '/' and empty paths
+sub join_paths
+{
+   my (@paths) = @_;
+   my(@out);
+   while(defined(my $path=shift(@paths)))
+   {
+      push(@out, $path) if(defined($path) and $path ne "" and $path ne "/");
+   }
+   return join('/', @out);
+}
+

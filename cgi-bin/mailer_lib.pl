@@ -8,22 +8,11 @@ require "mailer_define.pl";
 
 package mailer;
 
-sub join_paths
-{
-   my (@paths) = @_;
-   my(@out);
-   while(defined(my $path=shift(@paths)))
-   {
-      push(@out, $path) if(defined($path) and $path ne "" and $path ne "/");
-   }
-   return join('/', @out);
-}
-
 sub mail_subscribers
 {
    my($parent_path, $file) = @_;
    my($dfile) = filedb::default_file($parent_path);
-   my($notes_path) = join_paths ($parent_path, $file);
+   my($notes_path) = filedb::join_paths ($parent_path, $file);
    
    # notes path without default file
    my($notes_path_short) = ($file eq $dfile)? $parent_path : $notes_path;
