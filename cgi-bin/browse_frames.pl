@@ -56,7 +56,6 @@ if(defined($frame))
    return(0);
 }
 
-&view::set_view_mode("layout", "frames");
 my $this_script_prefix = view::get_cgi_prefix();
 &view::set_view_mode("layout", &view::get_view_mode("sublayout"));
 &view::unset_view_mode("sublayout");

@@ -24,7 +24,14 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
+   if(defined(my $sublayout = view::get_view_mode("sublayout")))
+   {  view::set_view_mode("layout", $sublayout);
+      view::unset_view_mode("sublayout");
+   }
+   view::read_page_template();
+   print $view::define::page_header if(defined($view::define::page_header));
 show(@paths);
+   print $view::define::page_footer if(defined($view::define::page_footer));
 print "</BODY>\n";
 print "</HTML>\n";
 
@@ -44,7 +51,7 @@ sub show
       }
    }
    &view::set_view_mode("layout", &view::get_view_mode("sublayout"));
-
+   &view::unset_view_mode("sublayout");
 
    @notes_paths=("/") unless(@notes_paths);
 

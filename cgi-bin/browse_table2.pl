@@ -8,6 +8,7 @@ package browse_table2;
 # dmahurin@users.sourceforge.net
 
 require "css_tables.pl";
+require 'view_lib.pl';
 
 sub show_page
 {
@@ -22,7 +23,14 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
+   if(defined(my $sublayout = view::get_view_mode("sublayout")))
+   {  view::set_view_mode("layout", $sublayout);
+      view::unset_view_mode("sublayout");
+   }
+   view::read_page_template();
+   print $view::define::page_header if(defined($view::define::page_header));
     show($path);
+   print $view::define::page_footer if(defined($view::define::page_footer));
 print "</BODY>\n";
 print "</HTML>\n";
 }

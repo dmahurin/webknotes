@@ -598,13 +598,6 @@ sub print_file
         return 0 unless(defined($text));
         print $text;
         return 1;
-	#open(MYFILE, "$filedb::define::doc_dir/$notes_file") || return 0;
-	#while(defined($line = <MYFILE>))
-	#{
-	#	print($line);
-	#}
-	#close(MYFILE);
-        return 1;
 }
 
 sub log
@@ -793,6 +786,23 @@ my $css_tables = new css_tables;
         return "<br><br>" . $css_tables->box_begin("topic-info") . "\n" .
       $text .
 $css_tables->box_end()  ;
+   }
+}
+
+sub read_page_template
+{
+   my $filename = ( $0 =~ m:/[^/]*$: ) ? "$`/":"";
+   $filename .= "page_template.html";
+   if(open(F, $filename))
+   {
+      undef $/;
+      $text = <F>;
+      close(F);
+      if($text =~ m:<\%\$page\%/>:)
+      {
+         $view::define::page_header .= $`;
+         $view::define::page_footer .= $';
+      }
    }
 }
 
