@@ -95,7 +95,7 @@ sub path_check
 {
    my($notes_path) = @_;
  
-   if ( $notes_path =~ m/\.\./ )
+   if ( $notes_path =~ m:(/|^)\.\.($|/):)
    {
       print "illegal chars\n";
       return ();

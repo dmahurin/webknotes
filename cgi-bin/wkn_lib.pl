@@ -782,7 +782,7 @@ sub path_check
    $user = auth::get_user() unless(defined($user));
    $user_info = auth::get_user_info($user) unless(defined($user_info));
  
-   if ( $notes_path =~ m/\.\./ )
+   if ( $notes_path =~ m:(/|^)\.\.($|/): )
    {
       print "illegal chars\n";
       return ();

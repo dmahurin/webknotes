@@ -35,5 +35,32 @@ notes and icons.
 Even if you set it up manually, I suggest that you run ./configure to
 get the define files basically set up.
 
+Below is how I set up webknotes, starting with an empty public_html dir.
+(I used all defaults)
+----
+
+These first few question are general questions about your web server setup
+
+Public html directory  [/home/dmahurin/public_html]:
+Public html url path  [/~dmahurin]:
+cgi-bin directory  [/home/dmahurin/public_html/cgi-bin]:
+cgi-bin url path  [/~dmahurin/cgi-bin]:
+Private web data directory  [/home/dmahurin/web/private]:
+
+The questions that follow allow changing the default webknotes sub paths
+
+Document sub path  [notes]:
+Create directory (y|n) [y]:
+Copy sample notes (y|n) [y]:
+Icons sub path  [icons]:
+Create icons directory (y|n) [y]:
+Copy sample icons (y|n) [y]:
+cgi-bin webknotes subpath  [wkn]:
+Copy webknotes cgi-bin (y|n) [y]:
+Set Setuid on scripts (y|n) [y]:
+Create configuration files (y|n) [y]:
+
+----
+
 The complicated MANUAL instructions were removed because they were out of
 date, and ... complicated.

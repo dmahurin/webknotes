@@ -21,7 +21,12 @@ exit(0) unless(defined($notes_path));
 
 print <<"_END";
 <HTML>
-<BODY $wkn::attr::body>
+<head>
+<LINK HREF="wkn.css" REL="stylesheet" TITLE="Default Styles"
+MEDIA="screen" type="text/css" >
+</head>
+
+<BODY class=\"back\">
 _END
 
 print_main_topic_table($notes_path);
@@ -50,7 +55,7 @@ while($file = readdir(DIR))
 closedir(DIR);
 
 print "<table border=0 cellpadding=8>\n";
-print "<tr><td $wkn::attr::td_highlight>\n";
+print "<tr><td class=\"actions\">\n";
 wkn::actions3($notes_path);
 print "</td></tr>\n";
 print "</table><br>\n";
@@ -65,16 +70,16 @@ sub print_main_topic_table
 	my $notes_name = $1;
 
 	print "<table border=0 cellpadding=8>\n";
-	print "<tr><td $wkn::attr::td_title>\n";
-	print "<b><font $wkn::attr::font_table_title>$notes_name</font></b><br>\n";
+	print "<tr><td class=\"title\">\n";
+	print "<b>$notes_name</b>\n";
 	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_highlight>\n";
+	print "<tr><td class=\"highlight\">\n";
 	&wkn::print_modification($notes_path);
 	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_description>\n";
+	print "<tr><td class=\"description\">\n";
 	&wkn::print_dir_file($notes_path);
 	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_highlight>\n";
+	print "<tr><td class=\"highlight\">\n";
 	wkn::actions2($notes_path);
 	print "</td></tr>\n";
 	print "</table><br>\n";
@@ -87,18 +92,18 @@ sub print_topic_table
 	my $notes_name = $1;
 
 	print "<table border=0 cellpadding=8>\n";
-	print "<tr><td $wkn::attr::td_list>\n";
+	print "<tr><td class=\"listing\">\n";
 #	print "<b>$notes_name</b><br>\n";
 	print "<br>\n" if wkn::print_link_html($notes_path);
 	&wkn::print_modification($notes_path);
 	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_description>\n";
+	print "<tr><td class=\"description\">\n";
 	&wkn::print_dir_file($notes_path);
 	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_list>\n";
+	print "<tr><td class=\"actions\">\n";
 	wkn::actions2($notes_path);
 	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_list>\n";
+	print "<tr><td class=\"listing\">\n";
 	&wkn::list_html($notes_path);
 	print "</td></tr>\n";
 	print "</table><br>\n";

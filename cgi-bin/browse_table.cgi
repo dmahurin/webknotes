@@ -26,16 +26,18 @@ my($notes_name) = $1;
 print <<"END";
 <HTML>
 <head>
+<LINK HREF="wkn.css" REL="stylesheet" TITLE="Default Styles"
+MEDIA="screen" type="text/css" >
 </head>
-<BODY $wkn::attr::body>
+<BODY class="back">
 END
 
 print "<table border=0 cellpadding=8>\n";
-print "<tr><td $wkn::attr::td_description>\n";
+print "<tr><td class=\"description\">\n";
 if(&wkn::print_dir_file($notes_path))
 {
    print "</td></tr>\n";
-   print "<tr><td $wkn::attr::td_list>\n";
+   print "<tr><td class=\"listing\">\n";
 }
 wkn::print_icon_img($notes_path);
 print "<b>$notes_name</b> - ";
@@ -46,20 +48,20 @@ wkn::print_modification($notes_path);
 #wkn::print_modification($notes_path);
 #print "</td></tr></table>\n";
 print "</td></tr>\n";
-print "<tr><td $wkn::attr::td_list>\n";
+print "<tr><td class=\"listing\">\n";
 if(&wkn::list_files_html($notes_path))
 {
    print "</td></tr>\n";
-   print "<tr><td $wkn::attr::td_list>\n";
+   print "<tr><td class=\"actions\">\n";
 }
 wkn::actions2($notes_path);
 print "</td></tr>\n";
-print "<tr><td $wkn::attr::td_list>\n";
+print "<tr><td class=\"listing\">\n";
 &wkn::list_dirs_html($notes_path);
 print "</td></tr>\n";
 print "</table><br>\n";
 print "<table border=0 cellpadding=8>\n";
-print "<tr><td $wkn::attr::td_list>\n";
+print "<tr><td class=\"actions\">\n";
 wkn::actions3($notes_path);
 print "</td></tr>\n";
 print "</table><br>\n";
