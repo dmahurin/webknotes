@@ -44,7 +44,7 @@ sub main
       exit 0;
    }
 
-   my $notes_path_encoded = &view::url_encode_path($notes_path);
+   my $encoded_path = &view::url_encode_path($notes_path);
    $in{'topic_tag'} =~ m:^([^/]*)$:;
    my($topic_tag) = $1;
 
@@ -72,12 +72,15 @@ sub main
 	 my $query = $in{query};
 	 my $url;
    	 if($filedb::define::default_browse_index)
-         {
-             $url = "$filedb::define::doc_wpath/$notes_path_encoded?$query";
+	 {
+            $url = "$filedb::define::doc_wpath/";
+            $url .= "$encoded_path/" if($encoded_path ne "");
+            $url .= "?$query" if($query);
          }
          else
          {
-            $url = "browse.cgi?$notes_path_encoded&$query";
+            $url = "browse.cgi?$encoded_path";
+            $url .= "&$query" if($query);
          }
 
          #view::browse_show_page($notes_path);

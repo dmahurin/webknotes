@@ -137,11 +137,14 @@ else
    my $url;
    if($filedb::define::default_browse_index)
    {
-      $url = "$filedb::define::doc_wpath/$encoded_path?$query";
+      $url = "$filedb::define::doc_wpath/";
+      $url .= "$encoded_path/" if($encoded_path ne "");
+      $url .= "?$query" if($query);
    }
    else
    {
-      $url = "browse.cgi?$encoded_path&$query";
+      $url = "browse.cgi?$encoded_path";
+      $url .= "&$query" if($query);
    }
 
    print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$url\"></head><html>\n";
@@ -152,5 +155,4 @@ else
    }
    print "<html>";
 }
-
-};
+}
