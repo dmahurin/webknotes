@@ -6,6 +6,7 @@ c - create
 m - modify
 d - delete
 s - system privalege
+i - inherit permissions
 
 When checking for permission, the following happens:
 if user is logged in: 
