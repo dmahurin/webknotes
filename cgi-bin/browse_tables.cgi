@@ -14,7 +14,7 @@ require 'wkn_define.pl';
 require 'wkn_lib.pl';
 require 'css_tables.pl';
 
-$wkn::define::mode = "tables";
+$wkn::view_mode{"layout"} = "tables";
 
 my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
 

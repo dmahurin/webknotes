@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use strict;
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'wkn_define.pl';
@@ -57,7 +58,7 @@ sub wkn_save_file
       print "No file uploaded.";
       return;
    }
-   my $fullpath = array_to_path( $wkn::define::notes_dir, $upload_path, $file);
+   my $fullpath = array_to_path( $auth::define::doc_dir, $upload_path, $file);
    print "fullpath='$fullpath'\n";
    print h2('File name'),$file;
    print h2('File MIME type'),uploadInfo($file)->{'Content-Type'};
@@ -75,6 +76,7 @@ sub array_to_path
 {
    my (@paths) = @_;
    my @pathout;
+   my $path;
    for $path (@paths)
    {
       next unless(defined($path) and $path ne "");

@@ -218,7 +218,9 @@ sub print_link_html
 			};
 
 			#default case
-			print "<A HREF=\"${web_path}\">$file</a>\n";
+			print "<A HREF=\"${web_path}\">";
+                        print &wkn::text_icon($wkn::define::unknown_file_icon_text, $wkn::define::unknown_file_icon);
+                        print "$file</a>\n";
 		}
 	}	
 	elsif ( -d $real_path )

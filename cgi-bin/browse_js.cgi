@@ -10,15 +10,13 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
 
+my $notes_path_encoded;
+my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
 
-my(@args) = split('&', $ENV{QUERY_STRING});
-my($notes_path_encoded) = shift(@args);
-my ($this_script_prefix, $target);
-if($notes_path_encoded =~ m:^target=:) 
+my $target;
+if($wkn::view_mode{"target"})
 {
-   $this_script_prefix .= "target=$'&";
-   $target = "target=\"$'\"";
-   $notes_path_encoded = shift(@args);
+   $target = "target=\"$wkn::view_mode{\"target\"}\"";
 }
 
 my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
@@ -27,13 +25,13 @@ exit(0) unless(defined($notes_path));
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
 
-my $OPENED_SYMBOL = &wkn::text_icon($wkn::define::file_icon_text, 
-                   $wkn::define::file_icon);
-my $CLOSED_SYMBOL = &wkn::text_icon($wkn::define::file_icon_text, 
+my $OPENED_SYMBOL = &wkn::text_icon($wkn::define::opened_icon_text, 
+                   $wkn::define::opened_icon);
+my $CLOSED_SYMBOL = &wkn::text_icon($wkn::define::closed_icon_text, 
                    $wkn::define::closed_icon);
 my $FILE_SYMBOL = &wkn::text_icon($wkn::define::file_icon_text, 
                    $wkn::define::file_icon);
-my $DIR_SYMBOL = &wkn::text_icon($wkn::define::file_icon_text, 
+my $DIR_SYMBOL = &wkn::text_icon($wkn::define::dir_icon_text, 
                    $wkn::define::dir_icon);
 
 print <<"EOT";
@@ -147,12 +145,12 @@ print <<"EOT";
 
       function doExplode ()
       {
-        setCookie ("oiWin", "exploade", toExpire, null, null, false);
+        setCookie ("jsWin", "exploade", toExpire, null, null, false);
       }
 
       function doJoin ()
       {
-        setCookie ("oiWin", "join", toExpire, null, null, false);
+        setCookie ("jsWin", "join", toExpire, null, null, false);
       }
 
       function doOpen()
@@ -278,8 +276,8 @@ print <<"EOT";
       
       function winObj (winName)
       {
-        this.statusString = getCookie ("oiWin");
-        this.name = "oiWin";
+        this.statusString = getCookie ("jsWin");
+        this.name = "jsWin";
         this.title = ""
         this.display = displayWin;
         this.join = doJoin;
@@ -322,9 +320,9 @@ print <<"EOT";
         document.write ('</table>');
       }
 
-    var window = new winObj ("oiWindow");
-    var menu = new menuObj("OImenu");
-    menu.title = "OpenIdeas";
+    var window = new winObj ("jsWindow");
+    var menu = new menuObj("jsMenu");
+    menu.title = "JavaScript menus";
 
 EOT
 # now populate the menu with the directories
@@ -347,6 +345,7 @@ if(-d $toppath)
    {
       #done with a directory
       my $filename = readdir("DIR$#dirs");
+      next if($filename =~ m:^\.:);
       unless(defined($filename))
       {
          closedir("DIR$#dirs");
@@ -379,7 +378,7 @@ if(-d $toppath)
       # Dir, traverse down it
       if (-d "$toppath/$fullpath")
       {
-         $link = "browse_plain.cgi?$encoded_notes_path";
+         $link = &wkn::get_cgi_prefix() . $encoded_notes_path;
          if(defined($wkn::define::max_depth) and $depth >= $wkn::define::max_depth)
          {
             if( opendir(DIRMAX, "$toppath/$fullpath") )
@@ -414,6 +413,7 @@ if(-d $toppath)
             $count++;
        }
       print "$struct_prefix = new sectionObj();\n";
+      $name =~ s:':' + "'" + ':g;
       print "${struct_prefix}.title = '$name';\n";
       print "${struct_prefix}.link = '$link';\n";
    }
@@ -436,8 +436,8 @@ print <<"EOT";
    </script>
 ${back_link}<a href="browse_plain.cgi?$notes_path_encoded">$notes_name</a><br>
    <script language="JavaScript">
-   <!-- Hide from browsers without js enabled;
-   menu.display();
+<!-- Hide from browsers without js enabled;
+menu.display();
    // End script hiding -->
    </script>
    <NOSCRIPT>

@@ -45,7 +45,12 @@ my($file_mask) = $in{'file_mask'};
 my($note_type) = $in{'note_type'};
 my($debug) = defined($in{debug});
 
-$wkn::view_mode{"layout"} = $in{notes_mode} if($in{notes_mode});
+my($notes_mode);
+if($in{notes_mode})
+{
+  $notes_mode = $in{notes_mode};
+  $wkn::view_mode{"layout"} = $notes_mode;
+}
 
 ##
 my($match_prefix_url) =  &wkn::get_cgi_prefix();

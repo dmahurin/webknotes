@@ -132,7 +132,7 @@ if($wkn_cgi_dir =~ m:^$cgi_root/:)
    $in_cgi_root = 1;
    $wkn_cgi_subpath = $';
 }
-$wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
+#$wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
 
 mkdir($cgi_root,0755) if ($in_cgi_root);
 mkdir($wkn_cgi_dir, 0755);
