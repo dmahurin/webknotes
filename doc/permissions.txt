@@ -1,35 +1,36 @@
-The permission flags are as follows:
+Permissions are obtained in the following order:
+
+If current path is in users AuthRoot, The permissions are set to flags
+in Users Permissions.
+
+If current path is in a defined 'path_permission' path, the corresponding
+permission modifiers are applied.
+  ex: $path_permissions = (""=> "+rn");#gives everyone read and note permission
+
+If .permissions file exists, the permission modifiers contained are applied.
+
+For path permissions and .permissions, the string is a permissions modifier.
+The format is:
+((o|g|a)?(+|-|=))?(.*)
+The fields are:
+1.
+   'o' - permissions are only applied if user is note directory owner.
+   'g' - permissions are only applied if user is in note directory group.
+   'a' - all get these permissions (default)
+2.
+   '=' - new permissions replace current permissions.
+   '+' - new permissions are added to current permissions.
+   '-' - new permissions are removed from current permissions.
+3.
+   new permissions.
+
+
+The permission flags are:
 r - read
 n - add note
-o - owner permissions
 c - create
 m - modify
 d - delete
 s - system privalege
 i - inherit permissions
-u - upload
 
-When checking for permission, the following happens:
-if user is logged in: 
-   they get the permissions in the user file.
-   if .permissions file exists permissions are modified accordingly.
-      "-" takes away permissions. ex: -cmd
-      "+" adds permission. ex: +m
-      "=" sets permission. ex: =rno
-   if .owner exists and matches user,
-      user gets additional permissions in $wkn_owner_permissions
-   if .group exists and user is in that group, user get additional
-      group permissions.
-
-if user is not logged in:
-   default permissions apply.
-   if .permissions exists, permissions are modified accordingly.
-
-.permissions examples:
-
-No permissions(Only useful if .group permissions exist):
-=
-
-No note permission(but if o is default for a user, only a logged in
-user could add a note):
--n

@@ -27,41 +27,13 @@ webknotes/
 	cgi-bin/wkn	- wkn cgi scripts
         cgi-bin/auth    - auth cgi scripts
 
-To get the basic WebKNotes system working you need to:
-(For the impatient, the next section has step by step commands)
-   - unpackage(gunzip < webknotes.tgz | tar xvf -) wkn.
-   - link or move wkn and auth cgi-bin dirs to somewhere visible on web.
-   - Create a directory structure with public and private directories.
-     (similar to those in the example directory).
-   - The public directory should also be linked or moved to a location
-     visible on the web.
-   - cd cgi-bin/wkn && cp wkn_define_sample.pl wkn_define.pl
-   - modify cgi-bin/wkn/wkn_define.pl for your system.
-   - cd cgi-bin/auth && cp auth_define_sample.pl auth_define.pl
-   - modify cgi-bin/auth/auth_define.pl for your system.
-   - do whatever is required to have the cgi-scripts run as the owner of
-          the 'notes' directory.
-        setuid perl scripts. ( chmod u+s cgi-bin/wkn/*cgi cgi-bin/auth/*cgi
-        using cgi-wrap.
-        using setuid apache module.
+For the simple AUTOMATIC setup, all you have to do to get it running is:
+./configure
+This will create auth_define.pl and wkn_define.pl, and install example
+notes and icons.
 
-Here are the step by step commands that I ran to get wkn running from
-scratch on MY system:
-   cd ~
-   tar zxvf webknotes.tgz 
-   cd webknotes
-   mv example/* .
-   cd ..
-   mkdir -p public_html/cgi-bin 
-   ln -s ~/webknotes/cgi-bin/* public_html/cgi-bin
-   ln -s ~/webknotes/public/* public_html
-   cd webknotes/cgi-bin/wkn
-   cp wkn_define_sample.pl wkn_define.pl
-   vi wkn_define.pl
-   cd ../auth
-   cp auth_define_sample.pl auth_define.pl
-   vi auth_define.pl
-   cd ../../..
+Even if you set it up manually, I suggest that you run ./configure to
+get the define files basically set up.
 
-   lynx http://localhost/~dmahurin/cgi-bin/wkn/wkn_table.cgi
-
+The complicated MANUAL instructions were removed because they were out of
+date, and ... complicated.
