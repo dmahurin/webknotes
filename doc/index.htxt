@@ -1,5 +1,5 @@
 WebKNotes is a web based Knowledge database of notes written in
-Perl, stored in a plain file ( text / html / [[wiki]] / [[htxt]] ) hierarchy. 
+Perl, stored in a plain file ( text / html / [[wiki]] / [[htxt]] ) [[hierarchy]]. 
 
 Topics can be added, modified and viewed by authenticated or anonymous users.
 

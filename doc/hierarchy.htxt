@@ -1,0 +1,25 @@
+The directory hierarchy is esstially a directory tree.
+
+
+Usually, topics and sub-topics are represented as directories in the tree.
+
+The text of each topic is stored as file inside the directory.
+For HTML, and pre-formated HTML, this is README.html,
+For Text, this is README.
+For HText, this is index.htxt.
+For Wiki, this is FrontPage.wiki
+
+In both HText and Wiki topic directories, Topics can also be created as files.
+The files are created there are given .htxt or .wiki file extensions.
+
+Other files can be manually added to the hierarchy and are understood by WebKnotes.
+
+index.html is assumed to contain the index for the topic hierarchy 
+contained below it. No file listing is shown. No file listing is shown.
+
+Other .html files can be viewed and editted, but no sub topics can be added.
+
+Other .txt files can be viewed and editted, but no sub topics can be added.
+
+
+Of course, all of this should be transparent, and users should not need to know the storage mechanism.
