@@ -26,6 +26,7 @@ my($user) = $in{'user'};
 
 my($password) = $in{'password'};
 my($path) = $in{'path'};
+my($path_encoded) = CGI::escape($path);
 my($next) = $in{'next'};
 
 if(defined($next))
@@ -33,7 +34,7 @@ if(defined($next))
   my $current_user =  auth::get_user();
   if(defined($current_user) and ((!defined($user)) or $current_user eq $user))
   {
-   redirect("$next?path=$path");
+   redirect("$next?path=$path_encoded");
    exit(0);
   }
 }
@@ -85,7 +86,7 @@ if(auth::check_pass($user, auth::get_user_info($user), $password))
       my $line;
       #my $user_info = auth::get_user_info($user);
       print "Content-type: text/html\n\n";
- print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$next?path=$path\"></head><html>\n";
+ print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$next?path=$path_encoded\"></head><html>\n";
       print "Now logged in <br>\n";
       #view::browse_show_page();
       #print "Back to main <a href=\"browse.cgi?theme=$user_info->{\"Theme\"}\">page</a>.\n";
