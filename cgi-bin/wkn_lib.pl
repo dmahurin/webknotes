@@ -845,7 +845,7 @@ sub get_style_header_string
 {
    my $theme = $wkn::view_mode{"theme"};
    $theme =  $wkn::define::default_theme unless($theme);
-   return "" unless(-f "wkn::define::themes_dir/$theme.css");
+   return "" unless(-f "$wkn::define::themes_dir/$theme.css");
    return "<LINK HREF=\"$wkn::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
       MEDIA=\"screen\" type=\"text/css\" >\n";
 }

@@ -115,7 +115,7 @@ if(prompt_default("Copy sample icons", ( -d $icons_dir )? "n" : "y",
    "(y|n)") eq "y")
 {
    mkdir($icons_dir,0755);
-   system("cp -r '$webknotes_base/example/public/icons'/* $icons_dir");
+   system("cp -r '$webknotes_base/icons'/* $icons_dir");
 }
 
 if(prompt_default("Copy sample themes", ( -d $themes_dir )? "n" : "y",
@@ -209,9 +209,9 @@ package auth::define;
    {
       print FILE
 "package wkn::define;
-\$icons_wpath = \"$icons_wpath\";" , 
-"\$themes_wpath = \"$themes_wpath\";" , 
-"\$themes_dir = \"$icons_dir\";" , 
+\$icons_wpath = \"$icons_wpath\"; 
+\$themes_wpath = \"$themes_wpath\";
+\$themes_dir = \"$themes_dir\";" , 
 '
 $default_layout = "table";
 $default_theme = "don";
