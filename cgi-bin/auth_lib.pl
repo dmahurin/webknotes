@@ -63,10 +63,10 @@ sub get_user
    }
    unless(defined($cookie{'sessionid'}))
    {
-      return () 
+      return "" 
       unless($auth::define::allow_remote_user_auth eq "any" or
          $auth::define::allow_remote_user_auth eq $ENV{AUTH_TYPE});
-      return () unless defined(my $user = $ENV{REMOTE_USER});
+      return "" unless defined(my $user = $ENV{REMOTE_USER});
       if( -f "$auth::define::private_dir/users/$user" ||
          ! $auth::define::autoadd_remote_auth_users)
       {
@@ -75,8 +75,8 @@ sub get_user
       }
       
       $user=auth::check_user_name($user);
-      return () unless($user);
-      return () unless( auth::write_user_info($user, 
+      return "" unless($user);
+      return "" unless( auth::write_user_info($user, 
          { "PassKey"=>"*",
          "AuthRoot"=>"",
 	    "Permissions"=>"", 
@@ -89,13 +89,13 @@ sub get_user
    my($user, $vword) =  split(/:/,$cookie{sessionid});
    my($sess_file);
    if($user =~ m:^([^/]*)$:) { $user = $1; } # untaint
-   else { $user = "invalid"; }
+   else { $user = (); }
    $sess_file = "$auth::define::private_dir/sessions/$user";
    unless( -f $sess_file )
    {
       print "No session file: $sess_file<br>\n";
       print "Check setuid permissions\n";
-      return ();
+      return "";
    }
    open(SFILE, $sess_file);
    my($line) = <SFILE>;
@@ -104,7 +104,7 @@ sub get_user
    if($ENV{'REMOTE_ADDR'} ne $addr or pcrypt1($vword) ne $vcrypt )
    {
       print "mismatch of remote address and session address\n";
-      return ();
+      return "";
    }
    $current_user = $user;
    return $user;
@@ -207,7 +207,7 @@ sub check_file_auth
   {
      return 0;     
   }
-  my(@path_permissions) = ( $auth::define::default_permissions );
+  my(@path_permissions) = split(/,/, $auth::define::default_permissions );
   push(@path_permissions, split(/,/, &filedb::get_hidden_data($file_dir, "permissions"))); 
   
   my $owner = filedb::get_hidden_data($file_dir, "owner");
@@ -362,7 +362,7 @@ sub get_user_info
    my(%info) = ();
 # did I do below for some reason?
 #   return \%info unless (defined($user));
-   return () unless (defined($user));
+   return () unless (defined($user) and $user ne "");
    if(open(UFILE, "$auth::define::private_dir/users/$user"))
    {
       my($key, $value);
