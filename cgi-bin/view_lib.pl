@@ -184,6 +184,10 @@ sub actions2
    {
       print "[ <A HREF=\"append.cgi#text?path=$notes_path_encoded\">Append</a> text ] \n";
    }
+   if( auth::check_current_user_file_auth('s', $notes_path) )
+   {
+      print "[ <A HREF=\"subscribe.cgi?path=$notes_path_encoded\">Subscribe</a> ] \n";
+   }
    print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">New Topic</A> ]\n";
       print "[ Raw \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
