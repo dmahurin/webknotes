@@ -54,7 +54,7 @@ my(@superlayouts) = ("frames_list", "frames", "frames_js", "page");
    
          my $prefix =
               $filedb::define::default_browse_index ?
-              filedb::join_paths($filedb::define::doc_wpath,&view::url_encode_path($path)) . '/' : "browse.cgi?";
+              filedb::wpath_to_uri(filedb::join_paths($filedb::define::doc_wpath,&view::url_encode_path($path))) : "browse.cgi?";
 print "<FORM METHOD=GET ACTION=\"$prefix\">\n";
 print "<INPUT TYPE=\"hidden\" NAME=\"path\" value=\"$path\">\n"
    unless ($filedb::define::default_browse_index); 
