@@ -33,9 +33,11 @@ A:active { color: #AAffff }
 
 .topic-actions {
   color: #ffffff;
+   background: black;
 }
 
 .topic-listing {
-   color: #CCCCCC;
+   color: #ffffff;
+   background: black;
 }
 

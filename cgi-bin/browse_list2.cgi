@@ -84,13 +84,13 @@ if( ! auth::check_file_auth( $user, auth::get_user_info($user),
    exit(0);
 }
 
-my $style = wkn::get_style_header_string();
+my $head_tags = wkn::get_style_head_tags();
 
 print
 "<HTML>
 <head>
 <title>${notes_path}</title>
-$style
+$head_tags
 </head>" .
 "<BODY class=\"topic-listing\">";
 
@@ -270,7 +270,7 @@ sub read_dir_entries
    return \@entries;
 }
 
-# creates an a oneway travered tree from an encoded string
+# creates an a oneway traversed tree from an encoded string
 # format: "complex/" - sub items follow, "" - end of sub items, or "item"
 sub unflatten_tree
 {

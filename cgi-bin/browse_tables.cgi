@@ -26,15 +26,14 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
    exit(0);
 }
 
-my $style = wkn::get_style_header_string();
+my $head_tags = wkn::get_style_head_tags();
 
 print <<"END";
 <HTML>
 <head>
-$style
+$head_tags
 </head>
 <BODY class="topics-back">
-$style
 END
 
 print_main_topic_table($notes_path);

@@ -1,4 +1,8 @@
-Better documentation(INSTALL)
+Better documentation - INSTALL.
+
+Smart configure script that defaults to your current configuration.
+
+Ability to set default theme and layout for user.
 
 Have another level of users that get passwords via email.(to verify address)
 

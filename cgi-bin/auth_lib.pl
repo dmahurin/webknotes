@@ -448,6 +448,7 @@ sub check_pass
 {
    my($user, $user_info, $pass) = @_;
 
+   return 0 unless defined($user_info->{"PassKey"});
    my $auth_pass = $user_info->{"PassKey"};
 
    return ( $auth_pass eq "" or pcrypt1($pass) eq $auth_pass);

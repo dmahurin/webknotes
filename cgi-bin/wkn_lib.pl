@@ -111,7 +111,8 @@ sub strip_view_mode_args
    my $arg;
    foreach $arg (@_)
    {
-      $arg = auth::path_check($arg);
+# below strips off trailing '/', and breaks list2
+#      $arg = auth::path_check($arg);
       if($arg =~ /^(theme|layout|target|frame)=/)
       {
          $wkn::view_mode{$1} = $';
@@ -185,7 +186,7 @@ sub actions2
    print "[ Browse ";
    print "<A HREF=\"$auth::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
    print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File Only</A> \n";
-   print "| <A HREF=\"" . &wkn::get_cgi_prefix("browse_help.cgi") . "$notes_path_encoded\">Other method</A> ]\n";
+   print "| <A HREF=\"" . &wkn::get_cgi_prefix("browse_help.cgi") . "$notes_path_encoded\">themes etc.</A> ]\n";
    #   print "<br>\n";
 }
 
@@ -261,9 +262,10 @@ sub print_link_html
 			{
 		        	print '<A HREF="';
 				&wkn::print_file($notes_path);
-				print '">',
-				"$file_base",
-				'</A>(l)';
+				print '">';
+                                print &wkn::text_icon($wkn::define::url_icon_text, $wkn::define::url_icon);
+				print "$file_base",
+				'</A>';
 				last SWITCH;
 			};
                         $file_ext =~ /^\.(c|h|c\+\+|cxx|hxx|idl|java)$/ && do
@@ -902,14 +904,19 @@ sub get_cgi_prefix
    return $prefix;
 }
 
-# return html to set style/css to current theme
-sub get_style_header_string
+# return the <HEAD> tags to style/css to current theme along with
+# site specific head tags
+sub get_style_head_tags
 {
    my $theme = $wkn::view_mode{"theme"};
    $theme =  $wkn::define::default_theme unless($theme);
-   return "" unless(-f "$wkn::define::themes_dir/$theme.css");
-   return "<LINK HREF=\"$wkn::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
-      MEDIA=\"screen\" type=\"text/css\" >\n";
+   my $head_tags = (-f "$wkn::define::themes_dir/$theme.css") ?
+   "<LINK HREF=\"$wkn::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
+      MEDIA=\"screen\" type=\"text/css\" >\n" : "";
+
+   $head_tags .= "\n$wkn::define::head_tags"
+      if(defined($wkn::define::head_tags));
+   return $head_tags;
 }
 
 sub text_icon

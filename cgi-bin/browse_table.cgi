@@ -29,12 +29,12 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 $notes_path =~ m:([^/]*)$:;
 my($notes_name) = $1;
 
-my $style = wkn::get_style_header_string();
+my $head_tags = wkn::get_style_head_tags();
 
 print <<"END";
 <HTML>
 <head>
-$style
+$head_tags
 </head>
 <BODY class="topics-back">
 END

@@ -131,7 +131,7 @@ if($system_access)
 
 if(! &auth::write_user_info(auth::check_user_name($username), $user_info))
 {
-   print "Could modify user information?\n";
+   print "Could not modify user information?\n";
    exit(0);
 }
 print "User information modified\n";

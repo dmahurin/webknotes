@@ -39,13 +39,13 @@ for (@notes_paths)
    }
 }
 
-my $style = wkn::get_style_header_string();
+my $head_tags = wkn::get_style_head_tags();
 
 print <<"END";
 <HTML>
 <head>
 <title>$wkn::define::index_title</title>
-$style
+$head_tags
 </head>
 <BODY class="topics-back">
 END

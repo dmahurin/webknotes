@@ -36,16 +36,17 @@ undef($wkn::view_mode{"frame"});
 
 if(defined($frame))
 {
+   my $head_tags = wkn::get_style_head_tags();
    if($frame eq "header")
    {
-      print "<html><head><BASE TARGET=\"_parent\"></head>";
+      print "<html><head><BASE TARGET=\"_parent\">$head_tags</head>";
       print ($wkn::define::index_header)
         if(defined($wkn::define::index_header));
       print "</html>\n";
    }
    elsif($frame eq "footer")
    {
-      print "<html><head><BASE TARGET=\"body\"></head>\n";
+      print "<html><head><BASE TARGET=\"body\">$head_tags</head><body class=\"topic-actions\">\n";
       if(defined($wkn::define::index_footer))
       {
          print ($wkn::define::index_footer, "");
@@ -54,7 +55,7 @@ if(defined($frame))
       {
          &wkn::actions3($notes_path);
       }
-      print "</html>\n";
+      print "</body></html>\n";
    }
    exit(0);
 }
@@ -66,13 +67,24 @@ my $this_cgi_script_prefix = wkn::get_cgi_prefix($this_script);
 print "<html> <head>\n";
 print "<title>$wkn::define::index_title</title>\n" 
   if(defined($wkn::define::index_title));
-print <<EOT
+print <<"EOT";
 <BASE TARGET="body">
 <title>$wkn::define::index_title</title>
   </head>
+EOT
+if(defined($wkn::define::index_header))
+{
+print <<"EOT";
   <frameset rows = "60,*">
    <frame src="${this_cgi_script_prefix}frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
       marginheight="0" scrolling="no">
+EOT
+}
+else
+{
+print "<frameset>\n";
+}
+print <<"EOT";
     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
    <frame src="${list_cgi_script_prefix}target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">

@@ -38,13 +38,13 @@ if( ! auth::check_file_auth( $user, auth::get_user_info($user),
    exit(0);
 }
 
-my $style = wkn::get_style_header_string();
+my $head_tags = wkn::get_style_head_tags();
 
 print
 "<HTML>
 <head>
 <title>${notes_path}</title>
-$style
+$head_tags
 </head>" .
 "<BODY class=\"topics-back\">";
 

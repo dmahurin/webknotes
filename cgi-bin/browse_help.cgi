@@ -15,14 +15,44 @@ my($cgi_query_str) = wkn::get_query_string();
 
 
 print "<h3>Theme</h3>\n";
-if($cgi_query_str =~ m:theme=([^&]*):)
+my($save) = 0;
+if($cgi_query_str =~ s:save=1&::)
 {
-   
-   print "Current theme is : $1<br>\n";
-   my $c = $cgi_query_str;
-   $c =~ s:theme=([^&]*)?&::;
+   $save = 1;
+}
+my $untheme_cgi_query_str;
+my $theme;
+
+if($cgi_query_str =~ m:theme=([^&]*)&?:)
+{
+   $untheme_cgi_query_str = $` . $';
+   $theme = $1;
+}
+
+   print "Current theme is : $theme<br>\n";
    print "<a href=\"browse_help.cgi?$c\">Reset theme</a><br>";
    
+   if($save)
+   {
+      my $username = auth::get_user();
+      if( ! defined($username) )
+      {
+         print "Not logged in, can't save\n";
+      }
+      else
+      {
+         my($user_info) = auth::get_user_info($username);
+         $user_info->{"theme"} = $theme;
+         if(! &auth::write_user_info(auth::check_user_name($username), $user_info))
+         {
+            print "Could not modify user information?\n";
+         }
+      }
+   }
+   else
+   {
+      print "<a href=\"browse_help.cgi?save=1&$cgi_query_str\">Save theme</a><br>";
+   }
 }
 else
 {
