@@ -7,83 +7,29 @@ Perl5 - installed as /usr/bin/perl
 
 CGI.pm - part of standard Perl 5 dist.
 
-To allow one user to own and modify all the notes(via the cgi scripts),
-you need one of these on your web server:
-    -setuid perl enabled(suidperl)
-       chmod u+s *.cgi
-    -cgi-wrap - http://www.unixtools.org/cgiwrap/
-    -setuid apache module(suEXEC) enabled.
-       http://www.apache.org/docs/suexec.html
-     -use setuid_wrapper that was available with perl4
-     -compile and use util/sperl_user.c
-       cd util
-       cc sperl_user -o sperl_`whoami`
-       chmod a+x,u+s sperl_`whoami`
-       using util/perlpath, change all cgi scripts to point to this exe.
+A setuid mechanism (See setuid.txt). ./configure will also ask about this.
 
-
-webknotes/
-	example/		- sample directory structure for WebKNotes
-	cgi-bin/wkn	- wkn cgi scripts
-        cgi-bin/auth    - auth cgi scripts
-
-For the simple AUTOMATIC setup, all you have to do to get it running is:
+To configure and install, run:
 ./configure
-This will create auth_define.pl and wkn_define.pl, and install example
-notes and icons.
+This will create the define files, copy the cgi-bin directory and create an admin user.
 
-Even if you set it up manually, I suggest that you run ./configure to
-get the define files basically set up.
+This starting point will be something like: httpd://localhost/cgi-bin/wkn/browse.cgi, depending on the location of your cgi-bin.
 
-Below is how I set up webknotes, starting with an empty public_html dir.
-(I used all defaults)
-----
-
-These first few question are general questions about your web server setup
-
-Public html directory  [/home/dmahurin/public_html]:
-Public html url path  [/~dmahurin]:
-cgi-bin directory  [/home/dmahurin/public_html/cgi-bin]:
-cgi-bin url path  [/~dmahurin/cgi-bin]:
-Private web data directory  [/home/dmahurin/web/private]:
-
-The questions that follow allow changing the default webknotes sub paths
-
-Document sub path  [notes]:
-Create directory (y|n) [y]:
-Copy sample notes (y|n) [y]:
-Icons sub path  [icons]:
-Create icons directory (y|n) [y]:
-Copy sample icons (y|n) [y]:
-cgi-bin webknotes subpath  [wkn]:
-Copy webknotes cgi-bin (y|n) [y]:
-Set Setuid on scripts (y|n) [y]:
-Create configuration files (y|n) [y]:
-
-----
-
-Some have told me that I neglected to document the final step.
-"How to run the damn thing?"
-
-I put a new configure script out in CVS that creates a default index, and
- prints out the URL address of the default index and browse_help.cgi as a 
- last step.
-
-The starting points would be:
-cgi-bin/wkn/browse.cgi
+Also, in the util directory is a script called 'cgitohtml', which will
+create a static file from a cgi script, given the cgi base.
 
 
-Also a static main index.html file can be generated with 'cgitohtml' util.
+Examples:
 
-A simple case would be:
+simple case:
 
-webknotes/util/cgitohtml /~awebuser/cgi-bin
-~awebuser/public_html/cgi-bin/browse_table.cgi ""
+util/cgitohtml /~awebuser/cgi-bin
+~awebuser/public_html/cgi-bin/browse.cgi ""
 
-Or, really specifically, on my web page(they use cgi-wrap for cgi scripts),
+Or, really specifically, on my web page (they use cgi-wrap for cgi scripts),
 I do:
 
-webknotes/util/cgitohtml /cgi-bin/cgiwrap/dmahurin/wkn
+util/cgitohtml /cgi-bin/cgiwrap/dmahurin/wkn
 ~dmahurin/public_html/cgi-bin/wkn/browse.cgi "layout=page" \
 "" "wknbook" "Computer/Linux" "" \
 "People/Don Mahurin" "colspan=2" "People/Don Mahurin/Projects/wkn" \
