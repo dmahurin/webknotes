@@ -536,6 +536,16 @@ sub get_dir_file_html
    return $text;
 }
 
+sub user_link
+{
+   my($user) = @_;
+   if(defined($user))
+   {
+     return "<a href=\"show_user.cgi?username=$user\">$user</a>";
+   }
+   else { return "" }
+}
+
 sub print_dir_file
 {
    my($notes_path) = @_;
@@ -545,7 +555,7 @@ sub print_dir_file
    # view specific mods
    if($file_type eq "html")
    {
-      $text =~ s#<hr\s+title="(Modified\s([\d\s\:-]+)(\sby\s+([^\"]+))?)"\s*>#&enclose_topic_info($1)#ge;
+      $text =~ s#<hr\s+title="Modified\s([\d\s\:-]+)(\sby\s+([^\"]+))?"\s*>#&enclose_topic_info("Modified $1 by " . user_link($3))#ge;
    }
    print $text;
    return $notes_path;
@@ -563,7 +573,7 @@ sub create_modification_string
    
    if( defined($user))
    {
-      $text .= ": owner <a href=\"show_user.cgi?username=$user\">$user</a>\n";
+      $text .= ": owner " . user_link($user) . "\n";
    }
    if(defined($group))
    {
@@ -610,10 +620,10 @@ sub log
 
 sub get_cgi_prefix
 {
-   my ($layout) = shift; # optionally start with a cgi script
+   my ($script) = shift; # optionally start with a cgi script
    my ($prefix);
    
-   if($layout eq "layout_theme")
+   if($script eq "layout_theme")
    {
       $prefix = "layout_theme.cgi?";
    }
@@ -625,14 +635,6 @@ sub get_cgi_prefix
    {
       $prefix .= ( "layout=" . $view::view_mode{"layout"} . "&" );
    }
-#   }
-#   else
-#   {
-#      $prefix = "browse_" . 
-#      ( $layout || $view::view_mode{"layout"}
-#               || $view::define::default_layout )
-#            . ".cgi?";
-#   }
          
    if(defined($view::view_mode{"sublayout"}))
    {
@@ -743,8 +745,6 @@ sub browse_show_page
    $layout = $view::define::default_layout unless($layout);
    require "browse_${layout}.pl";
    &{"browse_${layout}::show_page"}(@_);
-#   browse::show_page(@_);
-#   print "layout: $layout\n";
 }
 
 # persistent layout and theme settings for user
