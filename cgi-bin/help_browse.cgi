@@ -3,6 +3,12 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'view_define.pl';
 require 'view_lib.pl';
 
+my($my_main) = wkn::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
+
 print "Content-Type: text/html\n\n";
 print "<html><head>
 <TITLE>WKN browse help</TITLE>
@@ -108,3 +114,4 @@ Just brose the notes directory using the web servers file browsing.
 
 END
 print "</body></html>\n";
+}

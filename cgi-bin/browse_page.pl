@@ -9,7 +9,7 @@ use strict;
 require 'view_lib.pl';
 require 'css_tables.pl';
 
-package browse;
+package browse_page;
 
 sub show_page
 {
@@ -34,6 +34,7 @@ print "</HTML>\n";
 sub show
 {
  my(@notes_paths) = @_;
+   my($css_tables) = css_tables->new();
    for (@notes_paths)
    {
       unless( $_ =~ m:=: or auth::check_current_user_file_auth( 'r', $_ ) )
@@ -88,9 +89,9 @@ foreach $arg (@notes_paths)
    }
    $topic = $arg;
    print "<td${span}>\n";
-   print css_tables::table_begin("topic-table") . "\n";
+   print $css_tables->table_begin("topic-table") . "\n";
    
-   print css_tables::trtd_begin("topic-text") . "\n";
+   print $css_tables->trtd_begin("topic-text") . "\n";
    
    print "<table><tr>";
    my $icon = wkn::get_icon($topic);
@@ -107,13 +108,13 @@ foreach $arg (@notes_paths)
       print "<td>";
       &wkn::print_dir_file($topic);
       print "</td></tr></table>";
-      print css_tables::trtd_end() . "\n";
+      print $css_tables->trtd_end() . "\n";
       
-      print css_tables::trtd_begin("topic-listing") . "\n";
+      print $css_tables->trtd_begin("topic-listing") . "\n";
       &wkn::list_html($topic);
-      print css_tables::trtd_end() . "\n";
+      print $css_tables->trtd_end() . "\n";
       
-      print css_tables::table_end() . "\n";
+      print $css_tables->table_end() . "\n";
       print "</td>\n";
       $count++;
    

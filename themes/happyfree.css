@@ -64,7 +64,7 @@
 
 .topic-table {
    background: #ffffff;
-   border: 1px none;
+   border: 1px solid green;
 }
 
 
@@ -84,5 +84,3 @@
 .topic-listing-border {
    background: #CCCCCC;
 }
-
-                                                s

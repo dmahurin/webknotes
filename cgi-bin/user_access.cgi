@@ -12,7 +12,11 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'auth_define.pl';
 require 'auth_lib.pl';
 
-auth::init();
+my($my_main) = auth::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 
 print "Content-type: text/html\n\n\n";
 
@@ -64,3 +68,4 @@ Show info for a group <input type=text name=\"group\" size=20>
 </html>
 </body>
 ";
+}

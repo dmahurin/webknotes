@@ -7,7 +7,7 @@ use strict;
 
 require "link_translate.pl";
 
-package filter;
+package filter_txt;
 
 sub print_file 
 {

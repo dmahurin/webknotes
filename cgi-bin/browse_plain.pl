@@ -9,7 +9,7 @@ use strict;
 
 require 'view_lib.pl';
 
-package browse;
+package browse_plain;
 
 sub show_page
 {

@@ -1,73 +1,68 @@
-#bug workarounds for css in tables
+#!/usr/bin/perl
+#bug workaround for css in tables
 
 package css_tables;
 
+sub new
+{
+   my $type = shift;
+   my $class;
+
+   my $agent = $ENV{"HTTP_USER_AGENT"};
+
+   #Netscape
+   # Mozilla/4.75 [en] (X11; U; Linux 2.4.1 i686)
+   if($agent =~ m:^Mozilla/4:)
+   {
+      $class = "css_tables_ns4";
+   }
+
+   #Galeon
+   # Mozilla/5.0 (X11; U; Linux 2.4.1 i686; en-US; Galeon) Gecko/20010215
+
+   else
+   {
+      $class = css_tables_normal;
+   }
+   require "${class}.pl";
+
+   bless \$class, $type;
+}
+
 sub box_begin
 {
-   my($class) = @_;
-   return '<table  width="100%" cellpadding=3 cellspacing=0 border=0><tr>' .
-      "<td class=\"$class\">";
+   my $this = shift;
+   return &{"${$this}::box_begin"}(@_);
 }
 
 sub box_end
 {
-   return "</td></tr></table>";
+   my $this = shift;
+   return &{"${$this}::box_end"}(@_);
 }
 
 sub trtd_begin
 {
-   my($class) = @_;
-   return "<tr><td class=\"$class-border\">" . 
-      '<table  width="100%" cellpadding=6 cellspacing=1 border=0><tr>' . 
-      "<td class=\"$class\">";
+   my $this = shift;
+   return &{"${$this}::trtd_begin"}(@_);
 }
 
 sub trtd_end
 {
-   return "</td></tr></table></td></tr>";
+   my $this = shift;
+   return &{"${$this}::trtd_end"}(@_);
 }
 
 
 sub table_begin
 {
-   my($class, $props) = @_;
-   return "<table cellspacing=0 cellpadding=2 border=0><tr>" . 
-      "<td class=\"$class-border\"><table $props cellpadding=0 cellspacing=0 border=0 class=\"$class\">";
+   my $this = shift;
+   return &{"${$this}::table_begin"}(@_);
 }
 
 sub table_end
 {
-   return "</table></td></tr></table>";
+   my $this = shift;
+   return &{"${$this}::table_end"}(@_);
 }
-
-
-# below works and is cleaner, except:
-# 1. transparent images anywhere mess up Netscpape borders
-# 2. Mozilla makes the table background 100%
-
-package css_tables0;
-sub td_begin
-{
-   my($class) = @_;
-   return "<td class=\"$class\"><div class=\"$class-border\">";
-}
-
-sub td_end
-{
-   return "</div></td>";
-}
-
-sub table_begin
-{
-   my($class) = @_;
-   return "<div class=\"$class-back\"><div class=\"$class-border\"><table  cellpadding=0 cellspacing=0 border=0 class=\"$class\">";
-}
-
-sub table_end
-{
-   return "</table></div></div>";
-}
-
-
-
 1;

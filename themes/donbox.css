@@ -11,10 +11,10 @@
 }
 
 
-.topic-text { background: #CCCCCC ;color: #000000;}
+.topic-text { background: #CCCCCC ;color: #000000;  border: 1px solid black;}
 
 
-.topic-title { background: #00AAAA; color: black }
+.topic-title { background: #00AAAA; color: black;  border: 1px solid black; }
 .topic-title-border
 {
   border: 1px none;
@@ -36,6 +36,7 @@
   font-size: smaller;
   background: #AAAAAA;
   color: #000000;
+  border: 1px solid black;
 }
 
 .topic-info-border
@@ -50,22 +51,20 @@
   border: 1px solid green;
 }
 
-.topic-table { background: #CCCCCC }
+.topic-table { background: #CCCCCC;  border: 1px solid green; }
 
 
-.topic-actions {background: #AAAAAA}
+.topic-actions {background: #AAAAAA; border: 1px solid black;}
 
 .topic-actions-border {
   border: 1px solid black;
   background: black;
 }
 
-.topic-listing {background: #AAAAAA}
+.topic-listing {background: #AAAAAA; border: 1px solid black; }
 
 .topic-listing-border {
   border: 1px none;
   border: 1px solid black;
   background: black;
 }
-
-                                                s

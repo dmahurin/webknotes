@@ -9,7 +9,7 @@ no strict 'refs';
 
 require 'view_lib.pl';
 
-package browse;
+package browse_list2;
 
 sub show_page
 {

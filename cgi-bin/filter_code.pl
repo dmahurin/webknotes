@@ -1,5 +1,5 @@
 use strict;
-package filter;
+package filter_code;
 
 sub print_file
 {

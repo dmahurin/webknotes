@@ -3,7 +3,7 @@ require 'css_tables.pl';
 use strict;
 no strict 'refs';
 
-package browse;
+package browse_list;
 
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
@@ -29,6 +29,7 @@ print "</HTML>\n";
 sub show
 {
    my($notes_path) = @_;
+   my($css_tables) = css_tables->new();
    unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
    {
       print "You are not authorized to access this path.\n";
@@ -38,26 +39,26 @@ sub show
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
 
-print css_tables::table_begin("topic-table") . "\n";
+print $css_tables->table_begin("topic-table") . "\n";
 
-print css_tables::trtd_begin("topic-text") . "\n";
+print $css_tables->trtd_begin("topic-text") . "\n";
 &wkn::print_dir_file($notes_path);
-print css_tables::trtd_end() . "\n";
+print $css_tables->trtd_end() . "\n";
 
-print css_tables::trtd_begin("topic-title") . "\n";
+print $css_tables->trtd_begin("topic-title") . "\n";
 wkn::print_icon_img($notes_path);
 print "<b>$notes_name</b>";
-print css_tables::trtd_end() . "\n";
+print $css_tables->trtd_end() . "\n";
 
-print css_tables::trtd_begin("topic-info") . "\n";
+print $css_tables->trtd_begin("topic-info") . "\n";
 wkn::print_modification($notes_path);
-print css_tables::trtd_end() . "\n";
+print $css_tables->trtd_end() . "\n";
 
-print css_tables::trtd_begin("topic-actions") . "\n";
+print $css_tables->trtd_begin("topic-actions") . "\n";
 wkn::actions2($notes_path);
-print css_tables::trtd_end() . "\n";
+print $css_tables->trtd_end() . "\n";
 
-print css_tables::trtd_begin("topic-listing") . "\n";
+print $css_tables->trtd_begin("topic-listing") . "\n";
 
 my($toppath) = "$filedb::define::doc_dir";
 $toppath .= "/$notes_path" if( $notes_path ne "");
@@ -144,14 +145,14 @@ if(-d $toppath)
        }
    }
 }
-print css_tables::trtd_end() . "\n";
-print css_tables::table_end() . "\n";
+print $css_tables->trtd_end() . "\n";
+print $css_tables->table_end() . "\n";
 
-print css_tables::table_begin("topic-table") . "\n";
-print css_tables::trtd_begin("topic-actions") . "\n";
+print $css_tables->table_begin("topic-table") . "\n";
+print $css_tables->trtd_begin("topic-actions") . "\n";
 wkn::actions3($notes_path);
-print css_tables::trtd_end() . "\n";
-print css_tables::table_end() . "\n";
+print $css_tables->trtd_end() . "\n";
+print $css_tables->table_end() . "\n";
 return 1;
 }
 1;

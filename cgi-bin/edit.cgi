@@ -13,8 +13,11 @@ require 'auth_lib.pl';
 require 'filedb_lib.pl';
 use CGI qw(:cgi-lib); 
 
-auth::init();
+my($my_main) = auth::localize_sub(\&main);
+&$my_main;
 
+sub main
+{
 #$this_cgi = $ENV{'SCRIPT_NAME'};
 my $this_cgi = "edit.cgi";
 print "Content-type: text/html\n\n";
@@ -75,7 +78,7 @@ unless($file =~ m:^[^\.]+(\.(txt|html?|wiki))?$:)
 my $user = auth::get_user();
 my $user_info = auth::get_user_info($user);
 
-my $dir = ($file =~ m:/[^/]+$:) ? $` : "";
+#my $dir = ($file =~ m:/[^/]+$:) ? $` : "";
 
 my $text = $in{'text'};
 
@@ -139,3 +142,5 @@ else
    print "wrote $file\n";
    print "<html>";
 }
+
+};

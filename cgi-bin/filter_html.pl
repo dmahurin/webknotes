@@ -6,9 +6,8 @@ use strict;
 # dmahurin@users.sourceforge.net
 
 require "link_translate.pl";
-require "css_tables.pl";
 
-package filter;
+package filter_html;
 
 sub enclose_topic_info
 {
@@ -19,9 +18,11 @@ sub enclose_topic_info
    }
    else
    {
-        return "<br><br>" . &css_tables::box_begin("topic-info") . "\n" .
+require "css_tables.pl";
+my $css_tables = new css_tables;
+        return "<br><br>" . $css_tables->box_begin("topic-info") . "\n" .
       $text .
-&css_tables::box_end()  ;
+$css_tables->box_end()  ;
    }
 }
 

@@ -2,22 +2,12 @@
 use strict;
 # I ripped this out of wiki to display wiki pages
 
-package filter;
+package filter_wiki;
 
 my $TranslationToken = "###TOKEN###";
 
 my $linkWord = "[A-Z][a-z]+";
 my $LinkPattern = "($linkWord){2,}";
-
-use vars qw($notes_path @InPlaceUrls @code);
-local(@InPlaceUrls,@code, $notes_path);
-
-sub init
-{
-   @InPlaceUrls = ();
-   @code = ();
-   $notes_path = ();
-}
 
 sub EscapeMetaCharacters {
   s/&/&amp;/g;
@@ -27,30 +17,30 @@ sub EscapeMetaCharacters {
 # --------------------------------------------------------  EscapeMetaCharacters
 
 sub InPlaceUrl {
-  my($num) = (@_);
-  my($ref) = $InPlaceUrls[$num];
+  my($InPlaceUrls, $num) = (@_);
+  my($ref) = ${$InPlaceUrls}[$num];
   "<a href=\"$ref\">$ref</a>";
 }
 
 # --------------------------------------------------------  InPlaceUrl
 
 sub EmitCode {
-  my($code, $depth) = @_;
-  while (@code > $depth) 
-    {local($_) = pop @code; 
+  my($codes, $code, $depth) = @_;
+  while (@$codes > $depth) 
+    {local($_) = pop @$codes; 
      print "</$_>\n"}
-  while (@code < $depth) 
-    {push (@code, ($code)); 
+  while (@$codes < $depth) 
+    {push (@$codes, ($code)); 
      print "<$code>\n"}
-  if ($code[$#code] ne $code)
-    {print "</$code[$#code]><$code>\n";
-     $code[$#code] = $code;}
+  if (${$codes}[$#$codes] ne $code)
+    {print "</${$code}[$#$codes]><$code>\n";
+     ${$codes}[$#$codes] = $code;}
 }
 # --------------------------------------------------------  EmitCode
 
 sub file_exists
 {
-   my($file) = @_;
+   my($notes_path, $file) = @_;
    return $file 
       if( -e "$filedb::define::doc_dir/$notes_path/$file");
    return "${file}.wiki"
@@ -59,12 +49,12 @@ sub file_exists
 }
 
 sub AsAnchor {
-  my($title) = @_;
+  my($notes_path, $title) = @_;
   my($temp);
   my($view_url) =  &wkn::get_cgi_prefix() . $notes_path . "/";
   my($add_url) =  "http://web/cgi-bin/wkn/add_topic.cgi?notes_path=$notes_path&text_type=wiki&topic_tag=";
 
-  my($file) = file_exists($title);
+  my($file) = file_exists($notes_path, $title);
   defined($file)
   ? "<a hRef=\"${view_url}$file\">$title<\/a>"
     : "$title<a href=\"${add_url}$title\">?<\/a>";
@@ -83,6 +73,10 @@ sub AsLink {
 # --------------------------------------------------------  AsLink
 
 sub PrintBodyText {
+   my ($notes_path) = @_;
+   my @InPlaceUrls = ();
+   my @codes = ();
+
   s/\\\n/ /g;
   foreach (split(/\n/, $_)){
     my $InPlaceUrl=0;
@@ -101,47 +95,46 @@ sub PrintBodyText {
 
 
 #    s/^\s*$/<p>/                  && ($code = '...');             
-    s/^\s*$/<p>/          &&      &EmitCode("", 0);            
-#    /^\s*$/ && $code ne "P" &&  &EmitCode("P", 0);
-    s/^\;:(\s+)//              && &EmitCode("blockquote", length $1);
+    s/^\s*$/<p>/          &&      &EmitCode(\@codes,"", 0);            
+#    /^\s*$/ && $code ne "P" &&  &EmitCode(\@codes,"P", 0);
+    s/^\;:(\s+)//              && &EmitCode(\@codes,"blockquote", length $1);
    
 #below is a hack, put it in a function
-    s/^([\*\#]*\*(?!\#))/<li>/              && &EmitCode("UL", length $1);
-    s/^([\*\#]*\#)/<li>/              && &EmitCode("OL", length $1);
+    s/^([\*\#]*\*(?!\#))/<li>/              && &EmitCode(\@codes,"UL", length $1);
+    s/^([\*\#]*\#)/<li>/              && &EmitCode(\@codes,"OL", length $1);
 
-    s/^(\t+)\*/<li>/              && &EmitCode("UL", length $1);
-    s/^(\t+)\#/<li>/              && &EmitCode("OL", length $1);
-    s/^(\t+)\d+\.?/<li>/          && &EmitCode("OL", length $1);
-    /^\s/                        && &EmitCode("PRE", 1);
-    /^$/                  &&   &EmitCode("", 0);
-#    $code                           || &EmitCode("", 0);
+    s/^(\t+)\*/<li>/              && &EmitCode(\@codes,"UL", length $1);
+    s/^(\t+)\#/<li>/              && &EmitCode(\@codes,"OL", length $1);
+    s/^(\t+)\d+\.?/<li>/          && &EmitCode(\@codes,"OL", length $1);
+    /^\s/                        && &EmitCode(\@codes,"PRE", 1);
+    /^$/                  &&   &EmitCode(\@codes,"", 0);
+#    $code                           || &EmitCode(\@codes,"", 0);
     s/_{2}(.*)_{2}/<strong>$1<\/strong>/g;
     # s/'{3}(.*)'{3}/<strong>$1<\/strong>/g;
     # s/'{2}(.*)'{2}/<em>$1<\/em>/g;
     s/'{3}(.*?)'{3}/<strong>$1<\/strong>/g;
     s/'{2}(.*?)'{2}/<em>$1<\/em>/g;
-    s#^-----*(:+)(.*)#join('', "<hr><b><font size=\"\+", length $1, "\">$2</font></b><hr>")#ge &&  &EmitCode("", 0);
-    s/^-----*(\!.*)?/<hr>/ &&  &EmitCode("", 0);
+    s#^-----*(:+)(.*)#join('', "<hr><b><font size=\"\+", length $1, "\">$2</font></b><hr>")#ge &&  &EmitCode(\@codes,"", 0);
+    s/^-----*(\!.*)?/<hr>/ &&  &EmitCode(\@codes, "", 0);
     s/^!(.*)//;
-    s/\b($LinkPattern)\b/&AsAnchor($1)/geo;
+    s/\b($LinkPattern)\b/&AsAnchor($notes_path,$1)/geo;
     s/\[(\d+)\]/&AsLink($1)/geo;
-    s/$TranslationToken(\d+)$TranslationToken/&InPlaceUrl($1)/geo;
+    s/$TranslationToken(\d+)$TranslationToken/&InPlaceUrl(\@InPlaceUrls,$1)/geo;
 #    s/\[Search\]/$SearchForm/;
     print "$_\n";
   }
-  &EmitCode("", 0);
+  &EmitCode(\@codes, "", 0);
 }
 
 sub print_file
 {
-   filter::init();
    my($notes_file) = @_;
    my($text) = filedb::get_file($notes_file);
    $notes_file =~ m:/([^\/]+)$:;
-   $notes_path = $`;
+   my $notes_path = $`;
 
    $_ = $text; 
    &EscapeMetaCharacters;
-   &PrintBodyText;
+   &PrintBodyText($notes_path);
 }
 1;

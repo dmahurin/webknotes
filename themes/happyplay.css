@@ -45,6 +45,7 @@ a:visited { color: #000099}
 {
   background: #c0c0c0;
   color: #000000;
+  border: solid #cccccc;
 }
 
 .topic-text-border
@@ -67,12 +68,12 @@ a:visited { color: #000099}
 
 .topic-table {
    background: #ffffff;
-   border: 1px none;
+   border: 1px solid green;
 }
 
 
 .topic-actions {
-   background: #90c060;
+   background: #90c060; border: 1px solid #AACCCC;
 }
 
 .topic-actions-border {

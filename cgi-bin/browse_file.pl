@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-package browse;
+package browse_file;
 # single file version of main WebKNotes script table version
 # no subnotes are listed, only the file and bottom toolbar
 

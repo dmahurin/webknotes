@@ -16,7 +16,13 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'auth_lib.pl';
 require 'filedb_define.pl';
 
-auth::init();
+my($my_main) = auth::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
+
+
 
 
 my($this_cgi) = "browse_edit.cgi";
@@ -106,3 +112,4 @@ if(-d $real_path and opendir(DIR, $real_path))
 
 print "</BODY>\n";
 print "</HTML>\n";
+}

@@ -15,16 +15,19 @@ require 'auth_lib.pl';
 require 'filedb_lib.pl';
 use CGI qw(:cgi-lib);
 
-wkn::init();
-auth::init();
+my($my_main) = wkn::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 umask(022);
 my %in;
 &ReadParse(\%in);
 $in{'notes_path'} =~ m:^(.*)$:;
-my($notes_path) = $1;
+use vars qw($notes_path);
+local($notes_path) = $1;
 $notes_path=~ s:/$::;
 
-my($user) = auth::get_user();
 if( ! auth::check_current_user_file_auth(
 'n', $notes_path ) )
 {
@@ -94,10 +97,13 @@ print "<br><A HREF=\""
 $notes_path . '">' . "BACK TO NOTES:$notes_path</A>
 </BODY></HTML>\n";
 
+}
+
 sub print_form
 {
   my($topic_tag, $text_type, $body) = @_;
   my(%sel_text_type);
+  my($user) = auth::get_user();
   $sel_text_type{$text_type} = "selected";
 if( ! -e "$filedb::define::doc_dir/$notes_path" )
 {
@@ -295,6 +301,7 @@ $log .= "\n$source_details\n";
 &wkn::mkfile("$notes_path/.create-log", $log );
 #&wkn::mkfile("$notes_path/.type", $topic_type);
 
+my($user) = auth::get_user();
 if( defined($user))
 {
    &wkn::mkfile("$notes_path/.owner", $user);

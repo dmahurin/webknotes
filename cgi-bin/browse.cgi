@@ -7,7 +7,11 @@ use strict;
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'view_lib.pl';
 
-wkn::init();
+my($my_main) = wkn::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 
 wkn::content_header();
 my(@paths) = wkn::get_args();
@@ -28,3 +32,4 @@ wkn::unset_view_mode("save");
 wkn::persist_view_mode() if($save);
 
 wkn::browse_show_page(@paths);
+}

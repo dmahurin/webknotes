@@ -13,7 +13,12 @@ require 'auth_define.pl';
 require 'auth_lib.pl';
 require 'view_lib.pl';
 use CGI qw(:cgi-lib);
-wkn::init();
+
+my($my_main) = wkn::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 
 my(%in);
 &ReadParse(\%in);
@@ -78,4 +83,5 @@ else
 {
    print "Content-type: text/html\n\n";
    print "login failed\n";
+}
 }

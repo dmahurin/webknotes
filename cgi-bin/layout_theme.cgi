@@ -4,8 +4,12 @@ if( $0 =~ m:/[^/]*$: ) { $runpath=$`; push @INC, $runpath }
 require 'view_define.pl';
 require 'view_lib.pl';
 use CGI qw(:standard);
-wkn::init();
 
+my($my_main) = wkn::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 my $go = param("go");
 my $path = param("path");
 # set local view
@@ -97,3 +101,5 @@ print "<INPUT TYPE=\"SUBMIT\" VALUE=\"Change\">\n";
 
 #print "<p><a href=\"$return_link\">Return to browsing</a>";
 print "</body></html>\n";
+
+}

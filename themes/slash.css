@@ -45,24 +45,26 @@ A:visited { color: #006666 }
 
 .topic-table-border {
   background: black;
-  border: 1px solid black;
+  border: 1px solid #ffffff;
 }
 
 
 .topic-table {
    background: #ffffff;
-   border: 1px none;
+   border: 1px solid #ffffff;
 }
 
 
 .topic-actions {
    background: #cccccc;
+  border: 1px solid #ffffff;
    color: #000000;
 }
 
 
 .topic-listing {
    background: #CCCCCC;
+  border: 1px solid #ffffff;
 }
 
 

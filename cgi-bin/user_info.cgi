@@ -12,6 +12,12 @@ require 'auth_define.pl';
 require 'auth_lib.pl';
 use CGI qw(:cgi-lib); 
 
+my($my_main) = auth::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
+
 my $this_cgi = $ENV{'SCRIPT_NAME'};
 print "Content-type: text/html\n\n\n";
 
@@ -135,3 +141,4 @@ if(! &auth::write_user_info(auth::check_user_name($username), $user_info))
    exit(0);
 }
 print "User information modified\n";
+}

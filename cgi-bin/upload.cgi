@@ -8,8 +8,11 @@ push(@INC, $wkn::define::auth_inc);
 require 'auth_lib.pl';
 require 'filedb_lib.pl';
 
-wkn::init();
-auth::init();
+my($my_main) = auth::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 
 use CGI qw/:standard/;
 
@@ -88,4 +91,5 @@ sub array_to_path
       push(@pathout, $path);
    }
    return join('/', @pathout);
+}
 }

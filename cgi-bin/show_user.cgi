@@ -12,7 +12,12 @@ require 'auth_define.pl';
 require 'auth_lib.pl';
 use CGI qw(:cgi-lib); 
 
-auth::init();
+my($my_main) = auth::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
+
 
 my $this_cgi = $ENV{'SCRIPT_NAME'};
 print "Content-type: text/html\n\n\n";
@@ -60,3 +65,4 @@ else
 }
 
 print "</body></html>";
+}

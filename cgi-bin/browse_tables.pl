@@ -8,7 +8,7 @@ use strict;
 
 require 'css_tables.pl';
 
-package browse;
+package browse_tables;
 
 sub show_page
 {
@@ -32,16 +32,17 @@ print "</HTML>\n";
 sub show
 {
 my($notes_path) = @_;
+   my($css_tables) = css_tables->new();
 unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
    return(0);
 }
-print_main_topic_table($notes_path);
+print_main_topic_table($notes_path, $css_tables);
 print "<br>";
 
 return(0) unless
-opendir(DIR, "$auth::define::doc_dir/$notes_path");
+opendir(DIR, "$filedb::define::doc_dir/$notes_path");
 my $file;
 while($file = readdir(DIR))
 {
@@ -58,64 +59,64 @@ while($file = readdir(DIR))
 		print "hey, /'s ? not good.\n";
                 return(0);
 	}
-	print_topic_table( "$notes_path/$file");	
+	print_topic_table( "$notes_path/$file", $css_tables);	
 }
 closedir(DIR);
 
-print css_tables::table_begin("topic-table") . "\n";
-print css_tables::trtd_begin("topic-actions") . "\n";
+print $css_tables->table_begin("topic-table") . "\n";
+print $css_tables->trtd_begin("topic-actions") . "\n";
 wkn::actions3($notes_path);
-print css_tables::trtd_end();
-print css_tables::table_end() . "\n";
+print $css_tables->trtd_end();
+print $css_tables->table_end() . "\n";
 return 1;
 }
 
 
 sub print_main_topic_table
 {
-	my($notes_path) = @_;
+	my($notes_path, $css_tables) = @_;
 	$notes_path =~ m:([^/]*)$:;
 	my $notes_name = $1;
 
-        print css_tables::table_begin("topic-table") . "\n";
-        print css_tables::trtd_begin("topic-title") . "\n";
+        print $css_tables->table_begin("topic-table") . "\n";
+        print $css_tables->trtd_begin("topic-title") . "\n";
 	print "<b>$notes_name</b>\n";
-        print css_tables::trtd_end() . "\n";
+        print $css_tables->trtd_end() . "\n";
         
-        print css_tables::trtd_begin("topic-info") . "\n";
+        print $css_tables->trtd_begin("topic-info") . "\n";
 	&wkn::print_modification($notes_path);
-        print css_tables::trtd_end() . "\n";
+        print $css_tables->trtd_end() . "\n";
         
-        print css_tables::trtd_begin("topic-text") . "\n";
+        print $css_tables->trtd_begin("topic-text") . "\n";
 	print "&nbsp;" unless (&wkn::print_dir_file($notes_path));
-        print css_tables::trtd_end() . "\n";
+        print $css_tables->trtd_end() . "\n";
         
-        print css_tables::trtd_begin("topic-actions") . "\n";
+        print $css_tables->trtd_begin("topic-actions") . "\n";
 	wkn::actions2($notes_path);
-        print css_tables::trtd_end() . "\n";
-        print css_tables::table_end() . "\n";
+        print $css_tables->trtd_end() . "\n";
+        print $css_tables->table_end() . "\n";
 }
 
 sub print_topic_table
 {
-	my($notes_path) = @_;
+	my($notes_path, $css_tables) = @_;
 	$notes_path =~ m:([^/]*)$:;
 	my $notes_name = $1;
 
-        print css_tables::table_begin("topic-table") . "\n";
+        print $css_tables->table_begin("topic-table") . "\n";
         
-        print css_tables::trtd_begin("sub-topic-title") . "\n";
+        print $css_tables->trtd_begin("sub-topic-title") . "\n";
 #	print "<b>$notes_name</b><br>\n";
         print_icon_link($notes_path);
-        print css_tables::trtd_end() . "\n";
+        print $css_tables->trtd_end() . "\n";
         
-        print css_tables::trtd_begin("topic-info") . "\n";
+        print $css_tables->trtd_begin("topic-info") . "\n";
 	&wkn::print_modification($notes_path);
-        print css_tables::trtd_end() . "\n";
+        print $css_tables->trtd_end() . "\n";
         
-        print css_tables::trtd_begin("topic-text") . "\n";
+        print $css_tables->trtd_begin("topic-text") . "\n";
 	print "&nbsp;" unless (&wkn::print_dir_file($notes_path));
-        print css_tables::trtd_end() . "\n";
+        print $css_tables->trtd_end() . "\n";
         
         #	print "<tr><td class=\"listing\">\n";
 #	wkn::actions2($notes_path);
@@ -123,7 +124,7 @@ sub print_topic_table
 #	print "<tr><td class=\"listing\">\n";
 #	&wkn::list_html($notes_path);
 #	print "</td></tr>\n";
-        print css_tables::table_end() . "\n";
+        print $css_tables->table_end() . "\n";
 }
 
 sub print_icon_link

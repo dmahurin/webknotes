@@ -31,6 +31,7 @@ A:active { color: #336699 }
 {
  background: #000000;
  color: #ffffff;
+ border: 1px solid black;
 }
 
 .sub-topic-title A:link { color: #aaccee }
@@ -54,12 +55,14 @@ A:active { color: #336699 }
 .topic-table {
    background: #ffffff;
    border: 1px none;
+   border: 1px solid black;
 }
 
 
 .topic-actions {
    background: #000000;
    color: #ffffff;
+   border: 1px solid black;
 }
 
 
@@ -77,5 +80,7 @@ A:active { color: #336699 }
    background: #CCCCCC;
 }
 
+.topic-listing-border {
+   background: #CCCCCC;
+}
 
-                                                s

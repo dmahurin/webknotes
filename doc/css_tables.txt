@@ -1,0 +1,13 @@
+The css tables class serves to work around CSS bugs in existing browsers.
+
+The _normal translation is to print it assuming a bug free CSS implementation
+(at least as used).
+
+The _ns4 provides support for Netscape 4.
+
+Some notes to keep your CSS portable:
+
+For netscape any background and border information must be replicated in another -border class, since The ns4 workaround uses an outside table to get borders to work ( borders for tables, tr, and td are ignored by netscape.
+
+Don't use "padding" definitions.  No workaround exist for Netscape's bugs.
+

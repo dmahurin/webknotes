@@ -13,13 +13,22 @@ package auth;
 # dmahurin@users.sourceforge.net
 
 # store current user and info, so we only get them once.
-use vars qw($current_user $current_user_info);
-local($current_user, $current_user_info);
+#use vars qw($current_user $current_user_info);
+#local($current_user, $current_user_info);
+#$current_user_info = ();
+#$current_user = ();
 
-sub init
+# localize a sub ref (needed for mod_perl) to non-persist globals accross 
+#sessions
+sub localize_sub
 {
-   $current_user = ();
-   $current_user_info = ();
+   my($subref) = shift;
+   return sub 
+   { 
+      local($auth::current_user, $auth::current_user_info);
+use vars qw($current_user $current_user_info);
+      &$subref;
+   }
 }
 
 sub init_private_dir()

@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 # main WebKNotes functions
+#use strict;
 
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
@@ -16,14 +17,22 @@ my $wiki_name_pattern = "([A-Z][a-z]+){2,}";
 # TODO rename wkn to view...
 package wkn;
 
-use vars qw(%view_mode);
-local %view_mode; # used to store layout, theme, and target of wkn sessions
+#use vars qw(%view_mode);
+#local %view_mode; # used to store layout, theme, and target of wkn sessions
 #my(%view_mode); # used to store layout, theme, and target of wkn sessions
 
-sub init
+# localize a sub ref (needed for mod_perl)
+sub localize_sub
 {
-   %view_mode = ();
-   auth::init();
+   my($subref) = shift;
+   $subref = auth::localize_sub($subref);
+   return sub 
+   { 
+      package wkn;
+use vars qw(%view_mode);
+      local(%wkn::view_mode);
+      &$subref;
+   }
 }
 
 sub url_encode_path
@@ -155,6 +164,18 @@ sub actions1
 sub actions2
 {
    my($notes_path) = @_;
+   if ( $notes_path ne "" )
+   {      
+      $notes_path = url_encode_path($notes_path);
+      # /,non-/'s,/* 
+      my $parent_notes = $notes_path;
+      $parent_notes =~ s:(^|/)[^/]*/?$::;
+
+     my $parent_notes_ref = 
+      &wkn::get_cgi_prefix() .
+      $parent_notes;
+      print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
+   }
 
 #   my($dir_file) = filedb::path_file($notes_path);
 #print "dir file : $dir_file,$notes_path\n";
@@ -180,7 +201,6 @@ sub actions2
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
       print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Access</a> ]\n";
-   print "[ <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
    #   print "<br>\n";
 }
 
@@ -188,32 +208,18 @@ sub actions3
 {
         my( $notes_path ) = @_;
 
-	if ( $notes_path eq "" )
-	{
-		$notes_dir ="";
-	}
-	else
-	{      
-		$notes_path = url_encode_path($notes_path);
-		# /,non-/'s,/* 
-		$parent_notes = $notes_path;
-		$parent_notes =~ s:(^|/)[^/]*/?$::;
 
-                $parent_notes_ref = 
-                   &wkn::get_cgi_prefix() .
-                   $parent_notes;
-		$notes_dir = "$notes_path/";
-print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
-	}
 	print <<EOT;
 [ <A HREF="search.cgi?notes_mode=$wkn::define::mode&notes_subpath=${notes_path}">Search</A> ]
 [ <A HREF="user_access.cgi"> User Accounts </a> ]
 EOT
+   print "[ <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
 }
 
 sub print_link_html
 {
 	my( $notes_path ) = @_;
+        my($web_path, $notes_wpath, $file, $real_path);
         my($found) = 0;
 
 	if( $notes_path eq "" )
@@ -238,9 +244,9 @@ sub print_link_html
 	{
            my($link, $link_type, $link_text);
 
-           $file_base = $file;
+           my $file_base = $file;
            $file_base =~ s/\.[^\.]*$//;
-           $file_ext = $&;
+           my $file_ext = $&;
            $file_ext =~ s/^\.*$//;
            SWITCH:
            {
@@ -334,6 +340,8 @@ sub print_link_html
 sub get_icon
 {
 	my( $notes_path ) = @_;
+        my($web_path, $notes_wpath, $file, $real_path);
+        my($dir);
 
 	if( $notes_path eq "" )
 	{
@@ -369,6 +377,8 @@ sub get_icon
 sub print_icon_img
 {
 	my( $notes_path ) = @_;
+        my($web_path, $notes_wpath, $file, $real_path);
+        my($dir);
 
 	if( $notes_path eq "" )
 	{
@@ -427,6 +437,7 @@ sub list_files_html
    return 0 if( -f "$dir/index.html");
    return 0 if( -f "$dir/index.htm");
 
+   my($file);
    opendir(DIR, "$dir") || return 0;
    while(defined($file = readdir(DIR)))
    {
@@ -461,10 +472,11 @@ sub list_dirs_html
    my($dir) = $filedb::define::doc_dir;
    $dir .= "/$notes_path" unless( $notes_path eq "");
 
-#   return 0 if( -f "$dir/FrontPage.wiki");
-#   return 0 if( -f "$dir/FrontPage");
+   return 0 if( -f "$dir/FrontPage.wiki");
+   return 0 if( -f "$dir/FrontPage");
    return () unless
       opendir(DIR, $dir);
+   my $file;
    my $found = 0;
    while(defined($file = readdir(DIR)))
    {
@@ -494,6 +506,7 @@ sub list_html
    
    my($found) = 0;
 
+   my $file;
    opendir (DIR, ${dir});
    while( defined($file = readdir DIR))
    {
@@ -551,10 +564,10 @@ sub print_dir_file
             $file_type = $wkn::define::default_file_type;
          }
       }
-      if(defined($file_type) && ( -f "filter_${file_type}.pl") )
+      if(defined($file_type) and -f "filter_${file_type}.pl" )
       {
          require "filter_${file_type}.pl";
-         &filter::print_file($file);
+         &{"filter_${file_type}::print_file"}($file);
       }
       else
       {
@@ -683,7 +696,7 @@ sub get_view_mode
   my $val = $wkn::view_mode{$param};
   if(! defined($val))
    {
-      my $user_info = auth::get_current_user_info();
+     my $user_info = auth::get_current_user_info();
      $val = $user_info->{ucfirst($param)};
   }
   return $val;
@@ -765,7 +778,9 @@ sub browse_show_page
    my $layout = get_view_mode("layout");
    $layout = $wkn::define::default_layout unless($layout);
    require "browse_${layout}.pl";
-   browse::show_page(@_);
+   &{"browse_${layout}::show_page"}(@_);
+#   browse::show_page(@_);
+#   print "layout: $layout\n";
 }
 
 # persistent layout and theme settings for user

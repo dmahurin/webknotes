@@ -13,7 +13,12 @@ require 'auth_define.pl';
 require 'auth_lib.pl';
 require 'filedb_lib.pl';
 use CGI qw(:cgi-lib); 
-auth::init();
+
+my($my_main) = auth::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 
 #$this_cgi = $ENV{'SCRIPT_NAME'};
 my $this_cgi = "permissions.cgi";
@@ -163,4 +168,5 @@ else
    {
       print "failed to write owner: $dir<br>\n";
    }
+}
 }

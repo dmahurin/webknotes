@@ -25,8 +25,11 @@ require 'filedb_define.pl';
 require 'auth_lib.pl';
 require 'view_lib.pl';
 
-wkn::init();
-auth::init();
+my($my_main) = wkn::localize_sub(\&main);
+&$my_main;
+
+sub main
+{
 
 my($user) = auth::get_user(); # used for auth checking on find
 
@@ -527,4 +530,5 @@ sub print_input_form_html
 
 EOT
 
+}
 }

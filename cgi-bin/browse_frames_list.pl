@@ -6,7 +6,7 @@ use strict;
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-package browse;
+package browse_frames_list;
 
 sub show_page
 {

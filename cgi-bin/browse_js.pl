@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-package browse;
+package browse_js;
 no strict 'refs';
 
 sub show_page
