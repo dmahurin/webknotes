@@ -7,12 +7,15 @@ CGI.pm - part of standard Perl 5 dist.
 
 A [[setuid]] mechanism. ./Configure will also ask about this.
 
-To configure and install, run (in a terminal window):
+Un-tar the source (not in a web directory), then in the webknotes directory,
+configure and install by running (in a terminal window):
 ./Configure
 ( if you are upgrading webknotes, run ./Configure --cgi=/home/.../cgi-bin/wkn,
 to default to your previous definitions )
 
 This will create the define files, copy the cgi-bin directory and create an admin user.
+
+The initial un-tarred directory is no longer needed after configuration unless you wish to re-configure.
 
 This starting point will be something like: httpd://localhost/cgi-bin/wkn/browse.cgi, depending on the location of your cgi-bin.
 
@@ -24,8 +27,8 @@ Examples:
 
 simple case:
 
- util/cgitohtml /~awebuser/cgi-bin
- ~awebuser/public_html/cgi-bin/browse.cgi ""
+ util/cgitohtml /~awebuser/cgi-bin/wkn
+ /home/awebuser/public_html/cgi-bin/wkn/browse.cgi ""
 
 Or, really specifically, on my dma web page (they use cgi-wrap for cgi scripts),
 I do:
