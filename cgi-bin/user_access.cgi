@@ -65,6 +65,11 @@ Show info for a group <input type=text name=\"group\" size=20>
 <input type=submit value=\"Show Group Info\">
 </form>
 
+<form method=\"POST\" action=\"edit_group.cgi\">
+Add/Edit group <input type=text name=\"group\" size=20>
+<input type=submit value=\"Edit Group\">
+</form>
+
 </html>
 </body>
 ";

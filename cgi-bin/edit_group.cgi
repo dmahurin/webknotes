@@ -73,16 +73,22 @@ EOT
 }
 else
 {
-   if(! auth::write_group_info(auth::check_group_name($in{'group'}), 
-   ( "Members"=>$in{'users'}, 
+   my $group = auth::check_group_name($in{'group'});
+   if(! defined($group))
+   {
+      print "Invalid group: $in{'group'}\n";
+   }
+   elsif(! auth::write_group_info($group, 
+   { "Members"=>$in{'users'}, 
    "Permissions"=>$in{'permissions'}, 
-   "Comment"=>$in{'comment'})))
+   "Comment"=>$in{'comment'}}))
    {
       print "Sorry: Could not modify group info.\n";
    }
    else
    {
-      print "Group modified: $in{group}\n";
+      print "Group modified: $group\n";
+      print &auth::check_group_name($group) . "\n";
    }
 }
 }

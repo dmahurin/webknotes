@@ -309,7 +309,7 @@ sub write_user_info
 
 sub check_group_name
 {
-   my($group);
+   my($group) = @_;
    if($group =~ m:^([^/]+)$:)
    {
       return $1;
