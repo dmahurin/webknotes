@@ -7,14 +7,14 @@ use strict;
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'view_lib.pl';
 
-my($my_main) = wkn::localize_sub(\&main);
+my($my_main) = view::localize_sub(\&main);
 &$my_main;
 
 sub main
 {
 
-wkn::content_header();
-my(@paths) = wkn::get_args();
+view::content_header();
+my(@paths) = view::get_args();
 
 my $path;
 for $path (@paths)
@@ -27,9 +27,9 @@ for $path (@paths)
 }
 }
 
-my $save = wkn::get_view_mode("save");
-wkn::unset_view_mode("save");
-wkn::persist_view_mode() if($save);
+my $save = view::get_view_mode("save");
+view::unset_view_mode("save");
+view::persist_view_mode() if($save);
 
-wkn::browse_show_page(@paths);
+view::browse_show_page(@paths);
 }

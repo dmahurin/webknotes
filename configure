@@ -235,7 +235,7 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
    if(open(FILE, ">$wkn_cgi_dir/view_define.pl"))
    {
       print FILE
-"package wkn::define;
+"package view::define;
 \$icons_wpath = \"$icons_wpath\"; 
 \$themes_wpath = \"$themes_wpath\";
 \$themes_dir = \"$themes_dir\";" , 

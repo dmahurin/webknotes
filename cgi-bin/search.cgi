@@ -25,7 +25,7 @@ require 'filedb_define.pl';
 require 'auth_lib.pl';
 require 'view_lib.pl';
 
-my($my_main) = wkn::localize_sub(\&main);
+my($my_main) = view::localize_sub(\&main);
 &$my_main;
 
 sub main
@@ -55,11 +55,11 @@ my($notes_mode);
 if($in{notes_mode})
 {
   $notes_mode = $in{notes_mode};
-  $wkn::view_mode{"layout"} = $notes_mode;
+  $view::view_mode{"layout"} = $notes_mode;
 }
 
 ##
-my($match_prefix_url) =  &wkn::get_cgi_prefix();
+my($match_prefix_url) =  &view::get_cgi_prefix();
 
 my($notes_subpath) =  "$in{'notes_subpath'}";
 
@@ -140,8 +140,8 @@ DIR: while (@dirs)
 
    if (-d $fullpath)
    {
-      next DIR if (defined($wkn::define::skip_files) and 
-                  $file =~ m/$wkn::define::skip_files/);
+      next DIR if (defined($view::define::skip_files) and 
+                  $file =~ m/$view::define::skip_files/);
       next unless (-r $fullpath && -x $fullpath);
       push(@dirs, $file);
       opendir("DIR$#dirs", $fullpath);
@@ -194,8 +194,8 @@ DIR: while (@dirs)
       next unless( $note_type eq "" );
       unless (-r $fullpath) { print "Unreadable: $fullpath\n"; next }
       
-      next DIR if ( defined($wkn::define::skip_files) and
-           $file =~ m/$wkn::define::skip_files/);
+      next DIR if ( defined($view::define::skip_files) and
+           $file =~ m/$view::define::skip_files/);
       foreach (@skip_files)
       {
          next DIR if ($file =~ m/$_/);
@@ -463,7 +463,7 @@ sub print_file_match_html
 {
     my($filename, $title) = @_;
 
-    my $filename_enc =  wkn::url_encode_path($filename);
+    my $filename_enc =  view::url_encode_path($filename);
 
     my $prefix;
     if( -d "$filedb::define::doc_dir/$filename" || $filename =~ m:\.(htm|html|txt)|README:)

@@ -51,7 +51,7 @@ sub file_exists
 sub AsAnchor {
   my($notes_path, $title) = @_;
   my($temp);
-  my($view_url) =  &wkn::get_cgi_prefix() . $notes_path . "/";
+  my($view_url) =  &view::get_cgi_prefix() . $notes_path . "/";
   my($add_url) =  "http://web/cgi-bin/wkn/add_topic.cgi?notes_path=$notes_path&text_type=wiki&topic_tag=";
 
   my($file) = file_exists($notes_path, $title);

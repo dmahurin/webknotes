@@ -18,54 +18,54 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 }
 
 
-my $cgi_arg = wkn::get_query_string();
-my $notes_path_encoded = wkn::url_encode_path($notes_path);
+my $cgi_arg = view::get_query_string();
+my $notes_path_encoded = view::url_encode_path($notes_path);
 
-my $frame = $wkn::view_mode{"frame"};
-undef($wkn::view_mode{"frame"});
+my $frame = $view::view_mode{"frame"};
+undef($view::view_mode{"frame"});
 
 if(defined($frame))
 {
-   my $head_tags = wkn::get_style_head_tags();
+   my $head_tags = view::get_style_head_tags();
    if($frame eq "header")
    {
       print "<html><head><BASE TARGET=\"_parent\">$head_tags</head>";
-      print ($wkn::define::index_header)
-        if(defined($wkn::define::index_header));
+      print ($view::define::index_header)
+        if(defined($view::define::index_header));
       print "</html>\n";
    }
    elsif($frame eq "footer")
    {
       print "<html><head><BASE TARGET=\"body\">$head_tags</head><body class=\"topic-actions\">\n";
-      if(defined($wkn::define::index_footer))
+      if(defined($view::define::index_footer))
       {
-         print ($wkn::define::index_footer, "");
+         print ($view::define::index_footer, "");
       }
       else
       {
-         &wkn::actions3($notes_path);
+         &view::actions3($notes_path);
       }
       print "</body></html>\n";
    }
    return(0);
 }  
-my $this_cgi_script_prefix = wkn::get_cgi_prefix();
-&wkn::set_view_mode("layout", "list2");
-my $list_cgi_script_prefix = wkn::get_cgi_prefix();
-&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
-&wkn::unset_view_mode("sublayout");                          
-my $cgi_script_prefix = wkn::get_cgi_prefix();
+my $this_cgi_script_prefix = view::get_cgi_prefix();
+&view::set_view_mode("layout", "list2");
+my $list_cgi_script_prefix = view::get_cgi_prefix();
+&view::set_view_mode("layout", &view::get_view_mode("sublayout"));
+&view::unset_view_mode("sublayout");                          
+my $cgi_script_prefix = view::get_cgi_prefix();
 
 #print "$cgi_script_prefix, $list_cgi_script_prefix, $this_cgi_script_prefix\n";
 print "<html> <head>\n";
-print "<title>$wkn::define::index_title</title>\n" 
-  if(defined($wkn::define::index_title));
+print "<title>$view::define::index_title</title>\n" 
+  if(defined($view::define::index_title));
 print <<"EOT";
 <BASE TARGET="body">
-<title>$wkn::define::index_title</title>
+<title>$view::define::index_title</title>
   </head>
 EOT
-if(defined($wkn::define::index_header))
+if(defined($view::define::index_header))
 {
 print <<"EOT";
   <frameset rows = "60,*">

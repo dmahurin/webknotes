@@ -5,7 +5,7 @@ require 'view_define.pl';
 require 'view_lib.pl';
 use CGI qw(:standard);
 
-my($my_main) = wkn::localize_sub(\&main);
+my($my_main) = view::localize_sub(\&main);
 &$my_main;
 
 sub main
@@ -13,21 +13,21 @@ sub main
 my $go = param("go");
 my $path = param("path");
 # set local view
-wkn::set_view_mode("layout", param("layout"));
-wkn::set_view_mode("sublayout", param("sublayout"));
-wkn::set_view_mode("theme", param("theme"));
+view::set_view_mode("layout", param("layout"));
+view::set_view_mode("sublayout", param("sublayout"));
+view::set_view_mode("theme", param("theme"));
 
 # get view mode params ( falls back to users settings )
-$theme = wkn::get_view_mode("theme");
-$layout = wkn::get_view_mode("layout");
-$sublayout = wkn::get_view_mode("sublayout");
+$theme = view::get_view_mode("theme");
+$layout = view::get_view_mode("layout");
+$sublayout = view::get_view_mode("sublayout");
 
-wkn::persist_view_mode();
+view::persist_view_mode();
 
-wkn::content_header();
+view::content_header();
 if($go)
 {
-  wkn::browse_show_page($path);
+  view::browse_show_page($path);
   exit(0);
    }
 print "<html><head>
@@ -37,7 +37,7 @@ print "<html><head>
 <H1>Layout and Theme</H1>";
 
 my(@themes);
-if(opendir(CDIR, $wkn::define::themes_dir))
+if(opendir(CDIR, $view::define::themes_dir))
 {
    while(defined($file = readdir(CDIR)))
    {
@@ -96,8 +96,8 @@ print "</select> ( For frame and list layout modes )<br>\n";
 
 print "<INPUT TYPE=\"SUBMIT\" VALUE=\"Change\">\n";
 
-#my $return_link = wkn::get_cgi_prefix();
-#$return_link .=  &wkn::url_encode_path($path);
+#my $return_link = view::get_cgi_prefix();
+#$return_link .=  &view::url_encode_path($path);
 
 #print "<p><a href=\"$return_link\">Return to browsing</a>";
 print "</body></html>\n";

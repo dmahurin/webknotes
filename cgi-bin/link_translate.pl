@@ -17,7 +17,7 @@ sub smart_ref
    
    return $ref_enc if ( $ref_enc =~ m/^\w+:/ );
    return $ref_enc if ( $ref_enc =~ m:^/: );
-   my $ref = wkn::url_unencode_path($ref_enc);
+   my $ref = view::url_unencode_path($ref_enc);
 
    # ??
    if($ref =~ m:#: )
@@ -46,29 +46,29 @@ sub smart_ref
    #collapse dir/.. to nothing
    while($ref =~ s~(^|/+)(?!\.\./)[^/]+/+\.\.($|/)~$1~g){}
 
-   if($wkn::define::no_browse_links or $ref =~ m:\.([^\.]*)$: and ! ($1 =~ m:^(txt|html|htm)$:))  
+   if($view::define::no_browse_links or $ref =~ m:\.([^\.]*)$: and ! ($1 =~ m:^(txt|html|htm)$:))  
    {
-      return wkn::url_encode_path($ref);
+      return view::url_encode_path($ref);
    }
    
    $ref =~ s:/+$::;
    if($ref =~ m-^$filedb::define::doc_wpath/*- )
    {
-      return &wkn::get_cgi_prefix() . wkn::url_encode_path($');
+      return &view::get_cgi_prefix() . view::url_encode_path($');
    }
-   elsif(defined(%wkn::define::wpath_prefix_translation))
+   elsif(defined(%view::define::wpath_prefix_translation))
    {
-      for my $key ( keys %wkn::define::wpath_prefix_translation )
+      for my $key ( keys %view::define::wpath_prefix_translation )
       {
          if($ref =~ m/^$key/ )
          {
-            return $wkn::define::wpath_prefix_translation{$key} .
-            wkn::url_encode_path($');
+            return $view::define::wpath_prefix_translation{$key} .
+            view::url_encode_path($');
          }
       }
    }
    
-   return  wkn::url_encode_path($ref);
+   return  view::url_encode_path($ref);
 }
 
 sub translate_html
@@ -79,7 +79,7 @@ sub translate_html
    
    # translate relative image paths to full http paths
    my $this_path = ($notes_file =~ m:/[^/]*$:) ? "$`/" : "";
-   my $this_hpath = wkn::url_encode_path("$filedb::define::doc_wpath/$this_path");
+   my $this_hpath = view::url_encode_path("$filedb::define::doc_wpath/$this_path");
    $text =~ s!(<img\s[^>]*src=\")([^:\/>\"]+)!$1$this_hpath$2!gi;
    
    return $text;

@@ -3,7 +3,7 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'view_define.pl';
 require 'view_lib.pl';
 
-my($my_main) = wkn::localize_sub(\&main);
+my($my_main) = view::localize_sub(\&main);
 &$my_main;
 
 sub main

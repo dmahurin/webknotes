@@ -14,7 +14,7 @@ require 'auth_lib.pl';
 require 'view_lib.pl';
 use CGI qw(:cgi-lib);
 
-my($my_main) = wkn::localize_sub(\&main);
+my($my_main) = view::localize_sub(\&main);
 &$my_main;
 
 sub main
@@ -35,7 +35,7 @@ print "Content-type: text/html\n\n";
 $user = auth::get_user();
 if(defined($user))
 {
-   wkn::browse_show_page();
+   view::browse_show_page();
    exit(0);
 }
    print <<"END";
@@ -69,7 +69,7 @@ if(auth::check_pass($user, auth::get_user_info($user), $password))
       #my $user_info = auth::get_user_info($user);
       print "Content-type: text/html\n\n";
       #print "Now logged in <br>\n";
-      wkn::browse_show_page();
+      view::browse_show_page();
       #print "Back to main <a href=\"browse.cgi?theme=$user_info->{\"Theme\"}\">page</a>.\n";
       #print "Back to main <a href=\"browse.cgi\">page</a>.\n";
    }

@@ -34,14 +34,14 @@ sub show
 $notes_path =~ m:([^/]*)$:;
 my($notes_name) = $1;
 
-&wkn::print_dir_file($notes_path);
+&view::print_dir_file($notes_path);
 print "<hr>\n";
-#wkn::print_icon_img($notes_path);
+#view::print_icon_img($notes_path);
 print "<b>$notes_name</b> - ";
-wkn::print_modification($notes_path);
+view::print_modification($notes_path);
 print "<hr>\n";
-wkn::actions2($notes_path);
-#wkn::log($notes_path);
+view::actions2($notes_path);
+#view::log($notes_path);
 return 1;
 }
 

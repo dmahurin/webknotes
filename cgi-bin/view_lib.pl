@@ -14,12 +14,11 @@ my $img_border = " border=0 hspace=3";
 
 my $wiki_name_pattern = "([A-Z][a-z]+){2,}";
 
-# TODO rename wkn to view...
-package wkn;
+package view;
 
 #use vars qw(%view_mode);
-#local %view_mode; # used to store layout, theme, and target of wkn sessions
-#my(%view_mode); # used to store layout, theme, and target of wkn sessions
+#local %view_mode; # used to store layout, theme, and target of sessions
+#my(%view_mode); # used to store layout, theme, and target of sessions
 
 # localize a sub ref (needed for mod_perl)
 sub localize_sub
@@ -28,9 +27,9 @@ sub localize_sub
    $subref = auth::localize_sub($subref);
    return sub 
    { 
-      package wkn;
+      package view;
 use vars qw(%view_mode);
-      local(%wkn::view_mode);
+      local(%view::view_mode);
       &$subref;
    }
 }
@@ -85,7 +84,7 @@ sub url_encode_paths
    my(@out) = ();
    foreach(@_)
    {
-      push(@out,wkn::url_encode_path($_));
+      push(@out,view::url_encode_path($_));
    }
    return @out;
 }
@@ -95,7 +94,7 @@ sub url_unencode_paths
    my(@out) = ();
    foreach(@_)
    {
-      push(@out,wkn::url_unencode_path($_));
+      push(@out,view::url_unencode_path($_));
    }
    return @out;
 }
@@ -134,7 +133,7 @@ sub strip_view_mode_args
 #      $arg = auth::path_check($arg);
       if($arg =~ /^(theme|layout|sublayout|target|frame|save)=/)
       {
-         $wkn::view_mode{$1} = $';
+         $view::view_mode{$1} = $';
       }
 #some temporary hackery to make path= arg work
       elsif($arg =~ /^path=/)
@@ -153,7 +152,7 @@ sub strip_view_mode_args
 
 sub get_args
 {
-   return wkn::strip_view_mode_args(wkn::get_query_args());
+   return view::strip_view_mode_args(view::get_query_args());
 }
 
 sub actions1
@@ -171,7 +170,7 @@ sub actions2
       $parent_notes =~ s:(^|/)[^/]*/?$::;
 
      my $parent_notes_ref = 
-      &wkn::get_cgi_prefix() .
+      &view::get_cgi_prefix() .
       $parent_notes;
       print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
    }
@@ -209,10 +208,10 @@ sub actions3
 
 
 	print <<EOT;
-[ <A HREF="search.cgi?notes_mode=$wkn::define::mode&notes_subpath=${notes_path}">Search</A> ]
+[ <A HREF="search.cgi?notes_mode=$view::define::mode&notes_subpath=${notes_path}">Search</A> ]
 [ <A HREF="user_access.cgi"> User Accounts </a> ]
 EOT
-   print "[ <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
+   print "[ <A HREF=\"" . &view::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
 }
 
 sub print_link_html
@@ -237,8 +236,8 @@ sub print_link_html
 		$web_path="$filedb::define::doc_wpath/${notes_wpath}";
 	}
 
-        return if(defined($wkn::define::skip_files) and $file =~ m/$wkn::define::skip_files/ ); 
-        $file = &wkn::define::filename_filter($file) if(defined(&wkn::define::filename_filter));
+        return if(defined($view::define::skip_files) and $file =~ m/$view::define::skip_files/ ); 
+        $file = &view::define::filename_filter($file) if(defined(&view::define::filename_filter));
 	if ( -f $real_path )
 	{
            my($link, $link_type, $link_text);
@@ -264,28 +263,28 @@ sub print_link_html
               ($file_ext =~ /^\.wiki$/ || $file =~ /^$wiki_name_pattern$/ )&& do
               {
                  $link_type = "wiki";
-                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link = &view::get_cgi_prefix() . $notes_wpath;
                  $link_text = $file_base;
                  last SWITCH;
               };
               $file_ext =~ /^\.(c|h|c\+\+|cxx|hxx|idl|java)$/ && do
               {
                  $link_type = "code";
-                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link = &view::get_cgi_prefix() . $notes_wpath;
                  $link_text = $file;
                  last SWITCH;
               };
               $file_ext =~ /^\.(txt)/ && do
               {
                  $link_type = "txt";
-                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link = &view::get_cgi_prefix() . $notes_wpath;
                  $link_text = $file_base;
                  last SWITCH;
               };
               $file_ext =~ /^\.(html|htm)/ && do
               {
                  $link_type = "html";
-                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link = &view::get_cgi_prefix() . $notes_wpath;
                  $link_text = $file_base;
                  last SWITCH;
               };
@@ -297,14 +296,14 @@ sub print_link_html
               $link = ${web_path};
               $link_text = $file;
            }
-           my $link_icon = &wkn::file_type_icon_tag($link_type);
+           my $link_icon = &view::file_type_icon_tag($link_type);
            print "<A HREF=\"$link\">$link_icon${link_text}</a>";
         }
 	elsif ( -d $real_path )
 	{
 		return 0 if($file =~ /^\..*/ );
 		
-		my($icon_image) = $wkn::define::dir_icon;
+		my($icon_image) = $view::define::dir_icon;
                 if ( -r "${real_path}/.icon")
                 {
 		        if(open(ICONFILE, "$real_path/.icon"))
@@ -317,17 +316,17 @@ sub print_link_html
 		if(defined($icon_image))
 		{
 			print '<A HREF="',
-                        &wkn::get_cgi_prefix() ,
+                        &view::get_cgi_prefix() ,
                         "${notes_wpath}" ,
                         '">';
                         $icon_image =~ m:([^/\.]*)[^/]*$:;
-                        print &wkn::icon_tag("[>]", $icon_image);
+                        print &view::icon_tag("[>]", $icon_image);
                         print "$file</A>\n";
                 }
 		else
 		{
                    print "<A HREF=\"",
-                   &wkn::get_cgi_prefix() ,
+                   &view::get_cgi_prefix() ,
 			"$notes_wpath",
 			'">', $file,
                         "</A>\n";
@@ -361,7 +360,7 @@ sub get_icon
 	
         return () if($dir =~ /^\..*/ );
 	
-        my($icon_image) = $wkn::define::dir_icon;
+        my($icon_image) = $view::define::dir_icon;
         if ( -r "${real_path}/.icon" )
         {
            open(ICONFILE, "$real_path/.icon") || return ();
@@ -369,7 +368,7 @@ sub get_icon
            chomp($icon_image);
            close(ICONFILE);
         }
-        return  "$wkn::define::icons_wpath/$icon_image" if(defined($icon_image));
+        return  "$view::define::icons_wpath/$icon_image" if(defined($icon_image));
         return ();
 }
 
@@ -400,7 +399,7 @@ sub print_icon_img
 	{
 		return if($dir =~ /^\..*/ );
 		
-                my($icon_image) = $wkn::define::dir_icon;
+                my($icon_image) = $view::define::dir_icon;
                 if ( -r "${real_path}/.icon" )
                 {
 		        open(ICONFILE, "$real_path/.icon") || die "icon file";
@@ -412,7 +411,7 @@ sub print_icon_img
                 {
 			$icon_image =~ m:([^/\.]*)[^/]*$:;
                         
-                        print &wkn::icon_tag("[+]", $icon_image);
+                        print &view::icon_tag("[+]", $icon_image);
                         
                         return 1;
                 }
@@ -560,7 +559,7 @@ sub print_dir_file
          }
          else
          {
-            $file_type = $wkn::define::default_file_type;
+            $file_type = $view::define::default_file_type;
          }
       }
       if(defined($file_type) and -f "filter_${file_type}.pl" )
@@ -570,7 +569,7 @@ sub print_dir_file
       }
       else
       {
-         &wkn::print_file($notes_path);
+         &view::print_file($notes_path);
       }
       
       return $notes_path;
@@ -656,34 +655,34 @@ sub get_cgi_prefix
    {
       $prefix = "browse.cgi?";
    }
-   if(defined($wkn::view_mode{"layout"}))
+   if(defined($view::view_mode{"layout"}))
    {
-      $prefix .= ( "layout=" . $wkn::view_mode{"layout"} . "&" );
+      $prefix .= ( "layout=" . $view::view_mode{"layout"} . "&" );
    }
 #   }
 #   else
 #   {
 #      $prefix = "browse_" . 
-#      ( $layout || $wkn::view_mode{"layout"}
-#               || $wkn::define::default_layout )
+#      ( $layout || $view::view_mode{"layout"}
+#               || $view::define::default_layout )
 #            . ".cgi?";
 #   }
          
-   if(defined($wkn::view_mode{"sublayout"}))
+   if(defined($view::view_mode{"sublayout"}))
    {
-      $prefix .= ( "sublayout=" . $wkn::view_mode{"sublayout"} . "&" );
+      $prefix .= ( "sublayout=" . $view::view_mode{"sublayout"} . "&" );
    }
-   if(defined($wkn::view_mode{"theme"}))
+   if(defined($view::view_mode{"theme"}))
    {
-      $prefix .= ( "theme=" . $wkn::view_mode{"theme"} . "&" );
+      $prefix .= ( "theme=" . $view::view_mode{"theme"} . "&" );
    }
-   if(defined($wkn::view_mode{"target"}))
+   if(defined($view::view_mode{"target"}))
    {
-      $prefix .= ( "target=" . $wkn::view_mode{"target"} . "&" );
+      $prefix .= ( "target=" . $view::view_mode{"target"} . "&" );
    }
-   if(defined($wkn::view_mode{"frame"}))
+   if(defined($view::view_mode{"frame"}))
    {
-      $prefix .= ( "frame=" . $wkn::view_mode{"frame"} . "&" );
+      $prefix .= ( "frame=" . $view::view_mode{"frame"} . "&" );
    }
    return $prefix;
 }
@@ -692,7 +691,7 @@ sub get_view_mode
 {
   my($param) = @_;
 
-  my $val = $wkn::view_mode{$param};
+  my $val = $view::view_mode{$param};
   if(! defined($val))
    {
      my $user_info = auth::get_current_user_info();
@@ -704,13 +703,13 @@ sub get_view_mode
 sub set_view_mode
 {
    my($param, $val) = @_;
-   $wkn::view_mode{$param} = $val;
+   $view::view_mode{$param} = $val;
 }
 
 sub unset_view_mode
 {
    my($param) = @_;
-   undef $wkn::view_mode{$param};
+   undef $view::view_mode{$param};
 }
 
 # return the <HEAD> tags to style/css to current theme along with
@@ -718,13 +717,13 @@ sub unset_view_mode
 sub get_style_head_tags
 {
    my $theme = get_view_mode("theme");
-   $theme = $wkn::define::default_theme unless $theme;
-   my $head_tags = (-f "$wkn::define::themes_dir/$theme.css") ?
-   "<LINK HREF=\"$wkn::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
+   $theme = $view::define::default_theme unless $theme;
+   my $head_tags = (-f "$view::define::themes_dir/$theme.css") ?
+   "<LINK HREF=\"$view::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
       MEDIA=\"screen\" type=\"text/css\" >\n" : "";
 
-   $head_tags .= "\n$wkn::define::head_tags"
-      if(defined($wkn::define::head_tags));
+   $head_tags .= "\n$view::define::head_tags"
+      if(defined($view::define::head_tags));
    return $head_tags;
 }
 
@@ -733,7 +732,7 @@ sub icon_tag
    my($text, $icon ) = @_;
    if(defined($icon))
    {
-      return "<img src=\"$wkn::define::icons_wpath/$icon\" $img_border " .
+      return "<img src=\"$view::define::icons_wpath/$icon\" $img_border " .
          "alt=\"$text\"" . ">";
    }
    else
@@ -748,17 +747,17 @@ sub file_type_icon_tag
    my($icon);
    my($text) = "[${file_type}]";
    
-   if(defined($wkn::define::file_icons->{$file_type}))
+   if(defined($view::define::file_icons->{$file_type}))
    {
-      $icon = $wkn::define::file_icons->{$file_type};
+      $icon = $view::define::file_icons->{$file_type};
    }
    else
    {
-      $icon = $wkn::define::file_icons->{"file"};
+      $icon = $view::define::file_icons->{"file"};
    }
    if(defined($icon))
    {
-      return "<img src=\"$wkn::define::icons_wpath/$icon\" $img_border " .
+      return "<img src=\"$view::define::icons_wpath/$icon\" $img_border " .
          "alt=\"$text\"" . ">";
    }
    else
@@ -775,7 +774,7 @@ sub content_header
 sub browse_show_page
 {
    my $layout = get_view_mode("layout");
-   $layout = $wkn::define::default_layout unless($layout);
+   $layout = $view::define::default_layout unless($layout);
    require "browse_${layout}.pl";
    &{"browse_${layout}::show_page"}(@_);
 #   browse::show_page(@_);
@@ -789,9 +788,9 @@ sub persist_view_mode
 
    if( defined($username) )
    {
-      my $theme = $wkn::view_mode{"theme"};
-      my $layout = $wkn::view_mode{"layout"};
-      my ($sublayout) = $wkn::view_mode{"sublayout"};
+      my $theme = $view::view_mode{"theme"};
+      my $layout = $view::view_mode{"layout"};
+      my ($sublayout) = $view::view_mode{"sublayout"};
 
       my($user_info) = auth::get_current_user_info();
       if(defined($theme) && defined($layout) && defined($sublayout) &&
@@ -808,9 +807,9 @@ sub persist_view_mode
             print "Could not modify user information?\n";
          }
       }
-      undef $wkn::view_mode{"theme"};
-      undef $wkn::view_mode{"layout"};
-      undef $wkn::view_mode{"sublayout"};
+      undef $view::view_mode{"theme"};
+      undef $view::view_mode{"layout"};
+      undef $view::view_mode{"sublayout"};
    }
 }
 

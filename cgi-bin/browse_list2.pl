@@ -14,7 +14,7 @@ package browse_list2;
 sub show_page
 {
   my($notes_path, @paths)= @_;
-my $head_tags = wkn::get_style_head_tags();
+my $head_tags = view::get_style_head_tags();
 
 print
 "<HTML>
@@ -69,19 +69,19 @@ my $OPENED_SYMBOL = "[-]";
 my $FILE_SYMBOL = "[.]";
 
 my $target;
-if($wkn::view_mode{"target"})
+if($view::view_mode{"target"})
 {
-   $target = "target=\"$wkn::view_mode{\"target\"}\"";
+   $target = "target=\"$view::view_mode{\"target\"}\"";
 }
 
-my($notes_path_encoded)=wkn::url_encode_path($notes_path);
-my $this_script_prefix = wkn::get_cgi_prefix("list2");
-&wkn::unset_view_mode("target"); # don't want to pass target to main script
-&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
-&wkn::unset_view_mode("sublayout");
-my $script_prefix = wkn::get_cgi_prefix();
+my($notes_path_encoded)=view::url_encode_path($notes_path);
+my $this_script_prefix = view::get_cgi_prefix("list2");
+&view::unset_view_mode("target"); # don't want to pass target to main script
+&view::set_view_mode("layout", &view::get_view_mode("sublayout"));
+&view::unset_view_mode("sublayout");
+my $script_prefix = view::get_cgi_prefix();
 
-my $open_tree = unflatten_tree(wkn::url_unencode_paths(@paths));
+my $open_tree = unflatten_tree(view::url_unencode_paths(@paths));
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
@@ -95,14 +95,14 @@ my($notes_base) = $notes_path eq "" ? "" : "$notes_path/";
 if(-d $toppath)
 {
    # old code that provided a link the higher directory
-#   my($dirfile) = &wkn::dir_file($notes_path);
+#   my($dirfile) = &view::dir_file($notes_path);
 #   if(1 || defined( $dirfile ))
    #   {
 #      my $topname;
 #      print "$LSTART$LITEM_START";
 #      if($notes_path =~ m:(/|^)([^/]+)$:)
 #      {
-#          my($parent_epath) = wkn::url_encode_path($`);
+#          my($parent_epath) = view::url_encode_path($`);
 #          print "<a target=\"_top\" href=\"browse_frames_list.cgi?$parent_epath\">[<-]</a>";
 #          $topname = $2;
 #      }
@@ -143,16 +143,16 @@ if(-d $toppath)
        next if ($filename =~ m:^\.:);
 
        my($name) = $filename;
-       $name = wkn::define::filename_filter($filename) if defined(&wkn::define::filename_filter);
+       $name = view::define::filename_filter($filename) if defined(&view::define::filename_filter);
        next unless ( defined($name));
 
        my $fullpath = join('/', @dirs, $filename);
        #untaint fullpath ( why is it tainted)
        $fullpath =~ m:^:;
        $fullpath = $';
-       my $encoded_subnotes_path = wkn::url_encode_path("$notes_base$fullpath");
+       my $encoded_subnotes_path = view::url_encode_path("$notes_base$fullpath");
 
-       next if ( defined($wkn::define::skip_files) and $filename =~ m/$wkn::define::skip_files/);
+       next if ( defined($view::define::skip_files) and $filename =~ m/$view::define::skip_files/);
 
        print "$indent$LITEM_START";
        
@@ -165,19 +165,19 @@ if(-d $toppath)
              my $save_ref = $dir_ref->{$filename};
              undef($dir_ref->{$filename});
              print "<a href=\"$this_script_prefix$notes_path_encoded&". 
-                join ('&' , wkn::url_encode_paths(flatten_tree($open_tree))) .
-                "\">". &wkn::icon_tag('[-]', 
-                   $wkn::define::opened_icon) .
+                join ('&' , view::url_encode_paths(flatten_tree($open_tree))) .
+                "\">". &view::icon_tag('[-]', 
+                   $view::define::opened_icon) .
                 "</a>$LITEM_START1\n";
              $dir_ref->{$filename} = $save_ref;
           }
-          elsif(@dirs >= $wkn::define::max_depth - 1)
+          elsif(@dirs >= $view::define::max_depth - 1)
           {
 
              print "<table cellspacing=0 cellpadding=0 ><tr><td>" .
 #"<a href=\"browse_$mode.cgi?$encoded_subnotes_path\" $target>" .
-             &wkn::icon_tag('[+]',
-                $wkn::define::dir_icon) .
+             &view::icon_tag('[+]',
+                $view::define::dir_icon) .
 #"</a>" .
                 "</td></tr></table>" .
                 "$LITEM_START1\n";
@@ -187,10 +187,10 @@ if(-d $toppath)
              %{$dir_ref->{$filename}} = ();
              print "<table cellspacing=0 cellpadding=0 ><tr><td>";
              print "<a href=\"$this_script_prefix$notes_path_encoded&" . 
-                join ('&' , wkn::url_encode_paths(flatten_tree($open_tree))) .
+                join ('&' , view::url_encode_paths(flatten_tree($open_tree))) .
                 "\">" .
-                &wkn::icon_tag('[-]', 
-                   $wkn::define::closed_icon) .
+                &view::icon_tag('[-]', 
+                   $view::define::closed_icon) .
                 "</a>";
              print "</td></tr></table>";
              print "$LITEM_START1\n";
@@ -223,15 +223,15 @@ if(-d $toppath)
        elsif($name =~ m:\.(html|txt)$:)
        {
           $name = $`;
-          print &wkn::text_icon('[o]', 
-                   $wkn::define::file_icons->{"file"}) .
+          print &view::text_icon('[o]', 
+                   $view::define::file_icons->{"file"}) .
               "$LITEM_START1<a $target href=\"${script_prefix}$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
        else
        {
-          print &wkn::icon_tag('[o]', 
-                   $wkn::define::file_icons->{"file"}) . "$LITEM_START1<a $target href=\"$filedb::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
+          print &view::icon_tag('[o]', 
+                   $view::define::file_icons->{"file"}) . "$LITEM_START1<a $target href=\"$filedb::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
    }

@@ -63,7 +63,7 @@ if(auth::check_pass($user, auth::get_user_info($user), $password))
       print "Content-type: text/html\n\n";
  print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi\"></head><html>\n";
       print "Now logged in <br>\n";
-      #wkn::browse_show_page();
+      #view::browse_show_page();
       #print "Back to main <a href=\"browse.cgi?theme=$user_info->{\"Theme\"}\">page</a>.\n";
       print "Back to main <a href=\"browse.cgi\">page</a>.\n";
       print "</html>";

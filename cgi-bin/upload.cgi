@@ -4,7 +4,7 @@ use strict;
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'view_define.pl';
 require 'view_lib.pl';
-push(@INC, $wkn::define::auth_inc);
+push(@INC, $view::define::auth_inc);
 require 'auth_lib.pl';
 require 'filedb_lib.pl';
 

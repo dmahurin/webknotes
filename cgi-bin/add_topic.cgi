@@ -15,7 +15,7 @@ require 'auth_lib.pl';
 require 'filedb_lib.pl';
 use CGI qw(:cgi-lib);
 
-my($my_main) = wkn::localize_sub(\&main);
+my($my_main) = view::localize_sub(\&main);
 &$my_main;
 
 sub main
@@ -56,7 +56,7 @@ if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} 
    exit 0;
 }
 
-my $notes_path_encoded = &wkn::url_encode_path($notes_path);
+my $notes_path_encoded = &view::url_encode_path($notes_path);
 $in{'topic_tag'} =~ m:^([^/]*)$:;
 my($topic_tag) = $1;
 
@@ -79,10 +79,10 @@ elsif( $topic_tag eq "")
 else
 {
    $in{'description'} =~ s:\r\n:\n:g; # rid ourselves of the two char newlines
-   if( &wkn::add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
+   if( &view::add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
    {
 
-      #wkn::browse_show_page($notes_path);
+      #view::browse_show_page($notes_path);
       print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$notes_path_encoded\"></head><html><body>\n";
 print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
 print "</body></html>\n";
@@ -237,7 +237,7 @@ $text_type= "wiki" if($text_type eq "wikidir");
 
 if($should_make_dir)
 {
-if( ! &wkn::make_dir($notes_path))
+if( ! &view::make_dir($notes_path))
 {
 #if ( -e "$filedb::define::doc_dir${notes_path}/README" )
 #	print("Notes path already exist. \nTopic not created\n");
@@ -264,42 +264,42 @@ else
 
 if( $text_type eq "text" )
 {
-   &wkn::mkfile(
+   &view::mkfile(
       $should_make_dir ? "$notes_path/README" : "$parent_path/${topic}.txt",
       $message);
 }
 elsif( $text_type eq "pre" )
 {
-   &wkn::mkfile(
+   &view::mkfile(
       $should_make_dir ? "$notes_path/README.html" :
          "$parent_path/${topic}.html",
     "<pre>\n" . $message . "</pre>\n");
 }
 elsif( $text_type eq "wiki" )
 {
-   &wkn::mkfile(
+   &view::mkfile(
       $should_make_dir ? "$notes_path/FrontPage.wiki" :
         "$parent_path/${topic}.wiki",
       $message);
 }
 else
 {
-   &wkn::mkfile("$notes_path/README.html",
+   &view::mkfile("$notes_path/README.html",
       $should_make_dir ? "$notes_path/README.html" :
         "$parent_path/${topic}.html",
       $message);
 }
 
-#&wkn::mail_subscribers($notes_path);
+#&view::mail_subscribers($notes_path);
 my $log = localtime;
 $log .= "\n$source_details\n";
-&wkn::mkfile("$notes_path/.create-log", $log );
-#&wkn::mkfile("$notes_path/.type", $topic_type);
+&view::mkfile("$notes_path/.create-log", $log );
+#&view::mkfile("$notes_path/.type", $topic_type);
 
 my($user) = auth::get_user();
 if( defined($user))
 {
-   &wkn::mkfile("$notes_path/.owner", $user);
+   &view::mkfile("$notes_path/.owner", $user);
 }
 
 return 1;
@@ -321,8 +321,8 @@ foreach $dir (@path_array)
 
 #$footer = "\n\nThis message was generated from subscription to WebKNotes: ${temp_path}
 #To respond to this messages go to:\n" .
-#&wkn::mode_to_scriptprefix($wkn::define::mode). $notes_path . "\n" .
-#"for help, mailto: $wkn::define::admin_email\n";
+#&view::mode_to_scriptprefix($view::define::mode). $notes_path . "\n" .
+#"for help, mailto: $view::define::admin_email\n";
 		open(INPUT, "${full_path}/.subscribed" );
 		while($line = <INPUT>)
 		{
@@ -337,7 +337,7 @@ foreach $dir (@path_array)
 #			&send_email( "KN: /${notes_path}", $to,
 #			$message . $footer,
 #			'WebKNotes <noreplies@rightnow.noncom>',
-#			"WebKNotes Admin <$wkn::define::admin_email>"
+#			"WebKNotes Admin <$view::define::admin_email>"
 #		);
 		}
 		close(INPUT);

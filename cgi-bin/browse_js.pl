@@ -8,11 +8,11 @@ sub show_page
    my($path) = @_;
 
 my $target;
-if($wkn::view_mode{"target"})
+if($view::view_mode{"target"})
 {
-   $target = "target=\"$wkn::view_mode{\"target\"}\"";
+   $target = "target=\"$view::view_mode{\"target\"}\"";
 }
-&wkn::unset_view_mode("target"); # don't want to pass target to main script
+&view::unset_view_mode("target"); # don't want to pass target to main script
 
 print <<"EOT";
 <html>
@@ -40,17 +40,17 @@ sub show
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
-&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
-&wkn::unset_view_mode("sublayout");
+&view::set_view_mode("layout", &view::get_view_mode("sublayout"));
+&view::unset_view_mode("sublayout");
 
-my $OPENED_SYMBOL = &wkn::icon_tag('[-]', 
-                   $wkn::define::opened_icon);
-my $CLOSED_SYMBOL = &wkn::icon_tag('[+]', 
-                   $wkn::define::closed_icon);
-my $FILE_SYMBOL = &wkn::icon_tag('[o]', 
-                   $wkn::define::file_icons->{"file"});
-my $DIR_SYMBOL = &wkn::icon_tag('[o]', 
-                   $wkn::define::dir_icon);
+my $OPENED_SYMBOL = &view::icon_tag('[-]', 
+                   $view::define::opened_icon);
+my $CLOSED_SYMBOL = &view::icon_tag('[+]', 
+                   $view::define::closed_icon);
+my $FILE_SYMBOL = &view::icon_tag('[o]', 
+                   $view::define::file_icons->{"file"});
+my $DIR_SYMBOL = &view::icon_tag('[o]', 
+                   $view::define::dir_icon);
 
 print <<"EOT";
     <script language="JavaScript">
@@ -371,13 +371,13 @@ if(-d $toppath)
       next if ($filename =~ m:(\.bak|~)$:);
 
       my($name) = $filename;
-      $name = wkn::define::filename_filter($filename) if defined(&wkn::define::filename_filter);
+      $name = view::define::filename_filter($filename) if defined(&view::define::filename_filter);
       next unless ( defined($name));
 
       my $fullpath = $dirs[$#dirs] ne "" ? "$dirs[$#dirs]/$filename" : $filename;
-      my $encoded_notes_path = wkn::url_encode_path("$notes_base$fullpath");
+      my $encoded_notes_path = view::url_encode_path("$notes_base$fullpath");
 
-      next if ( defined($wkn::define::skip_files) and $filename =~ m/$wkn::define::skip_files/);
+      next if ( defined($view::define::skip_files) and $filename =~ m/$view::define::skip_files/);
 
       my $struct_prefix = "menu";
       for $count(@counts, $count)
@@ -389,8 +389,8 @@ if(-d $toppath)
       # Dir, traverse down it
       if (-d "$toppath/$fullpath")
       {
-         $link = &wkn::get_cgi_prefix() . $encoded_notes_path;
-         if(defined($wkn::define::max_depth) and $depth >= $wkn::define::max_depth)
+         $link = &view::get_cgi_prefix() . $encoded_notes_path;
+         if(defined($view::define::max_depth) and $depth >= $view::define::max_depth)
          {
             if( opendir(DIRMAX, "$toppath/$fullpath") )
             {
@@ -434,7 +434,7 @@ my $back_link;
 if($notes_name)
 {
    $notes_path =~ m:([^/]*)$:;
-   $back_link = "<a href=\"browse_js.cgi?" . &wkn::url_encode_path($`) ."\">[&lt;-]</a>";
+   $back_link = "<a href=\"browse_js.cgi?" . &view::url_encode_path($`) ."\">[&lt;-]</a>";
 }
 else
 {
@@ -442,9 +442,9 @@ else
    $back_link = '[/]';
 }
 
-my($notes_query_string) = wkn::get_query_string();
+my($notes_query_string) = view::get_query_string();
 
-my $script_prefix = wkn::get_cgi_prefix();
+my $script_prefix = view::get_cgi_prefix();
 
 print <<"EOT";
 // End script hiding-->

@@ -14,12 +14,12 @@ package browse_page;
 sub show_page
 {
 my(@paths) = @_;
-my $head_tags = wkn::get_style_head_tags();
+my $head_tags = view::get_style_head_tags();
 
 print <<"END";
 <HTML>
 <head>
-<title>$wkn::define::index_title</title>
+<title>$view::define::index_title</title>
 $head_tags
 </head>
 <BODY class="topics-back">
@@ -43,15 +43,15 @@ sub show
          return(0);
       }
    }
-   &wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
+   &view::set_view_mode("layout", &view::get_view_mode("sublayout"));
 
 
    @notes_paths=("/") unless(@notes_paths);
 
-if (defined($wkn::define::index_header))
+if (defined($view::define::index_header))
 {
    print "<table border=0 cellpadding=8><tr><td class=\"topics_header\">\n",
-   $wkn::define::index_header ,
+   $view::define::index_header ,
    "</td></tr></table>\n";
    
 }
@@ -94,24 +94,24 @@ foreach $arg (@notes_paths)
    print $css_tables->trtd_begin("topic-text") . "\n";
    
    print "<table><tr>";
-   my $icon = wkn::get_icon($topic);
+   my $icon = view::get_icon($topic);
       if( defined($icon) )
       {
          print "<td>";
-          my $etopic = wkn::url_encode_path($topic);
+          my $etopic = view::url_encode_path($topic);
           print "<a href=\"" ,
-             &wkn::get_cgi_prefix() , 
+             &view::get_cgi_prefix() , 
              $etopic . "\">\n";
           print "<img src=\"$icon\" alt=\"$icon\"></a>\n";
           print "</td>";
       }
       print "<td>";
-      &wkn::print_dir_file($topic);
+      &view::print_dir_file($topic);
       print "</td></tr></table>";
       print $css_tables->trtd_end() . "\n";
       
       print $css_tables->trtd_begin("topic-listing") . "\n";
-      &wkn::list_html($topic);
+      &view::list_html($topic);
       print $css_tables->trtd_end() . "\n";
       
       print $css_tables->table_end() . "\n";
@@ -124,10 +124,10 @@ print "</tr>\n";
 
 print "</table>\n";
 
-if (defined ($wkn::define::index_footer))
+if (defined ($view::define::index_footer))
 {
 print "<table border=0 cellpadding=8><tr><td class=\"topics-footer\">\n",
-   "$wkn::define::index_footer\n",
+   "$view::define::index_footer\n",
    "</td></tr></table>\n";
 }
 
