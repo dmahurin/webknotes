@@ -71,7 +71,7 @@ unless(defined($file))
     }
 }
 
-unless($file =~ m:^[^\.]+(\.(txt|html?|wiki))?$:)
+unless($file =~ m:^[^\.]+(\.(txt|html?|wiki|htxt))?$:)
 {
    print "Not text file\n";
    exit(0);
@@ -137,11 +137,11 @@ my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $m
    }
    elsif($file =~ m:\.wiki?$: or $file =~ m:^([A-Z][a-z]+){2,}$:)
    {
-      $header = "\n----!Modified $date $userstr\n";
+      $header = "\n\n----!Modified $date $userstr\n";
    }
    else #text
    {
-      $header = "\n---- Modified $date $userstr ----\n";
+      $header = "\n\n---- Modified $date $userstr ----\n";
    }
    $header .= "\n";
    

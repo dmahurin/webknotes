@@ -39,20 +39,7 @@ if( ! auth::check_current_user_file_auth(
 if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} eq "")
 {
    my $description;
-#?   if(defined($in{'copy'}) and $in{copy} ne ""  && ! defined($in{'description'}))
- #  {
-#      my $copyfile = &auth::path_check("$notes_path/$in{'copy'}");
-#      $description = "";
-#      if(open(COPYFILE, "$filedb::define::doc_dir/$copyfile/README.html"))
-#      {
-#         while(<COPYFILE>){$description .= $_;}
-#         close(COPYFILE);
-#      }
-#   }
-#   else
-   {
-      $description = $in{description};
-   }
+   $description = $in{description};
    print_form($in{'topic_tag'}, $in{'text_type'}, $description);
    exit 0;
 }
@@ -97,23 +84,33 @@ print "</body></html>\n";
 
 sub print_form
 {
-  my($topic_tag, $text_type, $body) = @_;
-  my(%sel_text_type);
-  my($user) = auth::get_user();
-  $sel_text_type{$text_type} = "selected";
-if( ! -e "$filedb::define::doc_dir/$notes_path" )
-{
-   if( $notes_path =~ m:/([^/]+)$: )
+   my($topic_tag, $text_type, $body) = @_;
+   my(%sel_text_type);
+   my($user) = auth::get_user();
+   if(filedb::is_file($notes_path))
    {
-      $notes_path = $`;
-      $topic_tag = $1;
+      print "File exists\n";
+      exit(0);
    }
-   else
+   elsif(! filedb::is_dir($notes_path))
    {
-      $topic_tag = $notes_path;
-      $notes_path = "";
+      if( $notes_path =~ m:/([^/]+)$: )
+      {
+         $notes_path = $`;
+         $topic_tag = $1;
+      }
+      else
+      {
+         $topic_tag = $notes_path;
+         $notes_path = "";
+      }
    }
-}
+   elsif(! defined($text_type))
+   {
+   	$text_type = filedb::default_type($notes_path);
+   }
+   $sel_text_type{$text_type} = "selected"
+     if(defined($text_type));
 
 print <<"EOT";
 <HTML><HEAD>
@@ -125,8 +122,17 @@ print <<"EOT";
 Text type<SELECT  WIDTH=33 NAME=\"text_type\">
 <OPTION VALUE=\"pre\" $sel_text_type{pre}>Preformatted Text(&lt;pre&gt;)
 <OPTION VALUE=\"html\"  $sel_text_type{html} >HTML
-<OPTION VALUE=\"wiki\"  $sel_text_type{wiki} >Wiki
-<OPTION VALUE=\"wikidir\"  $sel_text_type{wikidir} >SubWiki(dir)
+<OPTION VALUE=\"wikidir\"  $sel_text_type{wikidir} >Wiki Dir(.wiki)
+EOT
+
+print "<OPTION VALUE=\"wiki\"  $sel_text_type{wiki} >Wiki\n"
+	if( $text_type eq "wiki");
+
+print "<OPTION VALUE=\"htxtdir\" $sel_text_type{htxtdir}>HText Dir(.htxt)\n";
+print "<OPTION VALUE=\"htxt\" $sel_text_type{htxt}>HText(.htxt)\n"
+	if( $text_type eq "htxt");
+
+print <<"EOT";
 <OPTION VALUE=\"text\" $sel_text_type{txt}>Text(.txt)
 </SELECT>
 
@@ -142,7 +148,6 @@ EOT
 #<OPTION VALUE=\"answer\">Answer
 #<OPTION VALUE=\"topic\">Topic
 #</SELECT>
-#- (mailto:, http:, and &ltA HREF recognized )<br>
 
 print "WARNING: You are not logged in. You will NOT be able to edit this later.\n" unless(defined($user));
 
@@ -201,8 +206,9 @@ $notes_path =~ s#^/*##g;
 #}
 
 my $should_make_dir = 1;
-$should_make_dir = 0 if ($text_type eq "wiki");
+$should_make_dir = 0 if ($text_type eq "wiki" or $text_type eq "htxt");
 $text_type= "wiki" if($text_type eq "wikidir");
+$text_type= "htxt" if($text_type eq "htxtdir");
 
 if($should_make_dir)
 {
@@ -246,6 +252,11 @@ elsif( $text_type eq "wiki" )
 {
    $file_ext = ".wiki";
    $default_file = "FrontPage.wiki";
+}
+elsif( $text_type eq "htxt" )
+{
+   $file_ext = ".htxt";
+   $default_file = "index.htxt";
 }
 else
 {

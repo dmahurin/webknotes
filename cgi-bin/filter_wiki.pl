@@ -5,27 +5,90 @@ use strict;
 package filter_wiki;
 
 require 'view_define.pl';
+require 'link_translate.pl';
+require 'filedb_lib.pl';
+
 
 my $TranslationToken = "\@\@\@TOKEN\@\@\@";
 
 my $linkWord = "[A-Z][a-z,0-9]+";
 my $LinkPattern = "($linkWord){2,}";
 
-sub EscapeMetaCharacters {
-  
+sub EscapeMetaCharacters 
+{
   s/&/&amp;/g;
   s/</&lt;/g;
   s/>/&gt;/g;
 }
-# --------------------------------------------------------  EscapeMetaCharacters
 
-sub InPlaceUrl {
-  my($InPlaceUrls, $num) = (@_);
-  my($ref) = ${$InPlaceUrls}[$num];
-  "<a href=\"$ref\">$ref</a>";
+sub InPlaceUrl 
+{
+   my($InPlaceUrls, $path, $num) = (@_);
+
+   return AsAnchor($path, ${$InPlaceUrls}[$num]);
 }
 
-# --------------------------------------------------------  InPlaceUrl
+sub AsAnchor
+{
+   my($path, $ref) = @_;
+   my $link;
+
+   if( $ref =~ m:^[a-z]+\://[^/]+:)
+   {
+      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
+      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
+      $link = "<a href=\"$ref\">$ref</a>";
+   }
+   elsif( filedb::is_dir($path, $ref))
+   {
+      $ref =~ m:([^/]+)$:;
+      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $1);
+   }
+   elsif( filedb::is_file($path, $ref))
+   {
+      $ref =~ m:([^/]+)$:;
+      my $text = $1;
+      if($text =~ m:\.(htm?|txt|wiki|htxt)$:)
+      {
+         $text = $`;
+      }
+
+      if($text =~ m:\.(url)$:)
+      {
+         $text = $`;
+         my $url = filedb::get_file($path,$ref);
+         $url =~ s:\n::g;
+         $link = "<a href=\"$url\">$text</a>";
+      }
+      else
+      {
+         $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
+      }
+   }
+   elsif( filedb::is_file($path, "${ref}.wiki"))
+   {
+      $ref =~ m:([^/]+)$:;
+      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,"$ref.wiki"), $1);
+   }
+   else
+   {
+      if($ref =~ m:/([^/]+)$:) # relative
+      {
+         $ref = $1;
+	 $path .= "/$`";
+         # collapse ../dir
+         while($path =~ s~(^|/+)(?!\.\./)[^/]+/+\.\.($|/)~$1~g){}
+      }
+
+      my($path_encoded) = view::url_encode_path($path);
+      my($topic) = view::url_encode_path($ref); 
+      my($add_url) =  "add_topic.cgi?notes_path=${path_encoded}&text_type=wiki&topic_tag=";
+
+      $link = "<a href=\"${add_url}$topic\">$ref (?)<\/a>";
+   }
+   return $link;
+}
+
 
 sub EmitCode {
   my($codes, $code, $depth) = @_;
@@ -50,10 +113,12 @@ sub file_exists
       if( -e "$filedb::define::doc_dir/$notes_path/$file");
    return "${file}.wiki"
       if( -f "$filedb::define::doc_dir/$notes_path/${file}.wiki");
+   return "${file}.htxt"
+      if( -f "$filedb::define::doc_dir/$notes_path/${file}.htxt");
    return ();
 }
 
-sub AsAnchor {
+sub AsAnchorx {
   my($notes_path, $title) = @_;
   my($temp);
   my($notes_path_encoded) = view::url_encode_path($notes_path);
@@ -62,21 +127,9 @@ sub AsAnchor {
 
   my($file) = file_exists($notes_path, $title);
   defined($file)
-  ? "<a hRef=\"${view_url}$file\">$title<\/a>"
+  ? "<a href=\"${view_url}$file\">$title<\/a>"
     : "$title<a href=\"${add_url}$title\">?<\/a>";
 }
-# --------------------------------------------------------  AsAnchor
-
-sub AsLink {
-  my($num) = (@_);
-  my($ref) = "temp" ; #$old{"r$num"};
-  defined $ref
-    ? ($ref =~ /\.gif$/ 
-       ? "<img src=\"$ref\">" 
-       : "<a hreF=\"$ref\">[$num]<\/a>")
-      : "[$num]";
-}
-# --------------------------------------------------------  AsLink
 
 sub FilterBodyText {
    my ($notes_path, $text) = @_;
@@ -89,17 +142,23 @@ sub FilterBodyText {
     my $InPlaceUrl=0;
     my $code = "";
     if(s/^([\t\;]+)([^\*].+):/<dt>$2<dd>/)  { $out .= &EmitCode("DL", length $1);}
-#    while (s/(\[{1,2}([a-z]{3,}:[\$-:=\?-Z_a-z~]+[\$-+\/-Z_a-z~-])\]/[<a href="$1">$1<\/a>/) {
+
+    # change << >> markup to [[ ]]
+    s/<<([^>\]]+)>>/[[$1]]/g;
+    
+    # replace [[ ]] links with a URL translation token
+    while(s/\[\[([^\]]+)\]\]/$TranslationToken$InPlaceUrl$TranslationToken/)
+    {
+      $InPlaceUrls[$InPlaceUrl] = $1;
+    }
+
+    # replace raw url with URL markers
+#    while (s/\[\[([a-z]{3,}:[\$-:=\?-Z_a-z~]+[\$-+\/-Z_a-z~-])\]/\[$TranslationToken$InPlaceUrl$TranslationToken\]/) {
+#      $InPlaceUrls[$InPlaceUrl++] = $1;
 #    }
-    while (s/\[\[([a-z]{3,}:[\$-:=\?-Z_a-z~]+[\$-+\/-Z_a-z~-])\]/\[$TranslationToken$InPlaceUrl$TranslationToken\]/) {
+    while (s/\b((ftp|http|mailto):[\$-:=\?-Z_a-z~]+[\$-+\/-Z_a-z~-])/$TranslationToken$InPlaceUrl$TranslationToken/) {
       $InPlaceUrls[$InPlaceUrl++] = $1;
     }
-    while (s/\b\b((ftp|http|mailto):[\$-:=\?-Z_a-z~]+[\$-+\/-Z_a-z~-])/$TranslationToken$InPlaceUrl$TranslationToken/) {
-      $InPlaceUrls[$InPlaceUrl++] = $1;
-    }
-
-
-
 
     my $empty = s/^\s*$/<p>/;
 #    s/^\s*$/<p>/                  && ($code = '...');             
@@ -107,7 +166,7 @@ sub FilterBodyText {
 #    /^\s*$/ && $code ne "P" &&  $out .= &EmitCode(\@codes,"P", 0);
     if(s/^\;:(\s+)//) { $out .= &EmitCode(\@codes,"blockquote", length $1);}
    
-#below is a hack, put it in a function
+#below is a hack, put this in a function
     if(s/^([\*\#]*\*(?!\#))/<li>/) { $out .= &EmitCode(\@codes,"UL", length $1);}
     if(s/^([\*\#]*\#)/<li>/) { $out .= &EmitCode(\@codes,"OL", length $1);}
 
@@ -126,9 +185,8 @@ sub FilterBodyText {
     if(s/^-----*(\!.*)?/<hr>/ ) { $out .= &EmitCode(\@codes, "", 0); }
     s/^!(.*)//;
     s/\b($LinkPattern)\b/&AsAnchor($notes_path,$1)/geo;
-    s/\[(\d+)\]/&AsLink($1)/geo;
-    s/$TranslationToken(\d+)$TranslationToken/&InPlaceUrl(\@InPlaceUrls,$1)/geo;
-#    s/\[Search\]/$SearchForm/;
+    s/$TranslationToken(\d+)$TranslationToken/&InPlaceUrl(\@InPlaceUrls,$notes_path,$1)/geo;
+    
     $out .= $_;
     $out .= "<br>" unless($empty || @codes);
     $out .= "\n";

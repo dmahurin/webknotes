@@ -34,30 +34,32 @@ sub path_dir
 # return default file in directory
 sub path_file
 {
-	my($path) = @_;
-
-	my($dir) = "$filedb::define::doc_dir/$path";
-	return $path if( -f $dir);
-	return () unless ( -d $dir);
-
-	return "$path/index.html" if ( -f "$dir/index.html" );
-	return "$path/index.htm" if ( -f "$dir/index.htm" );
-	return "$path/FrontPage" if ( -f "$dir/FrontPage" );
-	return "$path/FrontPage.wiki" if ( -f "$dir/FrontPage.wiki" );
-	return "$path/HomePage" if ( -f "$dir/HomePage" );
-	return "$path/README.html" if ( -f "$dir/README.html" );
-	return "$path/README" if ( -f "$dir/README" );
-	return "$path/README.txt" if ( -f "$dir/README.txt" );
-        return ();
+   my($path) = @_;
+   
+   my($dir) = "$filedb::define::doc_dir/$path";
+   return $path if( -f $dir);
+   return () unless ( -d $dir);
+   
+   return "$path/index.html" if ( -f "$dir/index.html" );
+   return "$path/index.htm" if ( -f "$dir/index.htm" );
+   return "$path/FrontPage" if ( -f "$dir/FrontPage" );
+   return "$path/FrontPage.wiki" if ( -f "$dir/FrontPage.wiki" );
+   return "$path/HomePage" if ( -f "$dir/HomePage" );
+   return "$path/README.html" if ( -f "$dir/README.html" );
+   return "$path/README.htxt" if ( -f "$dir/README.htxt" );
+   return "$path/index.htxt" if ( -f "$dir/index.htxt" );
+   return "$path/README" if ( -f "$dir/README" );
+   return "$path/README.txt" if ( -f "$dir/README.txt" );
+   return ();
 }
 sub get_mtime
 {
    my($path) = @_;
    my $dir_file = path_file($path);
    unless($dir_file) { $dir_file = $path }
-  my($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-$atime,$mtime,$ctime,$blksize,$blocks)
-   = stat(get_full_path($dir_file));
+   my($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+      $atime,$mtime,$ctime,$blksize,$blocks)
+      = stat(get_full_path($dir_file));
    return $mtime;
 }
 
@@ -72,10 +74,28 @@ sub default_file
    }
    return () unless ( -d $dir);
 
-   for my $index ( "index.html", "index.htm", "FrontPage", "FrontPage.wiki", "HomePage", "README.html", "README", "README.txt" )
+   for my $index ( "index.html", "index.htm", "FrontPage", "FrontPage.wiki", "HomePage", "README.html", "README", "README.txt", "README.htxt", "index.htxt" )
    {
       return $index if (-f "$dir/$index");
    }
+   return ();
+}
+
+sub default_type
+{  
+   my($path) = @_;
+   my($dir) = get_full_path($path);
+
+   return "html" if ( -f "$dir/index.html" );
+   return "html" if ( -f "$dir/index.htm" );
+   return "wiki" if ( -f "$dir/FrontPage" );
+   return "wiki" if ( -f "$dir/FrontPage.wiki" );
+   return "wiki" if ( -f "$dir/HomePage" );
+   return "html" if ( -f "$dir/README.html" );
+   return "htxtdir" if ( -f "$dir/README.htxt" );
+   return "htxt" if ( -f "$dir/index.htxt" );
+   return "txt" if ( -f "$dir/README" );
+   return "txt" if ( -f "$dir/README.txt" );
    return ();
 }
 

@@ -98,9 +98,9 @@ sub get_user
       return ();
    }
    my($vcrypt,$addr) = split(/:/, $line);
-   if($ENV{'REMOTE_ADDR'} ne $addr or pcrypt1($vword) ne $vcrypt )
+   if($ENV{'REMOTE_ADDR'} ne $addr or pcrypt1($vword) ne $vcrypt)
    {
-      print "mismatch of remote address and session address\n";
+      print "mismatch of remote address and session key\n";
       return ();
    }
    $current_user = $user;

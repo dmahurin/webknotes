@@ -34,19 +34,19 @@ sub smart_ref
           return $filedb::define::doc_wpath . '/' . $path_enc . $ref_enc;
        }
    }
-   elsif($path_enc =~ m:/[^/]*$:) # strip off README.html or xxx.html
+   elsif($path_enc =~ m:/[^/]*\.(htm?|wiki)$:) # strip off README.html or xxx.html
    {
       $ref = "$filedb::define::doc_wpath/$`/$ref";
    }
    else
    {
-      $ref = "$filedb::define::doc_wpath/$ref";
+      $ref = "$filedb::define::doc_wpath/$path_enc/$ref";
    }
    
    #collapse dir/.. to nothing
    while($ref =~ s~(^|/+)(?!\.\./)[^/]+/+\.\.($|/)~$1~g){}
 
-   if($view::define::no_browse_links or $ref =~ m:\.([^\.]*)$: and ! ($1 =~ m:^(txt|html|htm)$:))  
+   if($view::define::no_browse_links or $ref =~ m:\.([^\.]*)$: and ! ($1 =~ m:^(txt|html|htm|htxt|wiki)$:))  
    {
       return view::url_encode_path($ref);
    }

@@ -60,10 +60,10 @@ for $username (split(',', $group_info->{"Members"}))
    my($username_more) = $username;
    if(defined($user_info->{"Name"}))
    {
-   print "<tr><td>$user_info-?{\"Name\"}</td>
+   print "<tr><td>$user_info->{\"Name\"}</td>
          <td>$username_more </td>
-<td><a href=\"mailto:$user_info-?{\"Email\"}\">$user_info-?{\"Email\"}</a></td>
-<td><a href=\"$user_info-?{\"Webpage\"}\">$user_info-?{\"Webpage\"}</a></td></tr>";
+<td><a href=\"mailto:$user_info->{\"Email\"}\">$user_info->{\"Email\"}</a></td>
+<td><a href=\"$user_info->{\"Webpage\"}\">$user_info->{\"Webpage\"}</a></td></tr>";
    }
    else
    {

@@ -59,7 +59,10 @@ $message .= "Content-Base: \"$http_base\"\n";
 $message .= "\n";
 
 $message .= "<hr>\n";
-$message .= view::create_modification_string(filedb::get_mtime($temp_path), filedb::get_hidden_data($temp_path, "owner"), filedb::get_hidden_data($temp_path, "group"));
+$message .= view::create_modification_string(filedb::get_mtime($temp_path));
+my($user) = auth::get_user();
+$user = "Unknown" unless(defined($user) and $user ne "");
+$message .= "by $user";
 
 my $message_end = "--${boundary}--\n";
 

@@ -160,12 +160,20 @@ sub actions1
    my( $notes_path ) = @_;
 }
 
+sub is_index
+{
+   my($path) = @_;
+   my($dir_file) = filedb::default_file($path);
+   return(defined($dir_file) && !($dir_file =~ m:^README:));
+}
+
+
 sub actions2
 {
    my($notes_path) = @_;
 
+#   my($dir_file) = filedb::default_file($notes_path);
 
-#   my($dir_file) = filedb::path_file($notes_path);
 #print "dir file : $dir_file,$notes_path\n";
 #   $notes_path = filedb::path_dir($notes_path);
    
@@ -184,11 +192,17 @@ sub actions2
    {
       print "[ <A HREF=\"append.cgi#text?path=$notes_path_encoded\">Append</a> text ] \n";
    }
+
+  
+unless(is_index($notes_path))
+{
+   print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">Attach New Topic</A> ]\n";
+}
+
    if( auth::check_current_user_file_auth('s', $notes_path) )
    {
       print "[ <A HREF=\"subscribe.cgi?path=$notes_path_encoded\">Subscribe</a> ] \n";
    }
-   print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">New Topic</A> ]\n";
       print "[ Raw \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
@@ -210,10 +224,12 @@ sub actions2
 sub actions3
 {
         my( $notes_path ) = @_;
+        my($notes_path_encoded) = url_encode_path($notes_path);
+
 
 
 	print <<EOT;
-[ <A HREF="search.cgi?notes_subpath=${notes_path}">Search</A> ]
+[ <A HREF="search.cgi?notes_subpath=${notes_path_encoded}">Search</A> ]
 [ <A HREF="user_access.cgi"> User Accounts </a> ]
 EOT
    print "[ <A HREF=\"" . &view::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
@@ -253,13 +269,14 @@ sub print_link_html
            {
               last SWITCH if ($file =~ m/^\./ );
               # skip the index files
-              last
-                 if ($file =~ m:^(index.html|index.htm|HomePage|FrontPage.wiki|FrontPage|README|README.txt)$: );
+#              last
+#                 if ($file =~ m:^(index.html|index.htm|HomePage|FrontPage.wiki|FrontPage|README|README.txt|README.htxt|index.htxt)$: );
 
               $file_ext =~ /^\.url/ && do
               {
                  $link_type = "url";
                  $link = filedb::get_file($notes_path);
+		 $line =~ s:\n::g;
                  $link_text = $file_base;
                  last SWITCH;
               };
@@ -277,16 +294,23 @@ sub print_link_html
                  $link_text = $file;
                  last SWITCH;
               };
-              $file_ext =~ /^\.(txt)/ && do
+              $file_ext =~ /^\.(html|htm)/ && do
               {
-                 $link_type = "txt";
+                 $link_type = "html";
                  $link = &view::get_cgi_prefix() . $notes_wpath;
                  $link_text = $file_base;
                  last SWITCH;
               };
-              $file_ext =~ /^\.(html|htm)/ && do
+              $file_ext =~ /^\.(htxt)/ && do
               {
-                 $link_type = "html";
+                 $link_type = "htxt";
+                 $link = &view::get_cgi_prefix() . $notes_wpath;
+                 $link_text = $file_base;
+                 last SWITCH;
+              };
+              $file_ext =~ /^\.(txt)/ && do
+              {
+                 $link_type = "txt";
                  $link = &view::get_cgi_prefix() . $notes_wpath;
                  $link_text = $file_base;
                  last SWITCH;
@@ -347,7 +371,7 @@ sub print_icon_img
 	
 	if ( filedb::is_dir($notes_path) )
 	{
-		return if($dir =~ /^\..*/ );
+		return if($notes_path =~ /^\..*/ ); # needed?
 		
 		my($icon_image) = filedb::get_hidden_data($notes_path, "icon");
 		$icon_image = $view::define::dir_icon unless(defined($icon_image));
@@ -377,6 +401,7 @@ sub list_files_html
    return 0 if( $dfile eq "HomePage");
    return 0 if( $dfile eq "index.html");
    return 0 if( $dfile eq "index.htm");
+   return 0 if( $dfile eq "index.htxt");
 
    for my $file (filedb::get_directory_list($notes_path))
    {
@@ -748,7 +773,7 @@ sub read_page_template
    if(open(F, $filename))
    {
       local $/ = undef;
-      $text = <F>;
+      my $text = <F>;
       close(F);
       if($text =~ m:<\%\$page\%/>:)
       {

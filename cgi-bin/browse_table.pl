@@ -68,10 +68,13 @@ print $css_tables->trtd_begin("topic-actions") . "\n";
 view::actions2($notes_path);
 print $css_tables->trtd_end() . "\n";
 
+unless(view::is_index($notes_path))
+{
 print $css_tables->trtd_begin("topic-listing") . "\n";
 &view::list_files_html($notes_path);
 print "&nbsp;" unless &view::list_dirs_html($notes_path);
 print $css_tables->trtd_end() . "\n";
+}
 
 print $css_tables->table_end() . "\n";
 

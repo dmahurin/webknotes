@@ -70,7 +70,7 @@ unless(defined($file))
     }
 }
 
-unless( $file =~ m:^[^\.]+$: || $file =~ m:^[^\.]+(\.(txt|html?|wiki))?$: )
+unless( $file =~ m:^[^\.]+$: || $file =~ m:^[^\.]+(\.(url|txt|html?|wiki|htxt))?$: )
 {
    print "Not text file\n";
    exit(0);
@@ -100,7 +100,7 @@ if(! auth::check_current_user_file_auth( $acc_flag, $dir ) )
 
 if( ! defined($text) )
 {
-   print( "FILE: $path <br>\n");
+   print( "FILE: $dir/$file <br>\n");
    print <<"EOT";
 <form action="$this_cgi" method="post">
 <pre>
