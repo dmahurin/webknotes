@@ -36,25 +36,41 @@ sub AsAnchor
    if( $ref =~ m:^[a-z]+\://[^/]+:)
    {
       #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
+      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
       $link = "<a href=\"$ref\">$ref</a>";
    }
-   elsif( filedb::is_dir($path, $ref))
+   else
    {
+      my($text);
+      if($ref =~ m:\|:)
+      {
+         $ref = $`;
+         $text = $';
+      }
+   if( filedb::is_dir($path, $ref))
+   {
+      unless(defined($text))
+      {
       $ref =~ m:([^/]+)$:;
-      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $1);
+      $text = $1; 
+      }
+      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
    }
    elsif( filedb::is_file($path, $ref))
    {
       $ref =~ m:([^/]+)$:;
-      my $text = $1;
-      if($text =~ m:\.(htm?|txt|wiki|htxt)$:)
+      my $file = $1;
+      unless(defined($text))
+      { 
+         $text = $file;
+      if($text =~ m:\.(htm?|txt|wiki|htxt|url)$:)
       {
          $text = $`;
       }
+      }
 
-      if($text =~ m:\.(url)$:)
+      if($file =~ m:\.(url)$:)
       {
-         $text = $`;
          my $url = filedb::get_file($path,$ref);
          $url =~ s:\n::g;
          $link = "<a href=\"$url\">$text</a>";
@@ -66,11 +82,20 @@ sub AsAnchor
    }
    elsif( filedb::is_file($path, "${ref}.wiki"))
    {
+      unless(defined($text))
+      {
       $ref =~ m:([^/]+)$:;
-      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,"$ref.wiki"), $1);
+      $text = $1;
+      }
+      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,"$ref.wiki"), $text);
    }
    else
    {
+      unless(defined($text))
+      {
+         $ref =~ m:([^/]+)$:;
+         $text = $1;
+      }
       if($ref =~ m:/([^/]+)$:) # relative
       {
          $ref = $1;
@@ -81,9 +106,11 @@ sub AsAnchor
 
       my($path_encoded) = view::url_encode_path($path);
       my($topic) = view::url_encode_path($ref); 
-      my($add_url) =  "add_topic.cgi?notes_path=${path_encoded}&text_type=wiki&topic_tag=";
+      my($bprefix, $bsuffix) = &view::get_cgi_prefix("");
+      my($add_url) =  "${bprefix}add_topic.cgi?notes_path=${path_encoded}&text_type=wiki&topic_tag=$bsuffix";
 
-      $link = "<a href=\"${add_url}$topic\">$ref (?)<\/a>";
+      $link = "<a href=\"${add_url}$topic\">$text (?)<\/a>";
+   }
    }
    return $link;
 }
