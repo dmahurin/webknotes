@@ -55,7 +55,7 @@ sub AsAnchor {
   my($temp);
   my($notes_path_encoded) = view::url_encode_path($notes_path);
   my($view_url) =  &view::get_cgi_prefix() . $notes_path_encoded . "/";
-  my($add_url) =  "http://web/cgi-bin/wkn/add_topic.cgi?notes_path=${notes_path_encoded}&text_type=wiki&topic_tag=";
+  my($add_url) =  "add_topic.cgi?notes_path=${notes_path_encoded}&text_type=wiki&topic_tag=";
 
   my($file) = file_exists($notes_path, $title);
   defined($file)
@@ -107,9 +107,9 @@ sub PrintBodyText {
     s/^([\*\#]*\*(?!\#))/<li>/              && &EmitCode(\@codes,"UL", length $1);
     s/^([\*\#]*\#)/<li>/              && &EmitCode(\@codes,"OL", length $1);
 
-    s/^(\t+)\*/<li>/              && &EmitCode(\@codes,"UL", length $1);
-    s/^(\t+)\#/<li>/              && &EmitCode(\@codes,"OL", length $1);
-    s/^(\t+)\d+\.?/<li>/          && &EmitCode(\@codes,"OL", length $1);
+    s/^(\s+)\*/<li>/              && &EmitCode(\@codes,"UL", length $1);
+    s/^(\s+)\#/<li>/              && &EmitCode(\@codes,"OL", length $1);
+    s/^(\s+)\d+\.?/<li>/          && &EmitCode(\@codes,"OL", length $1);
     /^\s/                        && &EmitCode(\@codes,"PRE", 1);
     /^$/                  &&   &EmitCode(\@codes,"", 0);
 #    $code                           || &EmitCode(\@codes,"", 0);
