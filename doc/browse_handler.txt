@@ -1,0 +1,10 @@
+To use WebKNotes as a DirectoryIndex and file handler in Apache,
+add the following section. "/docs" should correspond with the
+top level directory that WebKNote handles (doc_wpath).
+
+<Location "/docs">
+DirectoryIndex /cgi-perl/wkn/index_browse.cgi
+AddHandler webknotes .wiki
+AddHandler webknotes .htxt
+Action webknotes /cgi-perl/wkn/index_browse.cgi
+</Location>
