@@ -216,8 +216,8 @@ if(defined($auth::define::private_dir && !defined ($filedb::define::private_dir)
    undef $auth::define_private_dir;
 }
 
-unless(-d $filedb::define::private_dir or 
-'y' eq prompt_default("Create private web dir", "y", "(y|n)") )
+if(prompt_default("Create private web dir",
+(-d $filedb::define::private_dir ) ? "n" : "y", "(y|n)"))
 {
    if(mkdir($filedb::define::private_dir,0700))
    {
