@@ -331,6 +331,11 @@ sub list_files_html
 {
    my($notes_path) = @_;
    my($rtn) = 0;
+
+   # If you have index.html, not README.html, assume you want list files
+   return 0 if( -f "$auth::define::doc_dir/$notes_path/index.html");
+   return 0 if( -f "$auth::define::doc_dir/$notes_path/index.htm");
+
    return 0 unless
    opendir(DIR, "$auth::define::doc_dir/$notes_path") || return;
    while(defined($file = readdir(DIR)))
@@ -664,32 +669,32 @@ sub print_file
 # translate a href's to work as if just the html file was loaded
 sub smart_ref
 {
-   my( $file_path, $uref ) = @_;
-   if($uref =~ m:^#: )
+   my( $path_enc, $ref_enc ) = @_;
+   if($ref_enc =~ m:^#: )
    {
-      return $uref;
+      return $ref_enc;
    }
    
-   return $uref if ( $uref =~ m/^\w+:/ );
-   return $uref if ( $uref =~ m:^/: );
-   my $ref = url_unencode_path($uref);
+   return $ref_enc if ( $ref_enc =~ m/^\w+:/ );
+   return $ref_enc if ( $ref_enc =~ m:^/: );
+   my $ref = url_unencode_path($ref_enc);
 
    # ??
    if($ref =~ m:#: )
    {
-      $ref = "$auth::define::doc_wpath/$file_path$ref";
+      $ref = "$auth::define::doc_wpath/$path_enc$ref";
    }
    elsif( $ref =~ m:\.cgi(\?|$): ) # cgi script
    #elsif( $ref =~ m:^[^/]+\.cgi: ) # local cgi script
    {
-       if( -f "$auth::define::doc_dir/$file_path/$ref")
+       if( -f "$auth::define::doc_dir/$path_enc/$ref")
    {
-       $file_path =~ s:^/::;
-       $file_path =~ s:(/|^)[^/]*$:$1:; # strip off file
-       return $auth::define::doc_wpath . '/' . url_encode_path($file_path) . $uref;
+          $path_enc =~ s:^/::;
+          $path_enc =~ s:(/|^)[^/]*$:$1:; # strip off file
+          return $auth::define::doc_wpath . '/' . $path_enc . $ref_enc;
        }
    }
-   elsif($file_path =~ m:/[^/]*$:) # strip off README.html or xxx.html
+   elsif($path_enc =~ m:/[^/]*$:) # strip off README.html or xxx.html
    {
       $ref = "$auth::define::doc_wpath/$`/$ref";
    }
@@ -709,8 +714,7 @@ sub smart_ref
    $ref =~ s:/+$::;
    if($ref =~ m-^$auth::define::doc_wpath/*- )
    {
-      $ref = url_encode_path($');
-      $ref = &wkn::mode_to_scriptprefix($wkn::define::mode) . $ref;
+      return &wkn::mode_to_scriptprefix($wkn::define::mode) . url_encode_path($');
    }
    elsif(defined(%wkn::define::wpath_prefix_translation))
    {

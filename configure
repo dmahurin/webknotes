@@ -1,21 +1,64 @@
 #!/usr/bin/perl
 
+my ($default_doc_root, $default_cgi_root, $default_cgi_alias,
+   $user_dir) =
+   chomp_slashs(parse_httpd());
+   my $root_alias;
+if(! $<) #root
+{
+   $default_doc_root = "/home/httpd/html"
+      unless(defined($default_doc_root));
+   $default_cgi_root = "/home/httpd/cgi-bin"
+      unless(defined($default_cgi_root));
+   $default_cgi_alias = "/cgi-bin"
+      unless(defined($default_cgi_alias));
+   $doc_root_alias = "/";
+   $default_private_web_dir = "/home/httpd/private";
+}
+else
+{
+   if(defined($user_dir))
+   {
+      $default_doc_root = "$ENV{\"HOME\"}/$user_dir";
+   }
+   else
+   {
+      $default_doc_root = "$ENV{\"HOME\"}/public_html";
+   }
+   undef $default_cgi_root;
+   undef $default_cgi_alias;
+   $doc_root_alias = "/~$ENV{\"USER\"}";
+   $default_private_web_dir = "$ENV{\"HOME\"}/web_private";
+}
 
 $webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
 
 print "\nThese first few question are general questions about your web server setup\n\n";
-$public_html_dir= prompt_default("Public html directory", "$ENV{\"HOME\"}/public_html");
+$public_html_dir= prompt_default("Public html directory", $default_doc_root);
 unless(-d $public_html_dir)
 {
    print "Public html directory does not exist\n";
    exit(0);
 }
-$public_html_wpath=prompt_default("Public html url path", "/~$ENV{\"USER\"}");
-$public_cgi_dir= prompt_default("cgi-bin directory", "$public_html_dir/cgi-bin");
-$public_cgi_wpath= prompt_default("cgi-bin url path", 
-   $public_html_dir =~ ( m:^$public_html_dir/: )? "$public_html_wpath/$'" : 
+if($public_html_dir =~ m:$default_doc_root/:)
+{
+   $doc_root_alias = '/' . $';
+}
+$public_html_wpath=prompt_default("Public html url path", $doc_root_alias);
+
+$public_cgi_dir= prompt_default("cgi-bin directory", ($default_cgi_root || "$public_html_dir/cgi-bin"));
+if(!defined($default_cgi_alias))
+{
+   $default_cgi_alias =   ($public_cgi_dir =~ ( m:^$public_html_dir/: )? "$public_html_wpath/$'" : 
    "$public_html_wpath/cgi-bin");
-$private_web_dir= prompt_default("Private web data directory", "$ENV{\"HOME\"}/web/private");
+}
+elsif($public_cgi_dir =~  m:^${default_cgi_root}/:)
+{
+   $default_cgi_alias =   "$default_cgi_alias/$'";
+}
+
+$public_cgi_wpath= prompt_default("cgi-bin url path", $default_cgi_alias);
+$private_web_dir= prompt_default("Private web data directory", $default_private_web_dir);
 unless(-d $private_web_dir)
 {
    if(mkdir($private_web_dir,0755))
@@ -31,7 +74,8 @@ unless(-d $private_web_dir)
 }
 
 print "\nThe questions that follow allow changing the default webknotes sub paths\n\n";
-$doc_sub_path = prompt_default("Document sub path", "notes");
+$doc_sub_path = prompt_default("Document sub path ( '/' for toplevel)", "notes");
+$doc_sub_path = "" if ($doc_sub_path eq '/');
 $doc_dir = "$public_html_dir/$doc_sub_path";
 $doc_wpath = "$public_html_wpath/$doc_sub_path";
 
@@ -66,12 +110,13 @@ if( ! -d $icons_dir )
 }
 
 $cgi_subpath = prompt_default("cgi-bin webknotes subpath", "wkn");
-$default = ( -d "$public_cgi_dir/$cgi_subpath" ) ? "n" : "y";
 
-if(prompt_default("Copy webknotes cgi-bin", $default, "(y|n)") eq "y")
-{
    mkdir("$public_cgi_dir", 0755);
    mkdir("$public_cgi_dir/$cgi_subpath", 0755);
+
+#$default = ( -d "$public_cgi_dir/$cgi_subpath" ) ? "n" : "y";
+if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
+{
    system("cp -r $webknotes_base/cgi-bin/* $public_cgi_dir/$cgi_subpath");
 
    if(prompt_default("Set Setuid on scripts", "y", "(y|n)") eq "y")
@@ -79,8 +124,14 @@ if(prompt_default("Copy webknotes cgi-bin", $default, "(y|n)") eq "y")
       system("chmod a+x,u+s $public_cgi_dir/$cgi_subpath/*.cgi");
    }
 }
+
+
+$default = ( -f "$public_cgi_dir/$cgi_subpath/auth_define.pl" ) ? "n" : "y";
+
 if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
 {
+   
+   
    unlink("$public_cgi_dir/$cgi_subpath/auth_define.pl");
    if(open(FILE, ">$public_cgi_dir/$cgi_subpath/auth_define.pl"))
    {
@@ -99,6 +150,37 @@ package auth::define;
 ";
       close FILE;
    }
+   
+   $admin_user = $< ? getpwuid($<) : "admin";
+   $default = ( -f "$private_web_dir/users/$admin_user" ) ? "n" : "y";
+   if(prompt_default("Create Admin login as '$admin_user'", $default, "(y|n)") eq "y")
+   {
+      while(1)
+      {
+         system "stty -echo";
+         $admin_password = prompt_default("Admin Password", "");
+         print "\n";
+         $admin_password_check = prompt_default("Admin Password (verify)", "");
+         print "\n";
+         system "stty echo";
+         if($admin_password ne $admin_password_check)
+         {
+            print "Passwords did not match. Try again\n";
+         }
+         else { last };
+      }
+      push(@INC, "$public_cgi_dir/$cgi_subpath");
+      require "auth_lib.pl";
+      if(! auth::write_user_info($admin_user,
+         { "PassKey"=>auth::pcrypt1($admin_password),
+         "AuthPath"=>'/',
+         "Permissions"=>'rncmds',
+         "Name"=>"Admin"}))
+      {
+         print "Error creating admin.\n";
+      }
+   }
+
    unlink("$public_cgi_dir/$cgi_subpath/wkn_define.pl");
    if(open(FILE, ">$public_cgi_dir/$cgi_subpath/wkn_define.pl"))
    {
@@ -149,3 +231,59 @@ sub prompt_default
    return $line;
 }
 
+
+sub parse_httpd
+{
+
+   my($line, $doc_root, $script_root, $script_alias, $user_dir);
+   
+   for $conf ( "/etc/httpd/conf/httpd.conf", "/etc/httpd/conf/srm.conf" )
+   {
+      next unless(open( HCONF, $conf));
+      while(defined($line = <HCONF>))
+      {
+         if($line =~ m:^\s*DocumentRoot\s+:)
+         {
+            ($doc_root) = split_args($');
+         }
+         if($line =~ m:^\s*ScriptAlias\s+:)
+         {
+            ($script_alias, $script_root) = split_args($');
+         }
+         if($line =~ m:^\s*UserDir\s+:)
+         {
+            ($user_dir) = split_args($');
+         }
+      }
+      close(HCONF);
+   }
+   if(!defined($doc_root))
+   {                             
+      print "Warning: http configuration not found";
+   }
+   return ($doc_root, $script_root, $script_alias, $user_dir);
+}
+
+sub split_args
+{
+   my($line) = @_;
+   my(@args) = ();
+   while($line =~ m:^\s*\"([^\"]*)\"|([^\"\s]+)\s*:)
+   {
+      push(@args, $1) if(defined($1));
+      push(@args, $1) if(defined($2));
+      $line = $';
+   }
+   return (@args);
+}
+
+sub chomp_slashs
+{
+   my(@paths);
+   foreach(@_)
+   {
+      $_ =~ s:/+$::;
+      push( @paths, $_);
+   }
+   return(@paths);
+}

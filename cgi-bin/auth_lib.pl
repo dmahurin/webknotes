@@ -42,11 +42,11 @@ sub get_user()
       $user=auth::check_user_name($user);
       return () unless($user);
       return () unless( auth::write_user_info($user, 
-	 ("PassKey"=>"*",
+         { "PassKey"=>"*",
          "AuthRoot"=>$auth::define::newuser_path,
 	    "Permissions"=>$auth::define::newuser_flags, 
 	    "FromHost"=>$ENV{REMOTE_HOST}, 
-	    "FromAddr"=>$ENV{REMOTE_ADDR}))
+            "FromAddr"=>$ENV{REMOTE_ADDR}})
       );
       return $user;
    }

@@ -56,9 +56,9 @@ elsif( ! defined ( $in{'users'}))
    Group: $in{group}
 <form method="POST" action="$this_cgi">
    <input type=hidden name="group" value="$in{group}">
-Users <input type=text name="users" value="$user_info->{"Members"}" size=20>(user1,user2,...)<br>
-   Permissions <input type=text name="permissions" value="$user_info->{"Permissions"} size=20><br>
-Comment <input type=text name="comment" value="$user_info->{"Comment"}" size=20><br>
+Users <input type=text name="users" value="$group_info->{"Members"}" size=20>(user1,user2,...)<br>
+   Permissions <input type=text name="permissions" value="$group_info->{"Permissions"} size=20><br>
+Comment <input type=text name="comment" value="$group_info->{"Comment"}" size=20><br>
 <input type=submit value="Modify"> <input type=reset>
 </form>
 </body>
