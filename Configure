@@ -191,14 +191,12 @@ unless(defined($filedb::define::doc_dir))
 	exit(1);
 }
 
-unless( -d $filedb::define::doc_dir)
+$default = ( -d $filedb::define::doc_dir) ? "n" : "y";
+print "Error creating directory: $filedb::define::doc_dir\n" unless( -d $filedb::define::doc_dir or mkpath($filedb::define::doc_dir,0755));
+if(prompt_default("Copy sample notes", $default, "(y|n)") eq "y")
 {
-   print "Error creating directory: $filedb::define::doc_dir\n" unless(mkpath($filedb::define::doc_dir,0755));
-   if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
-   {
-      mkdir("$filedb::define::doc_dir/webknotes", 0755);
-      system("cp 'doc'/* $filedb::define::doc_dir/webknotes");
-   }
+   mkdir("$filedb::define::doc_dir/webknotes", 0755);
+   system("cp 'doc'/* $filedb::define::doc_dir/webknotes");
 }
 
 if(prompt_default("Copy sample icons", ( $install )? "y" : "n",
