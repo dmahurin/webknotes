@@ -108,6 +108,10 @@ else
       my $default_file = filedb::get_default_file($filepath);
       if(@dirlist < 1 || @dirlist == 1 && $dirlist[0] eq $default_file)
          {
+         if(@dirlist == 1)
+         {
+            filedb::remove_file($filepath, $default_file);
+         }
          if(filedb::unset_all_hidden_data($filepath) &&
          filedb::remove_dir($filepath))
          {

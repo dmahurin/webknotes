@@ -63,9 +63,10 @@ sub get_default_file
 
 sub get_full_path
 {
-   my($path) = @_;
+   my($path, $file) = @_;
    my($full) = $filedb::define::doc_dir;
    $full .= "/$path" if ($path ne "" and $path ne "/");
+   $full .= "/$file" if (defined($file) and $file ne "");
 
    return $full;
 }
@@ -96,9 +97,10 @@ sub make_file
 
 sub make_dir
 {
-   my($notes_path) = @_;
+   my($path, $name) = @_;
+   my($full) = get_full_path($path, $name);
 
-   if(!mkdir("$filedb::define::doc_dir/$notes_path", 0755 ))
+   if(!mkdir($full, 0755 ))
    {
       return 0;
    }
@@ -107,14 +109,16 @@ sub make_dir
 
 sub remove_dir
 {
-   my($path) = @_;
-   return rmdir("$filedb::define::doc_dir/$path");
+   my($path, $name) = @_;
+   my $full = get_full_path($path, $name);
+   return rmdir($full);
 }  
 
 sub remove_file
 {
-   my($path) = @_;
-   return unlink("$filedb::define::doc_dir/$path");
+   my($path, $name) = @_;
+   my $full = get_full_path($path, $name);
+   return unlink($full);
 }
 
 sub is_dir
@@ -132,7 +136,7 @@ sub is_file
 sub get_hidden_data
 {
    my($path, $name) = @_;
-   my($file) = get_full_path($path) . "/." . $name;
+   my($file) = get_full_path($path, $name);
   
    if ( -f $file and open (FILE, $file))
    {
@@ -147,7 +151,7 @@ sub get_hidden_data
 sub set_hidden_data
 {
    my($path, $name, $value) = @_;
-   my($file) = get_full_path($path) . "/." . $name;
+   my($file) = get_full_path($path, $name);
    unless(defined($value))
    {
       return 1 unless( -f $file);
@@ -165,16 +169,18 @@ sub set_hidden_data
 
 sub unset_all_hidden_data
 {
-   my($path) = get_full_path(@_);
+   my($path) = @_;
+   my($full) = get_full_path($path);
 
-   if(opendir(DIR, $path))
+   if(opendir(DIR, $full))
    {
       my($success) = 1;
       my $file;
       while(defined($file = readdir(DIR)))
       {
           next if($file eq '.' or $file eq '..');
-          unless(unlink($path . '/' . $file))
+          next unless($file =~ m:^\.:);
+          unless(unlink($full . '/' . $file))
           {
               $success = 0;
               last;
@@ -189,7 +195,7 @@ sub unset_all_hidden_data
 sub append_hidden_data
 {
    my($path, $name, $value) = @_;
-   my($file) = get_full_path($path) . "/." . $name;
+   my($file) = get_full_path($path, $name);
    return 1 unless(defined($value));
   
    if ( open (FILE, ">>$file"))
