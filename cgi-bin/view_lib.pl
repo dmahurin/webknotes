@@ -270,18 +270,26 @@ sub print_link_html
            my($link, $link_type, $link_text);
 
 
+           my $file_ext;
            my $file_base = $file;
-           $file_base =~ s/\.[^\.]*$//;
-           my $file_ext = $&;
-           $file_ext =~ s/^\.*$//;
+           if($file_base =~ s/\.([^\.]+)$//)
+           {
+               $file_ext = $1;
+#               $file_ext =~ s/^\.*$//;
+           }
+           if( ( ! defined($file_ext)) && defined $view::define::default_file_type)
+           {
+               $file_ext = $view::define::default_file_type;
+           }
            SWITCH:
            {
-              last SWITCH if ($file =~ m/^\./ );
+              last SWITCH if (! defined($file_ext));
+              last SWITCH if ($file eq '');
               # skip the index files
 #              last
 #                 if ($file =~ m:^(index.html|index.htm|HomePage|FrontPage.wiki|FrontPage|README|README.txt|README.htxt|index.htxt)$: );
 
-              $file_ext =~ /^\.url/ && do
+              $file_ext eq "url" && do
               {
                  $link_type = "url";
                  $link = filedb::get_file($notes_path);
@@ -289,7 +297,7 @@ sub print_link_html
                  $link_text = $file_base;
                  last SWITCH;
               };
-              ($file_ext =~ /^\.wiki$/ || $file =~ /$wiki_name_pattern/ )&& do
+              ($file_ext eq "wiki" || $file =~ /$wiki_name_pattern/ )&& do
               {
                  $link_type = "wiki";
                  $link = $bprefix . $notes_wpath . $bsuffix;
@@ -303,21 +311,21 @@ sub print_link_html
                  $link_text = $file;
                  last SWITCH;
               };
-              $file_ext =~ /^\.(html|htm)/ && do
+              $file_ext =~ /^html?$/ && do
               {
                  $link_type = "html";
                  $link = $bprefix . $notes_wpath . $bsuffix;
                  $link_text = $file_base;
                  last SWITCH;
               };
-              $file_ext =~ /^\.(htxt)/ && do
+              $file_ext eq "htxt" && do
               {
                  $link_type = "htxt";
                  $link = $bprefix . $notes_wpath . $bsuffix;
                  $link_text = $file_base;
                  last SWITCH;
               };
-              $file_ext =~ /^\.(txt)/ && do
+              $file_ext =~ "txt" && do
               {
                  $link_type = "txt";
                  $link = $bprefix . $notes_wpath . $bsuffix;

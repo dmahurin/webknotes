@@ -21,6 +21,7 @@ STRING default_layout "Default layout" "table"
 STRING default_theme "Default theme" "forge"
 INT max_depth "Maximum depth of list views" "3"
 STRING skip_files "Pattern to match of files to skip"
+STRING default_file_type "Default file type (for files without extensions)"
 
 SUB code_filter
 HASH filename_filter "Displayed filename filter"
