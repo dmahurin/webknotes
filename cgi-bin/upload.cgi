@@ -14,17 +14,17 @@ print header,
     start_html('File Upload'),
 h1('file upload');
 
-my $notes_path = param("notes_path");
+my $upload_path = param("path");
 my($user) = auth::get_user();
-$notes_path =~ s:/$::;
-print "notes_path: $notes_path\n";
+$upload_path =~ s:/$::;
+print "Upload path: $upload_path\n";
 if( ! auth::check_file_auth( $user, auth::get_user_info($user),
-  'u', $notes_path ) )
+  'u', $upload_path ) )
 {
    print "You are not authorized to access this path.\n";
    exit(0);
 }
-$notes_path = wkn::path_check($notes_path);
+$upload_path = wkn::path_check($upload_path);
 
 unless(defined(param('upload')))
 {
@@ -32,7 +32,7 @@ unless(defined(param('upload')))
 }
 else
 {
-   wkn_save_file($notes_path);
+   wkn_save_file($upload_path);
 }
 print end_html;
 
@@ -40,14 +40,14 @@ print end_html;
 sub print_form {
    print start_multipart_form(),
        filefield(-name=>'upload',-size=>60),br,
-       hidden(-name=>'notes_path',-value=>$notes_path),br,
+       hidden(-name=>'path',-value=>$upload_path),br,
        submit(-label=>'Upload File'),
        end_form;
 }
 
 sub wkn_save_file
 {
-   my($notes_path) = @_;
+   my($upload_path) = @_;
    
 
    my $length;
@@ -57,7 +57,7 @@ sub wkn_save_file
       print "No file uploaded.";
       return;
    }
-   my $fullpath = array_to_path( $wkn::define::notes_dir, $notes_path, $file);
+   my $fullpath = array_to_path( $wkn::define::notes_dir, $upload_path, $file);
    print "fullpath='$fullpath'\n";
    print h2('File name'),$file;
    print h2('File MIME type'),uploadInfo($file)->{'Content-Type'};

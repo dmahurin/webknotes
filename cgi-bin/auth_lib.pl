@@ -215,6 +215,8 @@ sub check_file_auth
   my($file_path) = join('/', grep(/./, @filepaths));
   #  my($auth_pass, $auth_path, ags, @other);
   
+  return 1 if($user_info->{"Permissions"} =~ m:s:);
+
   my($file_dir) = $file_path;
   my $have_auth_flags;
 

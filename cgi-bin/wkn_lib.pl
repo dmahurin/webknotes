@@ -82,16 +82,17 @@ sub actions2
       #}
    }
    
+      print "[ Edit \n";
    if(auth::check_file_auth($user, $user_info, 'm', $notes_path))
    {
-      print "[ Edit <A HREF=\"edit.cgi?$dir_file\">File</a> \n";
-      print "| <A HREF=\"browse_edit.cgi?$notes_path\">Directory</a> ]\n";
+      print "<A HREF=\"edit.cgi?$dir_file\">File</a> | \n";
    }
+      print "<A HREF=\"browse_edit.cgi?$notes_path\">Directory</a> ]\n";
    print "[ Browse ";
    print "<A HREF=\"$auth::define::doc_wpath/${notes_path}\">Directory</A> | \n";
    print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File Only</A> \n";
    print "| <A HREF=\"browse_help.cgi?$notes_path\">Other method</A> ]\n";
-   print "<br>\n";
+   #   print "<br>\n";
 }
 
 sub actions3
@@ -118,7 +119,6 @@ print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
 	print <<EOT;
 [ <A HREF="search.cgi?notes_mode=$wkn::define::mode&notes_subpath=${notes_path}">Search</A> ]
 [ <A HREF="user_access.cgi"> User Accounts </a> ]
-<br>
 EOT
 }
 
@@ -154,8 +154,8 @@ sub print_link_html
 		SWITCH:
 		{
 			last SWITCH if ($file =~ m/^\./ );
-			last SWITCH if ($file =~ /^README(\.html)?$/ );
-			last SWITCH if ($file eq "index.html" );
+                        last if ($filename eq 'README' or
+                           $filename =~ m:^(README|index)\.(txt|html|htm)$: );
 #			$file_ext =~ /^\.html/ && do
 #			{
 #				print "<A HREF=\"${web_path}",
@@ -183,7 +183,7 @@ sub print_link_html
 
                            last SWITCH;
                         };
-			$file_ext =~ /^\.(txt|html)/ && do
+			$file_ext =~ /^\.(txt|html|htm)/ && do
                         {
                            print "<A HREF=\"" .
                               &wkn::mode_to_scriptprefix($wkn::define::mode) .
@@ -331,6 +331,7 @@ sub list_files_html
         next if( $file =~ m:^\.: );
         next if( $file =~ m:^README(\.html)?:);
         next if( $file eq "index.html");
+        next if( $file eq "index.htm");
 
         if( $file =~ m:^([^/]*)$: ) # untaint dir entry
         {
@@ -406,7 +407,7 @@ sub list_html
 		$label = $file;
 		$wfile = url_encode_path($file);
                 $label = wkn::define::filename_filter($label)
-                   if(defined(wkn::define::filename_filter));
+                   if(defined($wkn::define::filename_filter));
 		if ( -f "${real_path}/$file" )
 		{
 			$file_base = $file;
@@ -420,6 +421,7 @@ sub list_html
 				last SWITCH if ($file =~ /\~$/ );
 				last SWITCH if ($file =~ /^README(\.html)?$/ );
 				last SWITCH if ($file eq "index.html" );
+				last SWITCH if ($file eq "index.htm" );
 				$file_ext =~ /^\.html/ && do
 				{
 					print "<A HREF=\"${web_path}/",
@@ -503,6 +505,7 @@ sub dir_file
 
 	chdir("$auth::define::doc_dir/$notes_path");
 	return "$notes_path/index.html" if ( -f "index.html" );
+	return "$notes_path/index.htm" if ( -f "index.htm" );
 	return "$notes_path/README.html" if ( -f "README.html" );
 	return "$notes_path/README" if ( -f "README" );
         return ();
@@ -537,6 +540,11 @@ sub print_dir_file
 	if( -f "index.html" )
 	{
 		$file = "index.html";
+                wkn::print_hfile("$notes_path/$file");
+        }
+	elsif( -f "index.htm" )
+	{
+		$file = "index.htm";
                 wkn::print_hfile("$notes_path/$file");
         }
 	elsif( -f "README.html" )
@@ -588,7 +596,7 @@ $atime,$mtime,$ctime,$blksize,$blocks)
 	  print ": Group <a href=\"show_group.cgi?group=$group\">$group</a>\n";
         }
         
-	print "<br>\n";
+        #	print "<br>\n";
 }
 
 sub get_file
@@ -679,7 +687,8 @@ sub smart_ref
    
    #collapse dir/.. to nothing
    while($ref =~ s~(^|/+)(?!\.\./)[^/]+/+\.\.($|/)~$1~g){}
-   if($ref =~ m:\.([^\.]*)$: and ! ($1 =~ m:^(txt|html)$:)) # not text
+
+   if($wkn::define::no_browse_links or $ref =~ m:\.([^\.]*)$: and ! ($1 =~ m:^(txt|html|htm)$:))  
    {
       return url_encode_path($ref);
    }
@@ -736,7 +745,7 @@ sub translate_html
    
    # translate relative image paths to full http paths
    my $this_path = ($notes_file =~ m:/[^/]*$:) ? "$`/" : "";
-   $text =~ s!(<img[^>]*src=\")([^:\/]+(\/|$))!$1$auth::define::doc_wpath/$this_path$2!gi;
+   $text =~ s!(<img\s[^>]*src=\")([^:\/>\"]+)!$1$auth::define::doc_wpath/$this_path$2!gi;
    
    return $text;
 }

@@ -73,7 +73,7 @@ if(-d $real_path and opendir(DIR, $real_path))
    }
    if(auth::check_file_auth( $user, $user_info, 'u',  $notes_path) )
    {
-      print "[ <a href=\"upload.cgi?dir=$notes_path_encoded\">Upload</a> ] \n";
+      print "[ <a href=\"upload.cgi?path=$notes_path_encoded\">Upload</a> ] \n";
    }
 }
 

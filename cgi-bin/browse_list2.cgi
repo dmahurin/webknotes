@@ -153,7 +153,8 @@ if(-d $toppath)
          next;
       }
 
-       next if ( $filename =~ m:^(\.|README|index.html): );
+      next if ($filename eq 'README' or 
+         $filename =~ m:^(README|index)\.(txt|html|htm)$: );
        next if ($filename =~ m:(\.bak|~)$:);
        next if ($filename =~ m:^\.:);
 

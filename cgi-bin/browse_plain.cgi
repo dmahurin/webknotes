@@ -67,12 +67,12 @@ _EOT
 	wkn::print_modification($notes_path);
 	print "<hr>\n";
 	&wkn::log($notes_path);
+        if($dir_file ne "index.html" and $dir_file ne "index.htm")
+        {
         if(&wkn::list_files_html($notes_path))
         {
            print "<hr>\n";
         }
-        if($dir_file ne "index.html")
-        {
            if(&wkn::list_dirs_html($notes_path))
            {
               print "<hr>";

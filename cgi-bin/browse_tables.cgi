@@ -32,8 +32,8 @@ my $file;
 while($file = readdir(DIR))
 {
 	next if( $file =~ m:^\.: );
-	next if( $file =~ m:^README(\.html)?:);
-	next if( $file eq "index.html");
+        next if ($filename eq 'README' or
+           $filename =~ m:^(README|index)\.(txt|html|htm)$: );
 
 	if( $file =~ m:^([^/]*)$: ) # untaint dir entry
         {
