@@ -39,7 +39,7 @@ my $http_base = get_http_location();
 #	$message .= "Content-Base: \"$http_base\"\n";
 $message .= "\n";
           
-my $browse_link = $http_base . 'login.cgi?next=browse.cgi&path=' . view::url_encode_path("$notes_path_short");
+my $browse_link = $http_base . 'login.cgi?next=&path=' . view::url_encode_path("$notes_path_short");
 $message .= "<a href=\"$browse_link\">$browse_link</a>\n<br><br>\n";
 
 $message .= "<hr>\n\n";
