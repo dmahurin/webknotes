@@ -27,6 +27,7 @@ my($user) = $in{'user'};
 my($password) = $in{'password'};
 my($path) = $in{'path'};
 my($path_encoded) = CGI::escape($path);
+$path_encoded =~ s/\%2F/\//g;
 my($next) = $in{'next'};
 
 my $prefix = 
@@ -36,6 +37,10 @@ my $prefix =
 if(defined($next))
 {
   $next=$prefix if($next eq "");
+  if($next =~ m:\.cgi$:)
+  {
+     $next .= '?';
+  }
   my $current_user =  auth::get_user();
   if(defined($current_user) and ((!defined($user)) or $current_user eq $user))
   {
@@ -89,9 +94,18 @@ if(auth::check_pass($user, auth::get_user_info($user), $password))
 {
    if(auth::create_session($user))
    {
+      if(defined($next))
+      {
+         if($next =~ m:\.cgi$:)
+         {
+            $next .= '?';
+         }
+      }
+      else
+      {
+         $next = $prefix;
+      }
 
-
-      $next = $prefix unless(defined($next));
       my $line;
       print "Content-type: text/html\n\n";
  print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$next$path_encoded\"></head><html>\n";
