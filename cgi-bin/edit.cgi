@@ -51,6 +51,12 @@ if( $file =~ m:$illegal_dir: )
    exit(0);
 }
 
+if ( -d $full_file )
+{
+   print "Can't edit directory\n";
+   exit(0);
+}
+
 my $user = auth::get_user();
 my $user_info = auth::get_user_info($user);
 

@@ -14,9 +14,6 @@ require 'auth_lib.pl';
 
 print "Content-type: text/html\n\n\n";
 
-my $script_path;
-if( $ENV{SCRIPT_NAME} =~ m:/[^/]*$: ) { $script_path = "$`/" }
-
 my $user = auth::get_user();
 
 print "
@@ -31,12 +28,12 @@ print "
 if(defined($user))
 {
    print "You are logged as user: $user\n";
-   print "<p><A href=\"${script_path}logout.cgi\"> Logout </a></p>";
+   print "<p><A href=\"logout.cgi\"> Logout </a></p>";
 }
 else
 {
    print "You are not logged in\n<p>
-<p><A href=\"${script_path}login.cgi\">Login</a>:</p>
+<p><A href=\"login.cgi\">Login</a>:</p>
 <form method=\"POST\" action=\"login.cgi\">
 User Name <input type=text name=\"user\" size=20><br>
 Password <input type=password name=\"password\" size=20><br>
@@ -44,20 +41,20 @@ Password <input type=password name=\"password\" size=20><br>
 </form>
       <hr>\n";
 }   
-   print"<p><form method=\"POST\" action=\"${script_path}userinfo.cgi\">
+   print"<p><form method=\"POST\" action=\"userinfo.cgi\">
 Change user info for
 <input type=text name=\"username\" value=\"$user\" size=20>
 <input type=submit value=\"Change User Info\">
 </form>
 
-<p><A href=\"${script_path}add_user.cgi\"> Add new user </a></p>
+<p><A href=\"add_user.cgi\"> Add new user </a></p>
 
-<form method=\"POST\" action=\"${script_path}show_user.cgi\">
+<form method=\"POST\" action=\"show_user.cgi\">
 Show info for another username <input type=text name=\"username\" size=20>
 <input type=submit value=\"Show Info\">
 </form>
 
-<form method=\"POST\" action=\"${script_path}show_group.cgi\">
+<form method=\"POST\" action=\"show_group.cgi\">
 Show info for a group <input type=text name=\"group\" size=20>
 <input type=submit value=\"Show Group Info\">
 </form>
