@@ -271,7 +271,7 @@ sub modify_user_info
    }
    
    return 0 unless open( UFILE, ">$auth::define::users_dir/$username");
-   print UFILE join(':', $password, $path, $flags, $fullname, $email, @webpage, @otherinfo);
+   print UFILE join(':', $password, $path, $flags, $fullname, $email, $webpage, @otherinfo);
    close(UFILE);
    return 1;
 }
