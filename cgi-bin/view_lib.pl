@@ -12,7 +12,7 @@ require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
 
-my $wiki_name_pattern = "([A-Z][a-z]+){2,}";
+my $wiki_name_pattern = '^([A-Z][a-z]+){2,}$';
 
 package view;
 
@@ -263,7 +263,7 @@ sub print_link_html
                  $link_text = $file_base;
                  last SWITCH;
               };
-              ($file_ext =~ /^\.wiki$/ || $file =~ /^$wiki_name_pattern$/ )&& do
+              ($file_ext =~ /^\.wiki$/ || $file =~ /$wiki_name_pattern/ )&& do
               {
                  $link_type = "wiki";
                  $link = &view::get_cgi_prefix() . $notes_wpath;
@@ -371,7 +371,7 @@ sub list_files_html
    my($rtn) = 0;
 
    my $dfile = filedb::default_file($notes_path);
-   # If you have index.html, not README.html, assume you want list files
+   # If you have index.html, assume you don't want to list files
    return 0 if( $dfile eq "FrontPage.wiki");
    return 0 if( $dfile eq "FrontPage");
    return 0 if( $dfile eq "HomePage");
@@ -458,7 +458,7 @@ sub get_file_type
       {
          $file_type = "txt";
       }
-      elsif( $file =~ m:^([A-Z][a-z]+){2,}$:)
+      elsif( $file =~ m:$wiki_name_pattern:)
       {
          $file_type = "wiki" ;
       }

@@ -34,17 +34,6 @@ use vars qw($current_user $current_user_info);
    }
 }
 
-sub init_private_dir()
-{
-   (-d "$auth::define::private_dir/users") ||
-      mkdir("$auth::define::private_dir/users", 0700) || return 0;
-   (-d "$auth::define::private_dir/groups") ||
-      mkdir("$auth::define::private_dir/groups", 0700) || return 0;
-   (-d "$auth::define::private_dir/sessions") ||
-      mkdir("$auth::define::private_dir/sessions", 0700) || return 0;
-   return 1;
-}
-
 sub set_user
 {
   my($user)=@_;
@@ -76,7 +65,7 @@ sub get_user
           if(defined($user))
           {
             if($user eq "") { $user = undef; }
-            elsif( ! -f "$auth::define::private_dir/users/$user" &&
+            elsif( ! filedb::private_data_exists("users/$user") &&
                $auth::define::autoadd_remote_auth_users)
             {
                if(defined($user = auth::check_user_name($user)))
@@ -101,16 +90,13 @@ sub get_user
    my($sess_file);
    if($user =~ m:^([^/]+)$:) { $user = $1; } # untaint
    else { $user = undef; }
-   $sess_file = "$auth::define::private_dir/sessions/$user";
-   unless( -f $sess_file )
+   my $line = filedb::get_private_data("sessions/$user");
+   unless( defined($line) )
    {
-      print "No session file: $sess_file<br>\n";
+      print "No session file for user: $user<br>\n";
       print "Check setuid permissions\n";
       return ();
    }
-   open(SFILE, $sess_file);
-   my($line) = <SFILE>;
-   close(SFILE);
    my($vcrypt,$addr) = split(/:/, $line);
    if($ENV{'REMOTE_ADDR'} ne $addr or pcrypt1($vword) ne $vcrypt )
    {
@@ -293,7 +279,7 @@ sub user_exists
 {
    my($username) = @_;
 
-   return( -f "$auth::define::private_dir/users/$username");
+   return filedb::private_data_exists("users/$username");
 }
 
 sub check_user_name
@@ -314,21 +300,17 @@ sub write_user_info
 {
    my($username, $user_info) = @_;
 
-   init_private_dir() || return 0;
-   return 0 unless open( UFILE, ">$auth::define::private_dir/users/$username");
-   flock(UFILE,LOCK_EX);
+   my $data = "";
    
-   my $key;
-   for $key ( keys %$user_info)
+   for my $key ( keys %$user_info)
    {
       if(defined($user_info->{$key}))
       {
-      print UFILE "$key: $user_info->{$key}\n";
+      $data .= "$key: $user_info->{$key}\n";
       }
    }
-   flock(UFILE,LOCK_UN);
-   close(UFILE);
-   return 1;
+
+   return filedb::set_private_data("users/$username", $data);
 }
 
 sub check_group_name
@@ -348,18 +330,13 @@ sub write_group_info
 {
    my($group, $group_info) = @_;
    
-   init_private_dir() || return 0;
-   return 0 unless open( GFILE, ">$auth::define::private_dir/groups/$group");
-   flock(UFILE,LOCK_EX);
-   
-   my $key;
-   for $key ( keys %$group_info)
+   my $data = ""; 
+   for my $key ( keys %$group_info)
    {
-      print UFILE "$key: $group_info->{$key}\n";
+      $data .= "$key: $group_info->{$key}\n";
    }
-   flock(UFILE,LOCK_UN);
-   close(GFILE);
-   return 1;
+
+   return filedb::set_private_data("groups/$group", $data);
 }
 
 sub get_user_info
@@ -369,17 +346,16 @@ sub get_user_info
 # did I do below for some reason?
 #   return \%info unless (defined($user));
    return () unless (defined($user) and $user ne "");
-   if(open(UFILE, "$auth::define::private_dir/users/$user"))
+   my $data = filedb::get_private_data("users/$user");
+
+   if(defined($data))
    {
       my($key, $value);
-      while(<UFILE>)
+      for (split(/\n/, $data))
       {
-         chomp;
-         ($key, $value) = split ': ';
+         ($key, $value) = split /:\s/;
          $info{$key} = $value;
       }
-         
-      close(UFILE);
    }
    return \%info;
 }
@@ -397,17 +373,15 @@ sub get_group_info
    my($group) = @_;
    my(%info);
    return () unless (defined($group));
-   if(open(GFILE, "$auth::define::private_dir/groups/$group"))
+   my $data = filedb::get_private_data("groups/$group");
+   if(defined($data))
    {
       my($key, $value);
-      while(<GFILE>)
+      for (split(/\n/, $data))
       {
-         chomp;
-         ($key, $value) = split ': ';
+         ($key, $value) = split /:\s/;
          $info{$key} = $value;
       }
-         
-      close(GFILE);
    }
    return \%info;
 }
@@ -443,13 +417,8 @@ sub create_session
    my($sessionid) = "$user:$vword";
    my($addr) = $ENV{'REMOTE_ADDR'};
    $user =~ m:^([^/]+)$:;
-   my($sfile) = "$auth::define::private_dir/sessions/$1";
+   return 0 unless filedb::set_private_data("sessions/$1", "$vcrypt:$addr"); 
 
-   return 0 unless(open(SFILE, ">$sfile")); 
-   flock(SFILE,LOCK_EX);
-   print SFILE "$vcrypt:$addr"; 
-   flock(SFILE,LOCK_UN);
-   close(SFILE);
    print "Set-Cookie: sessionid=$sessionid; path=/\n";
    return 1;
 }

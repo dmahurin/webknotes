@@ -130,6 +130,8 @@ if(prompt_default("Copy webknotes cgi-bin", $default, "(y|n)") eq "y")
 
 if('y' eq prompt_default("Write configuration in $wkn_cgi_dir?", "y", "(y|n)"))
 {
+
+
 for my $pack (keys %symbols)
 {
    open(DFILE, ">$wkn_cgi_dir/${pack}_define.pl");
@@ -183,14 +185,21 @@ if(prompt_default("Copy sample themes", ( -d $view::define::themes_dir )? "n" : 
    system("cp -r 'themes'/* $view::define::themes_dir");
 }
 
-unless(-d $auth::define::private_dir or 
+# upgrade to 1.0
+if(defined($auth::define_private_dir && !defined ($filedb::define::private_dir))
+{
+   $filedb::define::private_dir = $auth::define_private_dir;
+   undef $auth::define_private_dir;
+}
+
+unless(-d $filedb::define::private_dir or 
 'y' eq prompt_default("Create private web dir", "y", "(y|n)") )
 {
-   if(mkdir($auth::define::private_dir,0755))
+   if(mkdir($filedb::define::private_dir,0700))
    {
-      mkdir("$auth::define::private_dir/groups",0755);
-      mkdir("$auth::define::private_dir/users",0755);
-      mkdir("$auth::define::private_dir/sessions",0755);
+      mkdir("$filedb::define::private_dir/groups",0700);
+      mkdir("$filedb::define::private_dir/users",0700);
+      mkdir("$filedb::define::private_dir/sessions",0700);
    }
    else
    {

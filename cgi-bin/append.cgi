@@ -131,8 +131,18 @@ my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
    $user = "unknown" unless(defined($user));
 my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $min, $sec);
    my $header;
-   $header = "\n<hr title=\"Modified $date $userstr\">\n" if ($file =~ m:\.html?$:);
-   $header = "\n----!Modified $date by $user\n" if ($file =~ m:\.wiki?$: or $file =~ m:^([A-Z][a-z]+){2,}$:);
+   if($file =~ m:\.html?$:)
+   {
+      $header = "\n<hr title=\"Modified $date $userstr\">\n";
+   }
+   elsif($file =~ m:\.wiki?$: or $file =~ m:^([A-Z][a-z]+){2,}$:)
+   {
+      $header = "\n----!Modified $date $userstr\n";
+   }
+   else #text
+   {
+      $header = "\n---- Modified $date $userstr ----\n";
+   }
    $header .= "\n";
    
    filedb::append_file($dir, $file, $header . $text); 

@@ -355,3 +355,39 @@ sub join_paths
    return join('/', @out);
 }
 
+sub get_private_data
+{
+   my($path) = @_;
+   my($filepath) = join_paths($filedb::define::private_dir,$path);
+   open(PFILE, $filepath) || return ();
+   local $/ = undef;
+   my($data) = <PFILE>;
+   close(PFILE);
+   return $data;
+}
+
+sub private_data_exists
+{
+   my($path) = @_;
+   return( -f join_paths($filedb::define::private_dir,$path));
+}
+
+sub set_private_data
+{
+   my($path, $value) = @_;
+   my($filepath) = join_paths($filedb::define::private_dir,$path);
+
+   return 0 unless open( PFILE, ">$filepath");
+   flock(PFILE,LOCK_EX);
+   print PFILE $value;
+   flock(PFILE,LOCK_UN);
+   close(PFILE);
+   return 1;
+}
+
+sub make_private_dir
+{
+   my($path) = @_;
+   my($filepath) = join_paths($filedb::define::private_dir,$path);
+   return mkdir($filepath, 0700);
+}

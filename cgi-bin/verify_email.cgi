@@ -131,7 +131,7 @@ EOT
    }
    
 print <<"EOT";
-   Email Verify Key<input type=password name="email_verify_key" size=20><br>
+   Email Verify Key<input type=text name="email_verify_key" size=20><br>
    <input type=submit value="Submit"> <input type=reset>
 </form>
 EOT
