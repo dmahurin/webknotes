@@ -858,6 +858,7 @@ sub path_check
    $user = auth::get_user() unless(defined($user));
    $user_info = auth::get_user_info($user) unless(defined($user_info));
  
+   $notes_path =~ s:\\::g;
    if ( $notes_path =~ m:(/|^)\.\.($|/): )
    {
       print "illegal chars\n";
@@ -870,7 +871,6 @@ sub path_check
    #take off leading and trailing /'s and remove \'s
    $notes_path =~ s:^/*::;
    $notes_path =~ s:/*$::;
-   $notes_path =~ s:\\::g;
 
    if( ! -e "$auth::define::doc_dir/$notes_path" )
    {

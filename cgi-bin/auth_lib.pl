@@ -97,6 +97,7 @@ sub path_check
 {
    my($notes_path) = @_;
  
+   $notes_path =~ s:\\::g;
    if ( $notes_path =~ m:(/|^)\.\.($|/):)
    {
       print "illegal chars\n";
@@ -109,7 +110,6 @@ sub path_check
    #take off leading and trailing /'s and remove \'s
    $notes_path =~ s:^/*::;
    $notes_path =~ s:/*$::;
-   $notes_path =~ s:\\::g;
 
    return $notes_path;
 }

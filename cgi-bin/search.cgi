@@ -123,9 +123,10 @@ DIR: while (@dirs)
 
       next;
    }
-   next if ( $file eq "." or $file eq ".." );
    next if ( $file =~ m:^\.:);
    next if (defined($file_mask) && $file =~ /$file_mask/i );
+   print "$file\n" if ($file =~ m:^[\.]+:);
+   next unless ($file =~ m:(^[^\.]+|html|\.(txt|html|htm))$:);
 
    $fullpath = join('/', @dirs, $file);
    $subpath = join('/', @dirs[1..$#dirs], $file);
