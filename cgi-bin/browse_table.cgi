@@ -55,7 +55,8 @@ wkn::actions2($notes_path);
 print css_tables::trtd_end() . "\n";
 
 print css_tables::trtd_begin("topic-listing") . "\n";
-print "&nbsp;" unless (&wkn::list_dirs_html($notes_path));
+&wkn::list_files_html($notes_path);
+print "&nbsp;" unless &wkn::list_dirs_html($notes_path);
 print css_tables::trtd_end() . "\n";
 
 print css_tables::table_end() . "\n";
