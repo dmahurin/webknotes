@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 my $runpath;
 if( $0 =~ m:/[^/]*$: ) { $runpath=$`; push @INC, $runpath }
 require 'view_define.pl';

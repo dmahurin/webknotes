@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # CGI script to add a user, using the auth-lib.
 
@@ -66,8 +66,8 @@ if( $in{password} ne $in{password_verify} )
 
 if(! auth::write_user_info(auth::check_user_name($in{'username'}), 
 { "PassKey"=>auth::pcrypt1($in{'password'}), 
-   "AuthPath"=>$auth::define::newuser_path, 
-   "Permissions"=>$auth::define::newuser_flags,
+   "AuthPath"=>"", 
+   "Permissions"=>"",
    "Name"=>$in{'fullname'},"Email"=> $in{'email'}, "Webpage"=>$in{'webpage'}, "RemoteHost"=>$ENV{REMOTE_HOST}, "RemoteAddr"=>$ENV{REMOTE_ADDR}
 }))
 {

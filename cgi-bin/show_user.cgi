@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # show information on a user, using the auth-lib
 

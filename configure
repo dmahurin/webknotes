@@ -1,7 +1,9 @@
 #!/usr/bin/perl
-use strict;
+
+local($HOME) = $ENV{HOME};
 
 my($user);
+my($package) = "main";
 if($<)
 {
    $user = getpwuid($<)
@@ -11,14 +13,15 @@ else
    $user = "www";
 }
 
-my ($web_doc_root, $cgi_root, $cgi_root_wpath,
+# need local for var_eval
+local ($web_doc_root, $cgi_root, $cgi_root_wpath,
    $user_dir) =
    &chomp_slashs(parse_httpd());
-   
+
+print "$web_doc_root, $cgi_root, $cgi_root_wpath\n";
+
 my $default = ( $< && $user ne "www") ? "u" : "r";
 
-my ($private_web_dir, $web_doc_root_wpath);
-   
 if(prompt_default("Install in web Root or User directory", $default, "(r|u)") eq "r")
 {
    $web_doc_root = "/home/httpd/html"
@@ -28,10 +31,6 @@ if(prompt_default("Install in web Root or User directory", $default, "(r|u)") eq
    $cgi_root_wpath = "/cgi-bin"
       unless(defined($cgi_root_wpath));
    my $web_doc_root_wpath = "";
-   if($web_doc_root =~ m:[^/]+$:)
-   {
-      $private_web_dir = "$`private";
-   }
 }
 else
 {
@@ -46,170 +45,166 @@ else
    undef $cgi_root;
    undef $cgi_root_wpath;
    $web_doc_root_wpath = "/~$ENV{\"USER\"}";
-   if($web_doc_root =~ m:[^/]+$:)
-   {
-      $private_web_dir = "$`web_private";
-   }
 }
+
+my $web_doc_root = prompt_default("Web document root", $web_doc_root);
+my $web_doc_root_path = prompt_default("Web document root web path", $web_doc_root_wpath);
+
 
 unless($cgi_root)
 {
    $cgi_root = "$web_doc_root/cgi-bin";
    $cgi_root_wpath = "$web_doc_root_wpath/cgi-bin";
 }
-my $webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
 
-my $wkn_cgi_subpath = "wkn";
-my $wkn_cgi_dir = prompt_default("webknotes cgi-bin directory", "$cgi_root/$wkn_cgi_subpath");
-if($wkn_cgi_dir =~ m:^$web_doc_root/:)
+my $wkn_cgi_dir = prompt_default("cgi-bin install directory", "$cgi_root/wkn");
+
+
+exit unless(open(IN, "define.in"));
+while(defined(my $line = <IN>))
 {
-   mkdir($web_doc_root, 0755);
+  if($line =~ m:(\S+)\s+(\S+)(\s+\"([^\"]*)\")?(\s+\"([^\"]*)\")?:)
+  {
+     my ($type, $var, $prompt, $default) = ($1, $2, $4, $6);
+     if($type eq "PACKAGE") {
+         $package = $var;
+         if( -f "$wkn_cgi_dir/${package}_define.pl" ) { 
+            require "$wkn_cgi_dir/${package}_define.pl";
+         }
+         next; 
+     }
+     next if($type eq "SUB"); # can't retrieve a sub from define file
+           
+     if(defined(${"${package}::define::$var"})) { $default = ${"${package}::define::$var"}; }
+     next if(!defined($default)); # no default or previous user value
+     push(@{$symbols{$package}}, $var) if($package ne "main");
+     next if($type eq "HASH"); # manually configured
+     
+     $default =~ s:\$\{([^\}]+)\}:&eval_var($1):ge;
+     ${"${package}::define::$var"} = type_prompt($type, $prompt,  $default);
+  }
 }
-if($wkn_cgi_dir =~ m:^$cgi_root/:)
+close(IN);
+
+#INSTALLATION follows
+
+if(-d $wkn_cgi_dir )
 {
-   mkdir($cgi_root, 0755);
-   $wkn_cgi_subpath = $';
+  $default = "n";
+}
+else
+{
+   $default = "y";
 }
 
-my $wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
-
-mkdir($wkn_cgi_dir, 0755);
-
-if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
+if(prompt_default("Copy webknotes cgi-bin", $default, "(y|n)") eq "y")
 {
-   system("cp -r $webknotes_base/cgi-bin/* $wkn_cgi_dir");
+   mkdir($wkn_cgi_dir, 0755);
+   system("cp -r cgi-bin/* $wkn_cgi_dir");
 
    print "Note: WebKNotes requires some sort of setuid mechanism. You have these coices:\n";
    print "\tApache setuid_mod - if enabled, you do nothing\n";
    print "\tcgiwrap - Your cgi web path will be: /cgi-bin/cgiwrap/webuser/wkn\n";
-   print "\tsperl_user.c - \n" .
-      "\t\tcc -c util/sper_user.c -o $wkn_cgi_dir/sperl_$user\n" .
-      "\t\tutil/perlpath $wkn_cgi_dir/sperl_$user $wkn_cgi_dir/*.cgi\n";
-   print "\tsetuid .cgi - say Yes below\n";
+   print "\tsperl - A c program that provides a secure setuid mechanism for one specific user\n";
+   print "\tchmod +s on *.cgi\n";
    print "\tChange User/Group in httpd.conf to owner of files (Not recommended if untrusted users)\n";
       
    print "\n";
-   if(prompt_default("Set Setuid bit on scripts", "y", "(y|n)") eq "y")
+   my $sid_mod = prompt_default("What setuid mechanism should be used?", 
+      "other", "(chmod|sperl|other)");
+   if($sid_mod eq "chmod")
    {
       system("chmod a+x,u+s $wkn_cgi_dir/*.cgi");
    }
-}
-
-my $notes_subpath = "docs";
-my $notes_dir = prompt_default("Document file path (this is where the document tree lives)", "$web_doc_root/$notes_subpath");
-my $in_web_doc_root = 0;
-if($notes_dir =~ m:^$web_doc_root/:)
-{
-   $in_web_doc_root = 1;
-   $notes_subpath = $';
-}
-my $notes_wpath = prompt_default("Notes web path", "$web_doc_root_wpath/$notes_subpath");
-
-mkdir($web_doc_root, 0755) if($in_web_doc_root);
-
-unless(-d $notes_dir)
-{
-   print "Error creating directory: $notes_dir\n" unless(mkdir($notes_dir,0755));
-   if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
+   elsif($sid_mod eq "sperl")
    {
-      system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
-      mkdir("$notes_dir/webknotes", 0755);
-      system("cp '$webknotes_base/doc'/* $notes_dir/webknotes");
+      my $perl = `which perl`; chomp $perl;
+      my $perldef = $perl eq '/usr/bin/perl'? "" : "-DCOMMAND=$perl";
+      system("cc $perldef util/sperl_user.c -o $wkn_cgi_dir/sperl_$user");
+      $rtn = $? << 8;
+      if($rtn) { print "There was a problem compiling sperl_user.c\n";}
+      else
+      {
+         system("chmod a+x,u+s $wkn_cgi_dir/sperl_$user");
+         system("util/perlpath $wkn_cgi_dir/sperl_$user $wkn_cgi_dir/*.cgi\n");
+         system("chmod a+x $wkn_cgi_dir/*.cgi");
+      }
    }
 }
 
-my $public_subpath = "wkn";
-my $public_dir = prompt_default("WKN public html dir (where by default, icons and themes live)", "$web_doc_root/$public_subpath");
-if($public_dir =~ m:^$web_doc_root/:)
+if('y' eq prompt_default("Write configuration in $wkn_cgi_dir?", "y", "(y|n)"))
 {
-   $in_web_doc_root = 1;
-   $public_subpath = $';
-}
-my $public_wpath = prompt_default("WKN public html web path", "$web_doc_root_wpath/$public_subpath");
-
-mkdir($public_dir, 0755);
-
-my $icon_subpath = "$public_subpath/icons";
-my $theme_subpath = "$public_subpath/themes";
-my $icons_dir = prompt_default("Icons file path", "$web_doc_root/$icon_subpath");
-if($icons_dir =~ m:^$web_doc_root/:)
+for my $pack (keys %symbols)
 {
-   $icon_subpath = $';
-}
-my $icons_wpath = prompt_default("Icons web path", "$web_doc_root_wpath/$icon_subpath");
-
-my $themes_dir = prompt_default("Themes file path", "$web_doc_root/$theme_subpath");
-if($themes_dir =~ m:^$web_doc_root/:)
-{
-   $theme_subpath = $';
-}
-my $themes_wpath = prompt_default("Themes web path", "$web_doc_root_wpath/$theme_subpath");
-
-
-if(prompt_default("Copy sample icons", ( -d $icons_dir )? "n" : "y",
-   "(y|n)") eq "y")
-{
-   mkdir($icons_dir,0755);
-   system("cp -r '$webknotes_base/icons'/* $icons_dir");
-}
-
-if(prompt_default("Copy sample themes", ( -d $themes_dir )? "n" : "y",
-   "(y|n)") eq "y")
-{
-   mkdir($themes_dir,0755);
-   system("cp -r '$webknotes_base/themes'/* $themes_dir");
-}
-
-$private_web_dir= prompt_default("Private web data directory", $private_web_dir);
-unless(-d $private_web_dir)
-{
-   if(mkdir($private_web_dir,0755))
+   open(DFILE, ">$wkn_cgi_dir/${pack}_define.pl");
+   print DFILE "package ${pack}::define;\n\n";
+   
+   for $var (@{$symbols{$pack}})
    {
-      mkdir("$private_web_dir/groups",0755);
-      mkdir("$private_web_dir/users",0755);
-      mkdir("$private_web_dir/sessions",0755);
+      if(ref ${"${pack}::define::$var"} eq "HASH")
+      {
+         print DFILE "\$$var = {";
+         for my $key (keys %${"${pack}::define::$var"})
+         {
+            print DFILE  "'$key'=>'" . ${"${pack}::define::$var"}->{$key} . "',";
+         }
+         print DFILE "};\n";
+   
+      }
+      else
+      {
+      my $val = ${"${pack}::define::$var"};
+      print DFILE "\$$var = '$val';\n";
+      }
+   }
+   print DFILE "\n1;\n";
+   close(DFILE);
+}
+}
+
+unless(defined($filedb::define::doc_dir) and -d $filedb::define::doc_dir)
+{
+   print "Error creating directory: $notes_dir\n" unless(mkdir($filedb::define::doc_dir,0755));
+   if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
+   {
+      system("cp -r 'sample_notes'/* $filedb::define::doc_dir");
+      mkdir("$filedb::define::doc_dir/webknotes", 0755);
+      system("cp 'doc'/* $filedb::define::doc_dir/webknotes");
+   }
+}
+
+if(prompt_default("Copy sample icons", ( -d $view::define::icons_dir )? "n" : "y",
+   "(y|n)") eq "y")
+{
+   mkdir($view::define::icons_dir,0755);
+   system("cp -r 'icons'/* $view::define::icons_dir");
+}
+
+if(prompt_default("Copy sample themes", ( -d $view::define::themes_dir )? "n" : "y",
+   "(y|n)") eq "y")
+{
+   mkdir($view::define::themes_dir,0755);
+   system("cp -r 'themes'/* $view::define::themes_dir");
+}
+
+unless(-d $auth::define::private_dir or 
+'y' eq prompt_default("Create private web dir", "y", "(y|n)") )
+{
+   if(mkdir($auth::define::private_dir,0755))
+   {
+      mkdir("$auth::define::private_dir/groups",0755);
+      mkdir("$auth::define::private_dir/users",0755);
+      mkdir("$auth::define::private_dir/sessions",0755);
    }
    else
    {
-      print "Error making directory: $private_web_dir\n";
+      print "Error making directory: $auth::define::private_dir\n";
    }
 }
 
-$default = ( -f "$wkn_cgi_dir/auth_define.pl" ) ? "n" : "y";
-
-if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
-{
-   
-   
-
-   unlink("$wkn_cgi_dir/auth_define.pl");
-   if(open(FILE, ">$wkn_cgi_dir/auth_define.pl"))
-   {
-      print FILE 
-"package auth::define;
-\$private_dir = \"$private_web_dir\";
-\$path_permissions = { \"\" => \"+rn,o+mdc\"};
-1;
-";
-      close FILE;
-   }
-
-   unlink("$wkn_cgi_dir/filedb_define.pl");
-   if(open(FILE, ">$wkn_cgi_dir/filedb_define.pl"))
-   {
-      print FILE
-"package filedb::define;
-
-\$doc_dir = \"$notes_dir\";
-\$doc_wpath = \"$notes_wpath\";
-1;
-";
-      close FILE;
-   }
-   
-   my $admin_user = $< ? getpwuid($<) : "admin";
-   $default = ( -f "$private_web_dir/users/$admin_user" ) ? "n" : "y";
-   if(prompt_default("Create Admin login as '$admin_user'", $default, "(y|n)") eq "y")
+   my $admin_user = "admin";
+   if( ! -f "$auth::define::private_dir/users/$admin_user" and
+      prompt_default("Create Admin login as '$admin_user'", 'y', "(y|n)") eq "y")
    {
       my($admin_password, $admin_password_check);
       while(1)
@@ -230,89 +225,34 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
       require "auth_lib.pl";
       if(! auth::write_user_info($admin_user,
          { "PassKey"=>auth::pcrypt1($admin_password),
-         "AuthPath"=>'/',
-         "Permissions"=>'rncmds',
+         "AuthPath"=>'',
+         "Permissions"=>'s',
          "Name"=>"Admin"}))
       {
          print "Error creating admin.\n";
       }
    }
 
-   unlink("$wkn_cgi_dir/view_define.pl");
-   if(open(FILE, ">$wkn_cgi_dir/view_define.pl"))
-   {
-      print FILE
-"package view::define;
-\$icons_wpath = \"$icons_wpath\"; 
-\$themes_wpath = \"$themes_wpath\";
-\$themes_dir = \"$themes_dir\";" , 
-'
-$default_layout = "table";
-$default_theme = "forge";
-
-$max_depth = 3;
-
-$opened_icon = "fminus.gif";
-$closed_icon = "fplus.gif";
-$dir_icon = "folder.gif";
-$file_icons = { "file" => "document.gif" };
-';
-      close FILE;
-   }
-}
-my $default_layout = "table";
-my $default_theme = "don";
-if(prompt_default("Generate top level index", "y", "(y|n)") eq "y")
-{
-   my $index_file = prompt_default("Name of index file", "$public_dir/index.html");
-   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/browse.cgi '' >$index_file";
-   print "Running command: $command\n\n";
-   system($command);
-}
-
-my $wpath_prefix = 'localhost' if($wkn_cgi_wpath =~ m:^/:);
-print "\nhttp://$wpath_prefix$wkn_cgi_wpath/browse.cgi\n";
-print "http://$wpath_prefix$public_wpath/\n";
-
-sub prompt_default
-{
-   my($prompt, $default, $choices) = @_;
-      
-   if( length($prompt) + length($choices) + length($default) + 4 > 80)
-   {
-      print "$prompt $choices -\n  [$default]: ";
-   }
-   else
-   {
-      print "$prompt $choices [$default]: ";
-   }
-   my $line = <STDIN>;
-   chomp($line);
-   $line = $default if($line eq "");
-   
-   return $line;
-}
-
+print "Try this link:\nhttp://localhost$cgi_root_wpath/wkn/browse.cgi\n";
 
 sub parse_httpd
 {
-
    my($line, $web_doc_root, $script_root, $script_alias, $user_dir, $conf);
-   
+
    for $conf ( "/etc/httpd/conf/httpd.conf", "/etc/httpd/conf/srm.conf" )
    {
       next unless(open( HCONF, $conf));
       while(defined($line = <HCONF>))
       {
-         if($line =~ m:^\s*DocumentRoot\s+:)
+         if($line =~ m:^DocumentRoot\s+:)
          {
             ($web_doc_root) = split_args($');
          }
-         if($line =~ m:^\s*ScriptAlias\s+:)
+         if($line =~ m:^ScriptAlias\s+:)
          {
             ($script_alias, $script_root) = split_args($');
          }
-         if($line =~ m:^\s*UserDir\s+:)
+         if($line =~ m:^UserDir\s+:)
          {
             ($user_dir) = split_args($');
          }
@@ -320,20 +260,22 @@ sub parse_httpd
       close(HCONF);
    }
    if(!defined($web_doc_root))
-   {                             
+   {
       print "Warning: http configuration not found\n";
    }
    return ($web_doc_root, $script_root, $script_alias, $user_dir);
 }
 
+
 sub split_args
 {
    my($line) = @_;
    my(@args) = ();
-   while($line =~ m:^\s*\"([^\"]*)\"|([^\"\s]+)\s*:)
+   while($line =~ m:^\s*\"([^\"]*)\"|([^\"\s]+):)
+#   while($line =~ m:^\s*\"([^\"]*)\"|([^\"\s]+)\s*:)
    {
       push(@args, $1) if(defined($1));
-      push(@args, $1) if(defined($2));
+      push(@args, $2) if(defined($2));
       $line = $';
    }
    return (@args);
@@ -348,4 +290,51 @@ sub chomp_slashs
       push( @paths, $_);
    }
    return(@paths);
+}
+
+sub prompt_default
+{
+   my($prompt, $default, $choices) = @_;
+   my($line);
+
+   do
+   {
+   if( length($prompt) + length($choices) + length($default) + 4 > 80)
+   {
+      print "$prompt $choices -\n  [$default]: ";
+   }
+   else
+   {
+      print "$prompt $choices [$default]: ";
+   }
+   $line = <STDIN>;
+   chomp($line);
+   $line = $default if($line eq "");
+   } while(defined($choices) and ! ($line =~ m:^${choices}$:));
+
+   return $line;
+}
+
+sub type_prompt
+{
+   my($type, $prompt, $default) = @_;
+
+   if($type eq "BOOL")
+   {
+      return ('y' eq prompt_default($prompt, $default ? 'y': 'n', '(y|n)'))?1:0;
+   }
+   else
+   {
+      return prompt_default($prompt, $default);
+   }
+}
+
+sub eval_var
+{
+   my($var) = @_;
+   if(defined(${"${package}::define::$var"}))
+   {  return ${"${package}::define::$var"} }
+   elsif(defined(${"$var"}))
+   { return ${"$var"} }
+   else { return ();}
 }

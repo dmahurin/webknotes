@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # CGI script that acts as index to other cgi auth cgi scripts
 

@@ -13,17 +13,17 @@
 #include <unistd.h> /* for getuid, exec */
 #include <sys/stat.h>
 
-#define SCRIPTER "/usr/local/bin/perl5"
-#define SCRIPTER_ARGS "-T-"
+#define COMMAND "/usr/bin/perl"
+#define COMMAND_ARGS "-T-"
 void exec_script( char *script_name, int argc, char *argv[])
 {
    int i, myargc = 0;
    char **myargv = (char **)malloc(sizeof(char *) * (argc + 1));
-   myargv[myargc++] = SCRIPTER;
-   myargv[myargc++] = SCRIPTER_ARGS;
+   myargv[myargc++] = COMMAND;
+   myargv[myargc++] = COMMAND_ARGS;
    for(i = 0; argc--;i++) {myargv[myargc++] = argv[i];  }
    myargv[myargc] = NULL;
-   execv(SCRIPTER, myargv);
+   execv(COMMAND, myargv);
 }
 
 #define TRUSTED_ARGS "-T"

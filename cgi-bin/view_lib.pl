@@ -142,7 +142,7 @@ sub strip_view_mode_args
          $arg =~ s:\+: :g;
          push(@args, $arg);
       }
-      else
+      elsif(! ($arg =~ m:=:))
       {
          push(@args, $arg);
       }
@@ -209,7 +209,7 @@ sub actions3
 
 
 	print <<EOT;
-[ <A HREF="search.cgi?notes_mode=$view::define::mode&notes_subpath=${notes_path}">Search</A> ]
+[ <A HREF="search.cgi?notes_subpath=${notes_path}">Search</A> ]
 [ <A HREF="user_access.cgi"> User Accounts </a> ]
 EOT
    print "[ <A HREF=\"" . &view::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
@@ -408,167 +408,161 @@ sub print_icon_img
 sub list_files_html
 {
    my($notes_path) = @_;
-   my($dir) = $filedb::define::doc_dir;
-   $dir .= "/$notes_path" unless( $notes_path eq "");
 
    my($rtn) = 0;
 
+   my $dfile = filedb::default_file($notes_path);
    # If you have index.html, not README.html, assume you want list files
-   return 0 if( -f "$dir/FrontPage.wiki");
-   return 0 if( -f "$dir/FrontPage");
-   return 0 if( -f "$dir/HomePage");
-   return 0 if( -f "$dir/index.html");
-   return 0 if( -f "$dir/index.htm");
+   return 0 if( $dfile eq "FrontPage.wiki");
+   return 0 if( $dfile eq "FrontPage");
+   return 0 if( $dfile eq "HomePage");
+   return 0 if( $dfile eq "index.html");
+   return 0 if( $dfile eq "index.htm");
 
-   my($file);
-   opendir(DIR, "$dir") || return 0;
-   while(defined($file = readdir(DIR)))
+   for my $file (filedb::get_directory_list($notes_path))
    {
-	next if( -d "$dir/$file" );
-        next if( $file =~ m:^\.: );
-        next if( $file =~ m:^README(\.html)?:);
-        next if( $file eq "index.html");
-        next if( $file eq "index.htm");
+	next if( filedb::is_dir($notes_path, $file));
+        next if($file eq $dfile);
 
-        if( $file =~ m:^([^/]*)$: ) # untaint dir entry
-        {
-                $file = $1;
-        }
-        else
-        {
-                print "hey, /'s ? not good.\n";
-                return 0;
-        }
         if(print_link_html( "$notes_path/$file"))
         {
            $rtn = 1;
            print "<br>\n";
         }
    }
-   closedir(DIR);
    return $rtn;
 }
 
 sub list_dirs_html
 {
    my($notes_path) = @_;
-   my($dir) = $filedb::define::doc_dir;
-   $dir .= "/$notes_path" unless( $notes_path eq "");
 
-   return 0 if( -f "$dir/FrontPage.wiki");
-   return 0 if( -f "$dir/FrontPage");
-   return () unless
-      opendir(DIR, $dir);
-   my $file;
+   my $dfile = filedb::default_file($notes_path);
+
+   return 0 if( $dfile eq "FrontPage.wiki");
+   return 0 if( $dfile eq "FrontPage");
+
    my $found = 0;
-   while(defined($file = readdir(DIR)))
+   for my $file (filedb::get_directory_list($notes_path))
    {
-        next if( $file =~ m:^\.: );
-	next if( -f "$dir/$file" );
+	next if( filedb::is_file($notes_path, $file));
 
-
-        if( $file =~ m:^([^/]*)$: ) # untaint dir entry
-        { $file = $1; }
-        else
-        { die "hey, /'s ? not good.\n"; }
-        
         print "<br>" if ($found);
         next unless(print_link_html( "$notes_path/$file"));
         $found = 1;
         
    }
-   closedir(DIR);
    return $found;
 }
 
 sub list_html
 {
    my( $notes_path ) = @_;
-   my($dir) = $filedb::define::doc_dir;
-   $dir .= "/$notes_path" unless( $notes_path eq "");
+   my $dfile = filedb::default_file($notes_path);
    
    my($found) = 0;
 
-   my $file;
-   opendir (DIR, ${dir});
-   while( defined($file = readdir DIR))
+   for my $file (filedb::get_directory_list($notes_path))
    {
-	next if( -f $file );
-        next if( $file =~ m:^\.: );
-        next if( $file =~ m:^README(\.html)?:);
-        next if( $file eq "index.html");
-        next if( $file eq "index.htm");
-
-        if( $file =~ m:^([^/]*)$: ) # untaint dir entry
-        { $file = $1; }
-        else
-        { die "hey, /'s ? not good.\n"; }
-        print "<br>" if ($found);
+	next if( filedb::is_file($notes_path, $file));
+        next if($file eq $dfile);
 
         next unless(print_link_html( "$notes_path/$file"));
         $found = 1;
         
    }
-   closedir(DIR);
    return $found;
 }
 
-sub print_dir_file
+sub get_file_type
+{
+   my($notes_path) = @_;
+   my($file) = filedb::default_file($notes_path);
+
+   my($file_type);
+   if($file =~ m:\.([^\.]+)$:)
+   {
+      $file_type = $1;
+      if($file_type =~ /^(c|h|c\+\+|cxx|hxx|idl|java)$/)
+      {
+         $file_type = "code";
+      }
+      elsif($file_type eq "htm")
+      {
+         $file_type = "html";
+      }
+   }
+   else
+   {
+      if($file eq "README" )
+      {
+         $file_type = "txt";
+      }
+      elsif( $file =~ m:^([A-Z][a-z]+){2,}$:)
+      {
+         $file_type = "wiki" ;
+      }
+      else
+      {
+         $file_type = "txt";
+         #$file_type = $view::define::default_file_type;
+      }
+   }
+   return $file_type;
+}
+   
+
+sub get_dir_file_html
 {
    my($notes_path) = @_;
 
    my($file) = filedb::path_file($notes_path);
    return () unless(defined($file));
-   my($full_path) = filedb::get_full_path($file);
-   
-      my($file_type) = ();
-      $file =~ m:([^\/]+)$: or return ();
-      my($file_name) = $1;
-      if($file =~ m:\.([^\.]+)$:)
-      {
-         $file_type = $1;
-         if($file_type =~ /^(c|h|c\+\+|cxx|hxx|idl|java)$/)
-         {
-            $file_type = "code";
-         }
-      }
-      if( !defined($file_type))
-      {
-         if($file_name eq "README" )
-         {
-            $file_type = "txt";
-         }
-         elsif( $file_name =~ m:^([A-Z][a-z]+){2,}$:)
-         {
-            $file_type = "wiki" ;
-         }
-         else
-         {
-            $file_type = $view::define::default_file_type;
-         }
-      }
-      my $prefix = ( $0 =~ m:/[^/]*$: ) ? "$`/":"";
-      if(defined($file_type) and -f "${prefix}filter_${file_type}.pl" )
-      {
-         require "filter_${file_type}.pl";
-         &{"filter_${file_type}::print_file"}($file);
-      }
-      else
-      {
-         &view::print_file($notes_path);
-      }
+   my($text);
+   my($file_type) = get_file_type($notes_path);
+
+   my $prefix = ( $0 =~ m:/[^/]*$: ) ? "$`/":"";
+   if(defined($file_type) and -f "${prefix}filter_${file_type}.pl" )
+   {
+      require "filter_${file_type}.pl";
+      $text = &{"filter_${file_type}::filter_file"}($file);
+   }
+   else
+   {
+      $text = filedb::get_file($notes_path);
+   }
       
-      return $notes_path;
+   return $text;
+}
+
+sub print_dir_file
+{
+   my($notes_path) = @_;
+   my($text) = get_dir_file_html($notes_path);
+   my($file_type) = get_file_type($notes_path);
+
+   # view specific mods
+   if($file_type eq "html")
+   {
+      $text =~ s#<hr\s+title="Modified\s([\d\s\:-]+)(\sby\s+([^\"]+))?"\s*>#&enclose_topic_info(view::create_modification_string($1,$3))#ge;
+   }
+   print $text;
+   return $notes_path;
 }
 
 sub create_modification_string
 {
-   my($date, $user, $group) = @_;
+   my($time, $user, $group) = @_;
+   my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+           localtime($time);
+   $year +=1900;
+   $mon++;
+   my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $min, $sec);
    my($text) = "Modified $date ";
    
    if( defined($user))
    {
-      $text .= "by <a href=\"show_user.cgi?username=$user\">$user</a>\n";
+      $text .= ": owner <a href=\"show_user.cgi?username=$user\">$user</a>\n";
    }
    if(defined($group))
    {
@@ -581,22 +575,7 @@ sub print_modification
 {
    my($notes_path) = @_;
 
-   my ($dir_file);
-   if(! defined( $dir_file = filedb::path_file($notes_path)) )
-   {
-       $dir_file = $notes_path;
-   }
-my($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-$atime,$mtime,$ctime,$blksize,$blocks)
-   = stat("$filedb::define::doc_dir/$dir_file");
-
-   my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
-           localtime($mtime);
-   $year +=1900;
-   my(@months) = ( "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" );
-   my $mtime_str = "$year $months[$mon] $mday $hour:$min:$sec";
-        
-   print create_modification_string($mtime_str, filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"));
+   print create_modification_string(filedb::get_mtime($notes_path), filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"));
 }
 
 sub print_file
@@ -739,7 +718,7 @@ sub file_type_icon_tag
    }
    else
    {
-      $icon = $view::define::file_icons->{"file"};
+      $icon = $view::define::file_icon;
    }
    if(defined($icon))
    {
@@ -796,6 +775,23 @@ sub persist_view_mode
       undef $view::view_mode{"theme"};
       undef $view::view_mode{"layout"};
       undef $view::view_mode{"sublayout"};
+   }
+}
+
+sub enclose_topic_info
+{
+   my($text) = @_;
+   if(view::get_view_mode("save") eq "plain")
+   {
+      return "<hr><div class=\"topic-info\">$text</div><hr>";
+   }
+   else
+   {
+require "css_tables.pl";
+my $css_tables = new css_tables;
+        return "<br><br>" . $css_tables->box_begin("topic-info") . "\n" .
+      $text .
+$css_tables->box_end()  ;
    }
 }
 

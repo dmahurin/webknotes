@@ -9,38 +9,26 @@ require "link_translate.pl";
 
 package filter_txt;
 
-sub print_file 
+sub filter_file 
 {
    my($notes_file) = @_;
    my($text) = filedb::get_file($notes_file);
+
    return () if(! defined($text));
 
-   open(MYFILE, "$filedb::define::doc_dir/$notes_file") || return 0;
-   my($line);
-   while(defined($line = <MYFILE>))
-   {
-      if( $line =~ /^http:/ ||
-         $line =~ /^ftp:/ ||
-         $line =~ s/^mailto:// )
-      {
-         $line = "<A HREF=\"$line\">$line</A>\n";
-      }
-      while($line =~ s/<<([^>]+)>>/sprintf("<a href=\"%s\">${1}<\/a>",&link_translate::smart_ref($notes_file,$1))/gie) { }
+   $text =~ s/((http|ftp|mailto):.*)($)/<a href=\"$1\">$1<\/a>$2/g;
+   #while($text =~ s/<<([^>]+)>>/sprintf("<a href=\"%s\">${1}<\/a>",&link_translate::smart_ref($notes_file,$1))/gie) { }
+   $text =~ s/<<([^>]+)>>/sprintf("<a href=\"%s\">${1}<\/a>",&link_translate::smart_ref($notes_file,$1))/gie;
+   $text = &link_translate::translate_html($text, $notes_file);
 
+   while($text =~ s:(^ *) :$1&nbsp\;:gm) {}
+   $text =~ s:$:<br>:gm;
+   return $text;
+}
 
-      $line = &link_translate::translate_html($line, $notes_file);
-
-      if($line =~ m:^( +):)
-      {
-         my $a = $1;
-         my $b = $';
-         $a =~ s:\s:&nbsp;:g;
-         $line = $a . $b;
-      }
-      print("$line<br>");
-   }
-   close(MYFILE);
-   return 1;
+sub print_file
+{
+   print filter_file(@_);
 }
 
 1;

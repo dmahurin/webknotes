@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # edit information on a user, using the auth-lib
 
@@ -52,12 +52,8 @@ if( $in{"username"} and $in{"username"} ne $username )
    }
 }
 
-my($path, $access, $fullname, $email, $webpage) =
-( $user_info->{"AuthRoot"}, $user_info->{"Permissions"},
-  $user_info->{"Name"}, $user_info->{"Email"}, $user_info->{"Webpage"});
 
-if( ! defined ( $in{'fullname'}))
-{
+
    print <<"EOT";
 <html>
 <head>
@@ -68,7 +64,64 @@ if( ! defined ( $in{'fullname'}))
 <p><H1>Change User Info</H1></p>
 
 <HR>   
+EOT
 
+
+if(defined($in{fullname}))
+{
+my $password;
+if( defined($in{'password'}) and $in{password} ne "" )
+{
+   if($in{'password'} eq $in{'password_verify'})
+   {
+     $password = $in{'password'};
+   }
+   else
+   {
+     print "password verify did not match\n";
+     exit(0);
+   }
+}
+if($password eq "*")
+{
+   $user_info->{"PassKey"} ='*';
+}
+elsif($password ne "")
+{
+   $user_info->{"PassKey"}=auth::pcrypt1($password);
+}
+
+$user_info->{"Name"} = $in{'fullname'};
+
+$user_info->{"Webpage"} = $in{'webpage'};
+if($system_access)
+{
+   $username = $in{username};
+   $user_info->{"AuthRoot"} = $in{path};
+   $user_info->{"Permissions"} = $in{access};
+}
+
+if($user_info->{"Email"} ne $in{'email'}) # reset email verify
+{
+   $user_info->{"Email"} =  $in{'email'};
+   $user_info->{"Permissions"} =~ s:v::g;
+}
+
+if(! &auth::write_user_info(auth::check_user_name($username), $user_info))
+{
+   print "Could not modify user information?\n";
+   exit(0);
+}
+print "User information modified\n";
+print "<hr>\n";
+$user_info = auth::get_user_info($username);
+}
+
+my($path, $access, $fullname, $email, $webpage) =
+( $user_info->{"AuthRoot"}, $user_info->{"Permissions"},
+  $user_info->{"Name"}, $user_info->{"Email"}, $user_info->{"Webpage"});
+
+print <<"EOT";
 <form method="POST" action="$this_cgi">
 <p>User Name: $username</p>
 EOT
@@ -97,48 +150,16 @@ Email <input type=text name="email" value="$email" size=20><br>
 Web Page <input type=text name="webpage" value="$webpage" size=20><br>
 <input type=submit value="Change User Info"> <input type=reset>
 </form>
+<form method="POST" action="verify_email.cgi">
+<input type=hidden name="username" value="$username">
+EOT
+unless($user_info->{"Permissions"} =~ m:v:)
+{
+print <<"EOT";
+<input type=submit value="Verify Email">
+</form>
 </body>
 </html>
 EOT
-exit(0);
 }
-
-my $password;
-if( defined($in{'password'}) and $in{password} ne "" )
-{
-   if($in{'password'} eq $in{'password_verify'})
-   {
-     $password = $in{'password'};
-   }
-   else
-   {
-     print "password verify did not match\n";
-     exit(0);
-   }
-}
-if($password eq "*")
-{
-   $user_info->{"PassKey"} ='*';
-}
-elsif($password ne "")
-{
-   $user_info->{"PassKey"}=auth::pcrypt1($password);
-}
-
-$user_info->{"Name"} = $in{'fullname'};
-$user_info->{"Email"} =  $in{'email'};
-$user_info->{"Webpage"} = $in{'webpage'};
-if($system_access)
-{
-   $username = $in{username};
-   $user_info->{"AuthRoot"} = $in{path};
-   $user_info->{"Permissions"} = $in{access};
-}
-
-if(! &auth::write_user_info(auth::check_user_name($username), $user_info))
-{
-   print "Could not modify user information?\n";
-   exit(0);
-}
-print "User information modified\n";
 }

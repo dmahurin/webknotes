@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # CGI script to edit a file using auth-lib user verification
 
@@ -11,6 +11,7 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
 require 'auth_lib.pl';
 require 'filedb_lib.pl';
+require 'mailer_lib.pl';
 use CGI qw(:cgi-lib); 
 
 my($my_main) = auth::localize_sub(\&main);
@@ -57,7 +58,7 @@ if( $path =~ m:$illegal_dir: )
    exit(0);
 }
 
-my $file = &filedb::path_file($path);
+my $file = &filedb::default_file($path);
 my $dir = &filedb::path_dir($path);
 
 unless(defined($file))
@@ -84,11 +85,11 @@ if( ! defined ( $text ) )
 {
    $acc_flag = 'r'; #read
 }
-elsif( ! defined ($file) )
-{
-   $file = $path; # user specified file in path
-   $acc_flag = 'c'; #create
-}
+#elsif( ! defined ($file) )
+#?{
+#   $file = $path; # user specified file in path
+#   $acc_flag = 'c'; #create
+#}
 else
 {
    $acc_flag = 'm'; #modify
@@ -99,25 +100,17 @@ if(! auth::check_current_user_file_auth( $acc_flag, $file ) )
    exit 0;
 }
 
-my($full_file) = filedb::get_full_path($file);
 if( ! defined($text) )
 {
-   print( "FILE: $full_file <br>\n");
+   print( "FILE: $path <br>\n");
    print <<"EOT";
 <form action="$this_cgi" method="post">
 <pre>
 <TEXTAREA NAME="text" wrap=true rows=24 cols=65 >
 EOT
-   if(open(TFILE, $full_file ))
-   {
-      my $line;
-      while(defined($line = <TFILE>))
-      {
-         $line =~ s:<\/TEXTAREA>:<%2FTEXTAREA>:;
-         print $line;
-      }
-      close(TFILE);
-   }
+   $text = filedb::get_file($dir, $file);
+   $text =~ s:<\/TEXTAREA>:<%2FTEXTAREA>:g;
+   print $text;
    print "<\/TEXTAREA>\n";
    print <<"EOT";
 <input type=hidden name=path value="$path">
@@ -127,16 +120,16 @@ EOT
 }
 else
 {
-   if(!open( FOUT, ">$full_file" ) )
-   {
-      print "failed to write $file\n";
-      exit(1);
-   }
-    $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
-   print FOUT $text;
-   close(FOUT);
+   $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
+   filedb::put_file($dir, $file, $text);
+
+
    print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$encoded_path\"></head><html>\n";
    print "wrote $file\n";
+   if(auth::check_current_user_file_auth( 'M', $dir ))
+   {
+     &mailer::mail_subscribers($dir, $file);
+   }
    print "<html>";
 }
 

@@ -1,10 +1,11 @@
 use strict;
 package filter_code;
 
-sub print_file
+sub filter_file
 {
    my($notes_file) = @_;
    my($text) = filedb::get_file($notes_file);
+
    $notes_file =~ m:\.([^\.]+)$:;
 
    if(defined(&view::define::code_filter))
@@ -17,6 +18,10 @@ sub print_file
       $text =~ s:>:&gt;:g;
       $text= "<pre>${text}</pre>\n";
    }
-   print $text;
+}
+
+sub print_file
+{
+   print filter_file(@_);
 }
 1;

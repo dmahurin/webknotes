@@ -39,15 +39,10 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 }
 print_main_topic_table($notes_path, $css_tables);
 
-return(0) unless
-opendir(DIR, "$filedb::define::doc_dir/$notes_path");
-my $file;
-while($file = readdir(DIR))
+my $dfile = filedb::default_file($notes_path);
+for my $file (filedb::get_directory_list($notes_path))
 {
-	next if( $file =~ m:^\.: );
-	next if( $file =~ m:^README(\.html)?:);
-	next if( $file eq "index.html");
-
+	next if($file eq $dfile);
 	if( $file =~ m:^([^/]*)$: ) # untaint dir entry
         {
 		$file = $1;

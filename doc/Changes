@@ -96,3 +96,23 @@ and deleting non-note files)
 -New uploade script to allow uploading none-note or binary items(if user
 has 'u' permission in dir).
 
+0.8.x -
+This version removes all the attribute definition and instead uses 
+CSS to define the look.
+You can change your "theme" on the fly. 
+Sample themes included.
+
+0.9.x -
+-pluggable file filters, 
+-wiki support,
+-mod_perl support
+-css browser hacks. 
+-auto back loading
+
+0.A.x
+-cvs client support
+-file access is now nearly all done via filedb_lib
+-files are locked for write and append
+-subscribtion turned back on (subscribtion is still manual)
+-new configure script that remembers your previous configuration (exept filters)
+-verify email mechanism

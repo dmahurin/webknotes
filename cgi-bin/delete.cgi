@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # CGI script to edit a file using auth-lib user verification
 
@@ -104,12 +104,12 @@ else
    if( filedb::is_dir($filepath) )
       {
       my @dirlist = filedb::get_directory_list($filepath);
-      my $default_file = filedb::get_default_file($filepath);
-      if(@dirlist < 1 || @dirlist == 1 && $dirlist[0] eq $default_file)
+      my $file = filedb::default_file($filepath);
+      if(@dirlist < 1 || @dirlist == 1 && $dirlist[0] eq $file)
          {
          if(@dirlist == 1)
          {
-            filedb::remove_file($filepath, $default_file);
+            filedb::remove_file($filepath, $file);
          }
          if(filedb::unset_all_hidden_data($filepath) &&
          filedb::remove_dir($filepath))

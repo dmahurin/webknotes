@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
@@ -68,7 +68,7 @@ sub wkn_save_file
    {
       local $/ = undef;
 # TODO:: below should not be used with large files
-      filedb::make_file($upload_path, $file, <$file>);
+      filedb::put_file($upload_path, $file, <$file>);
    }
 }
 

@@ -41,15 +41,11 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 print_main_topic_table($notes_path, $css_tables);
 print "<br>";
 
-return(0) unless
-opendir(DIR, "$filedb::define::doc_dir/$notes_path");
-my $file;
-while($file = readdir(DIR))
-{
-	next if( $file =~ m:^\.: );
-        next if ($file eq 'README' or
-           $file =~ m:^(README|index)\.(txt|html|htm)$: );
 
+my $dfile = filedb::default_file($notes_path);
+for my $file (filedb::get_directory_list($notes_path))
+{
+	next if($file eq $dfile);
 	if( $file =~ m:^([^/]*)$: ) # untaint dir entry
         {
 		$file = $1;
@@ -61,7 +57,6 @@ while($file = readdir(DIR))
 	}
 	print_topic_table( "$notes_path/$file", $css_tables);	
 }
-closedir(DIR);
 
 print $css_tables->table_begin("topic-table") . "\n";
 print $css_tables->trtd_begin("topic-actions") . "\n";

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # show information on a user, using the auth-lib
 
@@ -54,7 +54,10 @@ for $username (split(',', $group_info->{"Members"}))
 {
    my($user_info) = &auth::get_user_info($username);
    
-   my($username_more) = (defined($auth::define::userinfocgi) ? ("<a href=\"$auth::define::userinfocgi$username\">$username</a>") : $username);
+# below was put in to allow user info (outside of wkn) to be linked to
+# anyone use it?
+#   my($username_more) = (defined($auth::define::userinfocgi) ? ("<a href=\"$auth::define::userinfocgi$username\">$username</a>") : $username);
+   my($username_more) = $username;
    if(defined($user_info->{"Name"}))
    {
    print "<tr><td>$user_info-?{\"Name\"}</td>

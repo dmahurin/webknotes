@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+#shows all use filedb, view and auth definitions and library calls in the given files
+# usage (from directory with defines.in) check_defines cgi-bin/*.pl cgi-bin/*.cgi
+
+for $file (@ARGV)
+{
+   if(open(FILE, $file))
+   {
+	while($line = <FILE>)
+        {
+           next if($line =~ m:^\s*#:);
+           while($line=~ m#(\w+)::define::(\w+)#)
+           {
+             $defines{$1}->{$2} = 1;
+             $line = $';
+           }
+        }
+      
+      close(FILE);
+   }
+}
+
+exit unless(open(IN, "define.in"));
+  my($pack) = "main";
+while(defined(my $line = <IN>))
+{
+  if($line =~ m:(\S+)\s+(\S+)(\s+\"([^\"]+)\")?(\s+\"([^\"]+)\")?:)
+  {
+     my ($type, $var, $prompt, $default) = ($1, $2, $4, $6);
+     if($type eq "PACKAGE") { $pack = $var; next; } 
+     undef($defines{"${pack}"}->{"$var"});
+  }
+}
+close(IN);
+
+for $ns (sort keys %defines)
+{
+    print "Name Space: $ns\n";
+    for $d (sort keys %{$defines{$ns}})
+    {
+       next unless(defined($defines{$ns}->{$d}));
+       print "STRING $d\n";
+    }
+}

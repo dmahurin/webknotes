@@ -1,38 +1,36 @@
-Permissions are obtained in the following order:
+Permissions are set based on the value of $default_permissions,
+combined with the permissions defined in a per directory .permissions file
+if it exists.
 
-If current path is in users AuthRoot, The permissions are set to flags
-in Users Permissions.
+A permissions string is a comma separated set of permission modifications 
+n format:
+{WHO}{MODIFIER}{PERMISSIONS}
 
-If current path is in a defined 'path_permission' path, the corresponding
-permission modifiers are applied.
-  ex: $path_permissions = (""=> "+rn");#gives everyone read and note permission
-
-If .permissions file exists, the permission modifiers contained are applied.
-
-For path permissions and .permissions, the string is a permissions modifier.
-The format is:
-((o|g|a)?(+|-|=))?(.*)
-The fields are:
-1.
-   'o' - permissions are only applied if user is note directory owner.
-   'u' - permissions are only applied if user is a user (not anonymous).
-   'v' - (later) verified user (by email)
-   'g' - permissions are only applied if user is in note directory group.
-   'a' - all get these permissions (default)
-2.
+WHO: - Who the permissions are applied to
+   'o' - directory owner
+   'u' - registered user
+   'v' - verified user (by email)
+   'g' - users in directory group
+   'a' - all
+MODIFIER: - How the the current permissions are modified
    '=' - new permissions replace current permissions.
    '+' - new permissions are added to current permissions.
    '-' - new permissions are removed from current permissions.
-3.
-   new permissions.
+PERMISSION: - What permissions are set or unset
+   'r' - read
+   'n' - add note
+   'c' - create
+   'm' - modify
+   'a' - append
+   'd' - delete
+   'u' - upload
+   's' - system privalege
+   'i' - inherit permissions
 
+Examples:
 
-The permission flags are:
-r - read
-n - add note
-c - create
-m - modify
-d - delete
-s - system privalege
-i - inherit permissions
+#Anyone can add and read notes, Owners can modify and delete notes:
+$default_permissions = "a+rn,o+mad";
 
+#Anyone can read, Users can add and append, verified users can modify and upload, owners can delete:
+$default_permissions = "a+r,u+na,v+mu,o+d";

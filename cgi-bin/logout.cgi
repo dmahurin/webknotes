@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 # set login cookie to empty
 
 print "Set-Cookie: sessionid=; path=/; expires=Mon, 03-Jun-96 00:00:00 GMT\n";

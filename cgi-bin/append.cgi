@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # CGI script to edit a file using auth-lib user verification
 
@@ -11,6 +11,7 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
 require 'auth_lib.pl';
 require 'filedb_lib.pl';
+require 'mailer_lib.pl';
 use CGI qw(:cgi-lib); 
 
 my($my_main) = auth::localize_sub(\&main);
@@ -57,8 +58,9 @@ if( $path =~ m:$illegal_dir: )
    exit(0);
 }
 
-my $file = &filedb::path_file($path);
+my $file = &filedb::default_file($path);
 my $dir = &filedb::path_dir($path);
+my $dirfile = &filedb::path_file($path);
 
 unless(defined($file))
 {
@@ -77,8 +79,6 @@ unless($file =~ m:^[^\.]+(\.(txt|html?|wiki))?$:)
 
 my $user = auth::get_user();
 
-#my $dir = ($file =~ m:/[^/]+$:) ? $` : "";
-
 my $text = $in{'text'};
 
 my $acc_flag;
@@ -95,32 +95,22 @@ else
 {
    $acc_flag = 'a'; #append
 }
-if( ! auth::check_current_user_file_auth( $acc_flag, $file ))
+if( ! auth::check_current_user_file_auth( $acc_flag, $dirfile ))
 {
-   print "You are not authorized(${acc_flag}) to access this file: $file\n";
+   print "You are not authorized(${acc_flag}) to access this file: $dirfile\n";
    exit 0;
 }
 
-my($full_file) = filedb::get_full_path($file);
 if( ! defined($text) )
 {
    print( "FILE: $file <br>\n");
-   print <<"EOT";
-EOT
 
-print "<hr><pre>";
-   if(open(TFILE, $full_file ))
-   {
-      my $line;
-      while(defined($line = <TFILE>))
-      {
-         $line =~ s#&#&amp;#g;
-         $line =~ s#<#&lt;#g;
-         $line =~ s#>#&gt;#g;
-         print $line;
-      }
-      close(TFILE);
-   }
+   $text = filedb::get_file($dir, $file);
+
+   $text =~ s#&#&amp;#g;
+   $text =~ s#<#&lt;#g;
+   $text =~ s#>#&gt;#g;
+   print "<PRE>$text</PRE>\n";
 print "<hr>\n";
 print "<form><TEXTAREA NAME=\"text\" wrap=true rows=22 cols=65 >";
    print "<\/TEXTAREA>\n";
@@ -132,28 +122,28 @@ EOT
 }
 else
 {
-   if(!open( FOUT, ">>$full_file" ) )
-   {
-      print "failed to append $file\n";
-      exit(1);
-   }
-    $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
-   print FOUT "\n";
+   $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
 my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
            localtime();
         $year +=1900;
+        $mon++;
    my($userstr) = "by $user" if(defined($user));
    $user = "unknown" unless(defined($user));
 my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $min, $sec);
-   print FOUT "\n<hr title=\"Modified $date $userstr\">\n" if ($file =~ m:\.html?$:);
-   print FOUT "\n----!Modified $date by $user\n" if ($file =~ m:\.wiki?$: or $file =~ m:^([A-Z][a-z]+){2,}$:);
-   print FOUT "\n";
+   my $header;
+   $header = "\n<hr title=\"Modified $date $userstr\">\n" if ($file =~ m:\.html?$:);
+   $header = "\n----!Modified $date by $user\n" if ($file =~ m:\.wiki?$: or $file =~ m:^([A-Z][a-z]+){2,}$:);
+   $header .= "\n";
    
-   
-   print FOUT $text;
-   close(FOUT);
+   filedb::append_file($dir, $file, $header . $text); 
+   if(auth::check_current_user_file_auth( 'M', $dir ))
+   {
+     &mailer::mail_subscribers($dir, $file);
+   }
+
+
    print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$encoded_path\"></head><html>\n";
-   print "wrote $file\n";
+   print "wrote $dirfile\n";
    print "<html>";
 }
 }

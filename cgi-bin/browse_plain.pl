@@ -41,23 +41,6 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 $notes_path =~ m:([^/]*)$:;
 my($notes_name) = $1;
 
-my($real_path) = "$auth::define::doc_dir/${notes_path}";
-#print "<h1>";
-#if ( &view::print_file("${notes_path}/.type") )
-#{
-#	print " : ";
-#}
-
-#print "${notes_path}</h1>\n<hr size=4\n";
-
-#if ( -f $real_path )
-#{
-#	&view::print_dir_file($notes_path);
-#
-#	print "<br>";
-#}
-#elsif ( -d "${real_path}" )
-{
 		
         print '<div class="topic-text">';
 	my $dir_file = &view::print_dir_file( $notes_path );
@@ -91,11 +74,5 @@ my($real_path) = "$auth::define::doc_dir/${notes_path}";
         print '<div class="topic-actions">';
 	&view::actions3($notes_path);
         print "</div>\n";        
-}
-#else # not dir or file
-#{
-#	print "Notes path '${notes_path}' is not accessible<br>";
-#}
-
 return 1;
 }

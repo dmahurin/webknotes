@@ -12,6 +12,7 @@ my $linkWord = "[A-Z][a-z,0-9]+";
 my $LinkPattern = "($linkWord){2,}";
 
 sub EscapeMetaCharacters {
+  
   s/&/&amp;/g;
   s/</&lt;/g;
   s/>/&gt;/g;
@@ -28,15 +29,17 @@ sub InPlaceUrl {
 
 sub EmitCode {
   my($codes, $code, $depth) = @_;
+  my $out = "";
   while (@$codes > $depth) 
     {local($_) = pop @$codes; 
-     print "</$_>\n"}
+     $out .= "</$_>\n"}
   while (@$codes < $depth) 
     {push (@$codes, ($code)); 
-     print "<$code>\n"}
+     $out .= "<$code>\n"}
   if (${$codes}[$#$codes] ne $code)
-    {print "</${$codes}[$#$codes]><$code>\n";
+    { $out .= "</${$codes}[$#$codes]><$code>\n";
      ${$codes}[$#$codes] = $code;}
+   return $out;
 }
 # --------------------------------------------------------  EmitCode
 
@@ -75,16 +78,17 @@ sub AsLink {
 }
 # --------------------------------------------------------  AsLink
 
-sub PrintBodyText {
-   my ($notes_path) = @_;
+sub FilterBodyText {
+   my ($notes_path, $text) = @_;
    my @InPlaceUrls = ();
    my @codes = ();
+   my $out = "";
 
   s/\\\n/ /g;
-  foreach (split(/\n/, $_)){
+  foreach (split(/\n/, $text)){
     my $InPlaceUrl=0;
     my $code = "";
-    s/^([\t\;]+)([^\*].+):/<dt>$2<dd>/   && &EmitCode("DL", length $1);
+    if(s/^([\t\;]+)([^\*].+):/<dt>$2<dd>/)  { $out .= &EmitCode("DL", length $1);}
 #    while (s/(\[{1,2}([a-z]{3,}:[\$-:=\?-Z_a-z~]+[\$-+\/-Z_a-z~-])\]/[<a href="$1">$1<\/a>/) {
 #    }
     while (s/\[\[([a-z]{3,}:[\$-:=\?-Z_a-z~]+[\$-+\/-Z_a-z~-])\]/\[$TranslationToken$InPlaceUrl$TranslationToken\]/) {
@@ -99,48 +103,51 @@ sub PrintBodyText {
 
     my $empty = s/^\s*$/<p>/;
 #    s/^\s*$/<p>/                  && ($code = '...');             
-    $empty          &&      &EmitCode(\@codes,"", 0);            
-#    /^\s*$/ && $code ne "P" &&  &EmitCode(\@codes,"P", 0);
-    s/^\;:(\s+)//              && &EmitCode(\@codes,"blockquote", length $1);
+    if($empty) {               $out .= &EmitCode(\@codes,"", 0);}
+#    /^\s*$/ && $code ne "P" &&  $out .= &EmitCode(\@codes,"P", 0);
+    if(s/^\;:(\s+)//) { $out .= &EmitCode(\@codes,"blockquote", length $1);}
    
 #below is a hack, put it in a function
-    s/^([\*\#]*\*(?!\#))/<li>/              && &EmitCode(\@codes,"UL", length $1);
-    s/^([\*\#]*\#)/<li>/              && &EmitCode(\@codes,"OL", length $1);
+    if(s/^([\*\#]*\*(?!\#))/<li>/) { $out .= &EmitCode(\@codes,"UL", length $1);}
+    if(s/^([\*\#]*\#)/<li>/) { $out .= &EmitCode(\@codes,"OL", length $1);}
 
-    s/^(\s+)\*/<li>/              && &EmitCode(\@codes,"UL", length $1);
-    s/^(\s+)\#/<li>/              && &EmitCode(\@codes,"OL", length $1);
-    s/^(\s+)\d+\.?/<li>/          && &EmitCode(\@codes,"OL", length $1);
-    /^\s/                        && &EmitCode(\@codes,"PRE", 1);
-    /^$/                  &&   &EmitCode(\@codes,"", 0);
-#    $code                           || &EmitCode(\@codes,"", 0);
+    if(s/^(\s+)\*/<li>/) { $out .= &EmitCode(\@codes,"UL", length $1); }
+    if(s/^(\s+)\#/<li>/ ) {$out .= &EmitCode(\@codes,"OL", length $1); }
+    if(s/^(\s+)\d+\.?/<li>/ ) { $out .= &EmitCode(\@codes,"OL", length $1); }
+    if(/^\s/ ) {$out .= &EmitCode(\@codes,"PRE", 1); }
+    if(/^$/ ) { $out .= &EmitCode(\@codes,"", 0); }
+#    $code                           || $out .= &EmitCode(\@codes,"", 0);
     s/_{2}(.*)_{2}/<strong>$1<\/strong>/g;
     # s/'{3}(.*)'{3}/<strong>$1<\/strong>/g;
     # s/'{2}(.*)'{2}/<em>$1<\/em>/g;
     s/'{3}(.*?)'{3}/<strong>$1<\/strong>/g;
     s/'{2}(.*?)'{2}/<em>$1<\/em>/g;
-    s#^-----*(:+)(.*)#join('', "<hr><b><font size=\"\+", length $1, "\">$2</font></b><hr>")#ge &&  &EmitCode(\@codes,"", 0);
-    s/^-----*(\!.*)?/<hr>/ &&  &EmitCode(\@codes, "", 0);
+    if( s#^-----*(:+)(.*)#join('', "<hr><b><font size=\"\+", length $1, "\">$2</font></b><hr>")#ge ) { $out .= &EmitCode(\@codes,"", 0); }
+    if(s/^-----*(\!.*)?/<hr>/ ) { $out .= &EmitCode(\@codes, "", 0); }
     s/^!(.*)//;
     s/\b($LinkPattern)\b/&AsAnchor($notes_path,$1)/geo;
     s/\[(\d+)\]/&AsLink($1)/geo;
     s/$TranslationToken(\d+)$TranslationToken/&InPlaceUrl(\@InPlaceUrls,$1)/geo;
 #    s/\[Search\]/$SearchForm/;
-    print $_;
-    print "<br>" unless($empty || @codes);
-    print "\n";
+    $out .= $_;
+    $out .= "<br>" unless($empty || @codes);
+    $out .= "\n";
   }
-  &EmitCode(\@codes, "", 0);
+  $out .= &EmitCode(\@codes, "", 0);
+  return $out;
 }
 
-sub print_file
+sub filter_file
 {
    my($notes_file) = @_;
    my($text) = filedb::get_file($notes_file);
    $notes_file =~ m:/([^\/]+)$:;
    my $notes_path = $`;
+   return &FilterBodyText($notes_path, $text);
+}
 
-   $_ = $text; 
-   &EscapeMetaCharacters;
-   &PrintBodyText($notes_path);
+sub print_file
+{
+   print filter_file(@_);
 }
 1;

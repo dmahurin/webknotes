@@ -1,0 +1,42 @@
+
+PACKAGE filedb
+STRING doc_wpath "Web document path" "${web_doc_root_wpath}/docs"
+STRING doc_dir "Document base path" "${web_doc_root}/docs"
+BOOL use_cvs "Use cvs client for CVS directories" "0"
+
+PACKAGE auth
+STRING private_dir "Private directory" "${HOME}/web_private"
+STRING default_permissions "Default permissions (see permissions.txt)" "a+rnaM,o+mdc"
+STRING allow_remote_user_auth "Trust REMOTE_USER auth"
+BOOL autoadd_remote_auth_users "Auto add REMOTE_USER users"
+
+
+PACKAGE view
+STRING icons_wpath "Icons web path" "${web_doc_root_wpath}/wkn_icons"
+STRING icons_dir "Icons directory" "${web_doc_root}/wkn_icons"
+STRING themes_wpath "Themes web path" "${web_doc_root_wpath}/wkn_themes"
+STRING themes_dir "Themes directory" "${web_doc_root}/wkn_themes"
+STRING default_layout "Default layout" "table"
+STRING default_theme "Default theme" "forge"
+INT max_depth "Maximum depth of list views" "3"
+STRING skip_files "Pattern to match of files to skip"
+
+SUB code_filter
+HASH filename_filter "Displayed filename filter"
+
+STRING no_browse_links "Do not browse (in cgi) file links"
+STRING wpath_prefix_translation "Dynamic path translation"
+
+STRING opened_icon "Opened icons" "fminus.gif"
+STRING closed_icon "Closed icon" "fplus.gif"
+STRING dir_icon "Directory icon" "folder.gif"
+STRING file_icon "File icon" "document.gif"
+HASH file_icons "Icons for specific file type"
+STRING head_tags
+STRING index_footer
+STRING index_header
+STRING index_title
+
+PACKAGE mailer
+STRING admin_email "Admin Email (subscribtion from address )" ""
+STRING sendmailer "Sendmail command" "/usr/sbin/sendmail -ba -t"

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 use strict;
 # script called by the add topic form. Adds topic, displays success.
 
@@ -13,6 +13,7 @@ require 'view_define.pl';
 require 'view_lib.pl';
 require 'auth_lib.pl';
 require 'filedb_lib.pl';
+require 'mailer_lib.pl';
 use CGI qw(:cgi-lib);
 
 my($my_main) = view::localize_sub(\&main);
@@ -38,17 +39,17 @@ if( ! auth::check_current_user_file_auth(
 if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} eq "")
 {
    my $description;
-   if(defined($in{'copy'}) and $in{copy} ne ""  && ! defined($in{'description'}))
-   {
-      my $copyfile = &auth::path_check("$notes_path/$in{'copy'}");
-      $description = "";
-      if(open(COPYFILE, "$filedb::define::doc_dir/$copyfile/README.html"))
-      {
-         while(<COPYFILE>){$description .= $_;}
-         close(COPYFILE);
-      }
-   }
-   else
+#?   if(defined($in{'copy'}) and $in{copy} ne ""  && ! defined($in{'description'}))
+ #  {
+#      my $copyfile = &auth::path_check("$notes_path/$in{'copy'}");
+#      $description = "";
+#      if(open(COPYFILE, "$filedb::define::doc_dir/$copyfile/README.html"))
+#      {
+#         while(<COPYFILE>){$description .= $_;}
+#         close(COPYFILE);
+#      }
+#   }
+#   else
    {
       $description = $in{description};
    }
@@ -152,7 +153,6 @@ print <<"EOT";
 EOT
 }
 
-#require 'send_email.pl';
 
 sub add_topic
 {
@@ -208,9 +208,7 @@ if($should_make_dir)
 {
 if( ! &filedb::make_dir($parent_path, $topic))
 {
-#if ( -e "$filedb::define::doc_dir${notes_path}/README" )
-#	print("Notes path already exist. \nTopic not created\n");
-print "Failed to create dir: $notes_path\n";
+print "Failed to create dir: $topic in $parent_path\n";
 	return 0;
 }
 if(auth::check_current_user_file_auth( 'i', $parent_path ))
@@ -218,11 +216,11 @@ if(auth::check_current_user_file_auth( 'i', $parent_path ))
    my($permissions, $group);
    if(defined($permissions = filedb::get_hidden_data($parent_path, "permissions")))
    {
-      auth::set_hidden_data($notes_path, "permissions", $permissions);
+      filedb::set_hidden_data($notes_path, "permissions", $permissions);
    }
    if(defined($group = filedb::get_hidden_data($parent_path, "group")))
    {
-      auth::set_hidden_data($notes_path, "group", $group);
+      filedb::set_hidden_data($notes_path, "group", $group);
    }
 }
 }
@@ -257,14 +255,14 @@ else
 
 if($should_make_dir)
 {
-   &filedb::make_file("$parent_path/$topic", $default_file, $message);
+   $file_ext = "";
+   &filedb::put_file("$parent_path/$topic", $default_file, $message);
 }
 else
 {
-   &filedb::make_file($parent_path, $topic . $file_ext, $message);
+   &filedb::put_file($parent_path, $topic . $file_ext, $message);
 }
 
-#&view::mail_subscribers($notes_path);
 my $log = localtime;
 $log .= "\n$source_details\n";
 &filedb::set_hidden_data($notes_path, "create-log", $log );
@@ -276,46 +274,10 @@ if( defined($user))
    filedb::set_hidden_data($notes_path, "owner", $user);
 }
 
+if(auth::check_current_user_file_auth( 'M', $parent_path ))
+{
+&mailer::mail_subscribers($parent_path, $topic . $file_ext);
+}
+
 return 1;
-}
-
-sub mail_subscribers
-{
-   my($notes_path) = @_;
-my @path_array = split( /\// , $notes_path );
-
-my $temp_path="";
-my ($dir, $full_path, $line);
-foreach $dir (@path_array)
-{
-	$temp_path="$temp_path/$dir";
-	$full_path="$filedb::define::doc_dir${temp_path}";
-	if( -r "${full_path}/.subscribed" )
-	{
-
-#$footer = "\n\nThis message was generated from subscription to WebKNotes: ${temp_path}
-#To respond to this messages go to:\n" .
-#&view::mode_to_scriptprefix($view::define::mode). $notes_path . "\n" .
-#"for help, mailto: $view::define::admin_email\n";
-		open(INPUT, "${full_path}/.subscribed" );
-		while($line = <INPUT>)
-		{
-			chomp($line);
-			if(! $line)
-			{
-				last;
-			}
-			my @subs_args = split(' ', $line);
-			my($to) = $subs_args[0];
-
-#			&send_email( "KN: /${notes_path}", $to,
-#			$message . $footer,
-#			'WebKNotes <noreplies@rightnow.noncom>',
-#			"WebKNotes Admin <$view::define::admin_email>"
-#		);
-		}
-		close(INPUT);
-	} 
-}
-	return 1;
 }

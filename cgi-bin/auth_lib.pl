@@ -2,7 +2,10 @@
 use strict;
 
 require 'auth_define.pl';
+require 'filedb_lib.pl';
 require 'filedb_define.pl';
+use Fcntl ':flock'; # import LOCK_* constants
+no strict 'subs'; # for lock constants
 
 # auth-lib - library used for user authentication for a web based system
 package auth;
@@ -75,8 +78,8 @@ sub get_user
       return () unless($user);
       return () unless( auth::write_user_info($user, 
          { "PassKey"=>"*",
-         "AuthRoot"=>$auth::define::newuser_path,
-	    "Permissions"=>$auth::define::newuser_flags, 
+         "AuthRoot"=>"",
+	    "Permissions"=>"", 
 	    "FromHost"=>$ENV{REMOTE_HOST}, 
             "FromAddr"=>$ENV{REMOTE_ADDR}})
       );
@@ -177,7 +180,7 @@ sub check_path_exists
    
    if( ! -e "$filedb::define::doc_dir/$path" )
    {
-     #     print "Note not found: $auth::define::doc_dir/$notes_path<br>\n";
+     #     print "Note not found: $notes_path<br>\n";
      #print "If you want, you can <a href=\"add_topic.cgi?notes_path=$notes_path_encoded\"> Add </a> the note yourself<br>\n";
      return 0;
    }
@@ -204,20 +207,8 @@ sub check_file_auth
   {
      return 0;     
   }
-  my(@path_permissions) = split(/,/, filedb::get_hidden_data($file_dir, "permissions")) 
-     or ();
-  if(defined($auth::define::path_permissions))
-  {
-     my $key;
-     for $key (keys %$auth::define::path_permissions)
-     {   
-	if($key eq "" or $file_path =~ m:^$key:)
-	{
-	   unshift(@path_permissions, split(/,/, 
-	      $auth::define::path_permissions->{$key}));
-	}
-     }
-  }	
+  my(@path_permissions) = ( $auth::define::default_permissions );
+  push(@path_permissions, split(/,/, &filedb::get_hidden_data($file_dir, "permissions"))); 
   
   my $owner = filedb::get_hidden_data($file_dir, "owner");
   my $is_owner = (defined($owner) && $user eq $owner);
@@ -237,30 +228,41 @@ sub check_file_auth
      $have_auth_flags = "";
   }
   my $permissions;
-  for $permissions (@path_permissions)
+  for $permissions ( @path_permissions)
   {                
      if($permissions =~ m:^(o|u|g|a)?(\+|-|=):)
      {
-	if($1 eq 'o') # owner of directory
+	my $who = $1;
+	my $mod = $2;
+	my $what = $';
+	if($who eq 'o') # owner of directory
 	{
-	   $have_auth_flags = change_flags($have_auth_flags, $', $2)
+	   $have_auth_flags = change_flags($have_auth_flags, $what, $mod)
 	      if($is_owner);
 	}
-        elsif($1 eq 'u') # user (not anonymous)
+        elsif($who eq 'u') # user (not anonymous)
         {
-           print "XXX\n" if (defined($user_info));
-          $have_auth_flags = change_flags($have_auth_flags, $', $2)
+          $have_auth_flags = change_flags($have_auth_flags, $what, $mod)
              if(defined($user_info));
         }
-	elsif($1 eq 'g') # in directory group
+        elsif($who eq 'v') # verified user
+        {
+          $have_auth_flags = change_flags($have_auth_flags, $what, $mod)
+             if($have_auth_flags =~ m:v:);
+        }
+	elsif($who eq 'g') # in directory group
 	{
-	   $have_auth_flags = change_flags($have_auth_flags, $', $2 )
+	   $have_auth_flags = change_flags($have_auth_flags, $what, $mod )
 	      if($in_group);
 	}
-	else
+	elsif($who eq 'a' or !defined $who)
 	{
-	   $have_auth_flags = change_flags($have_auth_flags, $', $2 );
+	   $have_auth_flags = change_flags($have_auth_flags, $what, $mod );
 	}
+        else
+        {
+           print STDERR "unknown permissions actor: $who\n";
+        }
      }
      else
      {
@@ -311,12 +313,14 @@ sub write_user_info
 
    init_private_dir() || return 0;
    return 0 unless open( UFILE, ">$auth::define::private_dir/users/$username");
+   flock(UFILE,LOCK_EX);
    
    my $key;
    for $key ( keys %$user_info)
    {
       print UFILE "$key: $user_info->{$key}\n";
    }
+   flock(UFILE,LOCK_UN);
    close(UFILE);
    return 1;
 }
@@ -340,12 +344,14 @@ sub write_group_info
    
    init_private_dir() || return 0;
    return 0 unless open( GFILE, ">$auth::define::private_dir/groups/$group");
+   flock(UFILE,LOCK_EX);
    
    my $key;
    for $key ( keys %$group_info)
    {
       print UFILE "$key: $group_info->{$key}\n";
    }
+   flock(UFILE,LOCK_UN);
    close(GFILE);
    return 1;
 }
@@ -434,7 +440,9 @@ sub create_session
    my($sfile) = "$auth::define::private_dir/sessions/$1";
 
    return 0 unless(open(SFILE, ">$sfile")); 
+   flock(SFILE,LOCK_EX);
    print SFILE "$vcrypt:$addr"; 
+   flock(SFILE,LOCK_UN);
    close(SFILE);
    print "Set-Cookie: sessionid=$sessionid; path=/\n";
    return 1;
@@ -442,10 +450,12 @@ sub create_session
 
 sub create_vword
 {
+   my($len) = @_;
+   $len = 8 unless(defined($len));
    my($i, $word, $num,$add);
    $word = "";
 
-   for($i = 0; $i < 8; $i++)
+   for($i = 0; $i < $len; $i++)
    {
       $num = rand(62);
       if( $num < 10)

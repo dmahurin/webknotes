@@ -7,7 +7,7 @@ for $file (@ARGV)
    {
 	while($line = <FILE>)
         {
-           while($line=~ m#((filedb|auth|view)[\w:]*)::(\w+)#)
+           while($line=~ m#((filedb|auth|view|mailer)[\w:]*)::(\w+)#)
            {
              $defines{$1}->{$3} = 1;
              $line = $';
