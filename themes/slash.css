@@ -100,11 +100,11 @@ A:visited { color: #006666 }
   background: #cccccc;
 }
 .topic-listing {
-   background: #CCCCCC;
-  border: 1px solid #000000;
+   background: #dddddd;
+  border: 1px solid #cccccc;
 }
 
 .topic-listing-border {
-   background: #000000;
+   background: #cccccc;
 }
 
