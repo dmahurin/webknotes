@@ -2,7 +2,7 @@
 use strict;
 # expanded tables version of the main WebKNotes script table version
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin
 # For information regarding the Copying policy read 'LICENSE'
 # dmahurin@users.sourceforge.net
 

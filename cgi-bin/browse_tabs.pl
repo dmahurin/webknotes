@@ -3,7 +3,7 @@ use strict;
 package browse_tabs;
 # single table version of main WebKNotes script table version
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 

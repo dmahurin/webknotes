@@ -15,12 +15,6 @@ package auth;
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-# store current user and info, so we only get them once.
-#use vars qw($current_user $current_user_info);
-#local($current_user, $current_user_info);
-#$current_user_info = ();
-#$current_user = ();
-
 # localize a sub ref (needed for mod_perl) to non-persist globals accross 
 #sessions
 sub localize_sub

@@ -2,7 +2,7 @@
 use strict;
 # single table version of main WebKNotes script table version
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -10,90 +10,90 @@ package browse_frames_list;
 
 sub show_page
 {
-  my($notes_path)=@_;
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
-{
-   print "You are not authorized to access this path.\n";
-   return(0);
-}
-
-
-my $cgi_arg = view::get_query_string();
-my $notes_path_encoded = view::url_encode_path($notes_path);
-
-my $frame = $view::view_mode{"frame"};
-undef($view::view_mode{"frame"});
-
-if(defined($frame))
-{
-   my $head_tags = view::get_style_head_tags();
-   if($frame eq "header")
+   my($notes_path)=@_;
+   unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
    {
-      print "<html><head><BASE TARGET=\"_parent\">$head_tags</head>";
-      print $view::define::index_header
-        if(defined($view::define::index_header));
-      print "</html>\n";
+      print "You are not authorized to access this path.\n";
+      return(0);
    }
-   elsif($frame eq "footer")
+
+
+   my $cgi_arg = view::get_query_string();
+   my $notes_path_encoded = view::url_encode_path($notes_path);
+
+   my $frame = $view::view_mode{"frame"};
+   undef($view::view_mode{"frame"});
+
+   if(defined($frame))
    {
-      print "<html><head><BASE TARGET=\"body\">$head_tags</head><body class=\"topic-actions\">\n";
-      if(defined($view::define::index_footer))
+      my $head_tags = view::get_style_head_tags();
+      if($frame eq "header")
       {
-         print $view::define::index_footer;
+         print "<html><head><BASE TARGET=\"_parent\">$head_tags</head>";
+         print $view::define::index_header
+            if(defined($view::define::index_header));
+         print "</html>\n";
       }
-      else
+      elsif($frame eq "footer")
       {
-         &view::actions3($notes_path);
+         print "<html><head><BASE TARGET=\"body\">$head_tags</head><body class=\"topic-actions\">\n";
+         if(defined($view::define::index_footer))
+         {
+            print $view::define::index_footer;
+         }
+         else
+         {
+            &view::actions3($notes_path);
+         }
+         print "</body></html>\n";
       }
-      print "</body></html>\n";
+      return(0);
    }
-   return(0);
-}  
 
-#my ($this_bprefix, $this_bsuffix) = view::get_cgi_prefix();
+   #my ($this_bprefix, $this_bsuffix) = view::get_cgi_prefix();
 
-&view::set_view_mode("frame", "header");
-my ($header_bprefix, $header_bsuffix) = view::get_cgi_prefix();
-&view::set_view_mode("frame", "footer");
-my ($footer_bprefix, $footer_bsuffix) = view::get_cgi_prefix();
-&view::unset_view_mode("frame");
+   &view::set_view_mode("frame", "header");
+   my ($header_bprefix, $header_bsuffix) = view::get_cgi_prefix();
+   &view::set_view_mode("frame", "footer");
+   my ($footer_bprefix, $footer_bsuffix) = view::get_cgi_prefix();
+   &view::unset_view_mode("frame");
 
-&view::set_view_mode("superlayout", "list2");
-&view::set_view_mode("target", "body");
-my ($menu_bprefix, $menu_bsuffix) = view::get_cgi_prefix();
-&view::unset_view_mode("target");
+   &view::set_view_mode("superlayout", "list2");
+   &view::set_view_mode("target", "body");
+   my ($menu_bprefix, $menu_bsuffix) = view::get_cgi_prefix();
+   &view::unset_view_mode("target");
 
-&view::set_view_mode("superlayout", "framed");
-my ($sub_bprefix, $sub_bsuffix) = view::get_cgi_prefix();
+   &view::set_view_mode("superlayout", "framed");
+   my ($sub_bprefix, $sub_bsuffix) = view::get_cgi_prefix();
 
-print "<html> <head>\n";
-print "<title>$view::define::index_title</title>\n" 
-  if(defined($view::define::index_title));
-print <<"EOT";
+   print "<html> <head>\n";
+   print "<title>$view::define::index_title</title>\n"
+      if(defined($view::define::index_title));
+   print <<"EOT";
 <BASE TARGET="body">
 <title>$view::define::index_title</title>
-  </head>
+</head>
 EOT
-if(defined($view::define::index_header))
-{
-print <<"EOT";
+   if(defined($view::define::index_header))
+   {
+      print <<"EOT";
 <frameset rows = "60,*">
-    <frame src="${header_bprefix}$notes_path_encoded$header_bsuffix" name="header" noresize marginwidth="0"
+   <frame src="${header_bprefix}$notes_path_encoded$header_bsuffix" name="header" noresize marginwidth="0"
       marginheight="0" scrolling="no">
 EOT
-}
-else
-{
-print "<frameset>\n";
-}
-print <<"EOT";
-    <frameset cols = "25%,*">
+   }
+   else
+   {
+      print "<frameset>\n";
+   }
+   print <<"EOT";
+     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
           <frame src="${menu_bprefix}$notes_path_encoded$menu_bsuffix" name="menu" marginwidth="0" marginheight="0">
           <frame src="${footer_bprefix}$notes_path_encoded$footer_bsuffix" name="footer" marginwidth="0"
                  marginheight="0" scrolling="no">
         </frameset>
-   <frame src="${sub_bprefix}$notes_path_encoded$sub_bsuffix" name="body" marginwidth="0" marginheight=
+        <frame src="${sub_bprefix}$notes_path_encoded$sub_bsuffix" name="body" marginwidth="0" marginheight=
 "0">
     </frameset>
   </frameset>

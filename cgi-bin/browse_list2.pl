@@ -3,7 +3,7 @@ use strict;
 no strict 'refs';
 
 # expanding list version of main WebKNotes script table version
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -14,28 +14,28 @@ package browse_list2;
 sub show_page
 {
   my($notes_path, @paths)= @_;
-my $head_tags = view::get_style_head_tags();
+  my $head_tags = view::get_style_head_tags();
 
-print
+  print
 "<HTML>
 <head>
 <title>${notes_path}</title>
 $head_tags
 </head>" .
 "<BODY class=\"topic-listing\">";
-show($notes_path,@paths);
-print "</BODY>\n";
-print "</HTML>\n";
+  show($notes_path,@paths);
+  print "</BODY>\n";
+  print "</HTML>\n";
 }
 
 sub show
 {
   my($notes_path, @paths)= @_;
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
-{
-   print "You are not authorized to access this path.\n";
-   return(0);
-}
+  unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+  {
+     print "You are not authorized to access this path.\n";
+     return(0);
+  }
 #my $INDENT = " ";
 #my $LSTART = "<dl>";
 #my $LITEM = "<dt>";
@@ -84,8 +84,6 @@ my $open_tree = unflatten_tree(view::url_unencode_paths(@paths));
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
-
-
 
 my($toppath) = $filedb::define::doc_dir;
 $toppath .= "/$notes_path" if( $notes_path ne "");

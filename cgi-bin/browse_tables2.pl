@@ -2,7 +2,7 @@
 use strict;
 # main WebKNotes script table version
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin
 # For information regarding the Copying policy read 'COPYING'
 # dmahurin@users.sourceforge.net
 
@@ -13,10 +13,10 @@ package browse_tables2;
 
 sub show_page
 {
-my($path) = @_;
-my $head_tags = view::get_style_head_tags();
+   my($path) = @_;
+   my $head_tags = view::get_style_head_tags();
 
-print <<"END";
+   print <<"END";
 <HTML>
 <head>
 $head_tags
@@ -25,52 +25,52 @@ $head_tags
 END
    view::read_page_template();
    print $view::define::page_header if(defined($view::define::page_header));
-show($path);
+   show($path);
    print $view::define::page_footer if(defined($view::define::page_footer));
 
-print "</BODY>\n";
-print "</HTML>\n";
+   print "</BODY>\n";
+   print "</HTML>\n";
 }
 
 sub show
 {
    my($notes_path) = @_;
    my($css_tables) = css_tables->new();
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
-{
-   print "You are not authorized to access this path.\n";
-   return(0);
-}
-print_main_topic_table($notes_path, $css_tables);
+   unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+   {
+      print "You are not authorized to access this path.\n";
+      return(0);
+   }
+   print_main_topic_table($notes_path, $css_tables);
 
-my $dfile = filedb::default_file($notes_path);
-for my $file (filedb::get_directory_list($notes_path))
-{
-	next if($file eq $dfile);
-	if( $file =~ m:^([^/]*)$: ) # untaint dir entry
-        {
-		$file = $1;
-	}
-	else
-	{
-		print "hey, /'s ? not ggod.\n";
-                exit;
-	}
-        $file = "$notes_path/$file" if($notes_path);
-        print "<p>\n";
-	print_topic_table( $file, $css_tables);	
-}
-closedir(DIR);
+   my $dfile = filedb::default_file($notes_path);
+   for my $file (filedb::get_directory_list($notes_path))
+   {
+      next if($file eq $dfile);
+      if( $file =~ m:^([^/]*)$: ) # untaint dir entry
+      {
+         $file = $1;
+      }
+      else
+      {
+         print "hey, /'s ? not ggod.\n";
+         exit;
+      }
+      $file = "$notes_path/$file" if($notes_path);
+      print "<p>\n";
+      print_topic_table( $file, $css_tables);
+   }
+   closedir(DIR);
 
-unless(view::get_view_mode("superlayout") eq "framed")
-{
-	print $css_tables->table_begin("topic-table") . "\n";
-	print "<tr>" . $css_tables->trtd_begin("topic-actions") . "\n";
-	view::actions3($notes_path);
-	print $css_tables->trtd_end() . "</tr>\n";
-	print $css_tables->table_end() . "\n";
-}
-return 1;
+   unless(view::get_view_mode("superlayout") eq "framed")
+   {
+      print $css_tables->table_begin("topic-table") . "\n";
+      print "<tr>" . $css_tables->trtd_begin("topic-actions") . "\n";
+      view::actions3($notes_path);
+      print $css_tables->trtd_end() . "</tr>\n";
+      print $css_tables->table_end() . "\n";
+   }
+   return 1;
 }
 
 

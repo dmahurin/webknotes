@@ -3,7 +3,7 @@ use strict;
 # cgi login scrip using auth-lib
 
 # The auth-lib and all related scripts are part of WebKNotes
-# The WebKNotes system is Copyright 1996-1999 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 

@@ -3,7 +3,7 @@ use strict;
 package browse_table;
 # single table version of main WebKNotes script table version
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -15,9 +15,9 @@ sub show_page
 {
    my($path) = @_;
 
-my $head_tags = view::get_style_head_tags();
+   my $head_tags = view::get_style_head_tags();
 
-print <<"END";
+   print <<"END";
 <HTML>
 <head>
 $head_tags
@@ -26,10 +26,10 @@ $head_tags
 END
    view::read_page_template();
    print $view::define::page_header if(defined($view::define::page_header));
-    show($path);
+   show($path);
    print $view::define::page_footer if(defined($view::define::page_header));
-print "</BODY>\n";
-print "</HTML>\n";
+   print "</BODY>\n";
+   print "</HTML>\n";
 }
 
 sub show
@@ -42,49 +42,49 @@ sub show
       return(0);
    }
 
-$notes_path =~ m:([^/]*)$:;
-my($notes_name) = $1;
+   $notes_path =~ m:([^/]*)$:;
+   my($notes_name) = $1;
 
-print $css_tables->table_begin("topic-table") . "\n";
+   print $css_tables->table_begin("topic-table") . "\n";
 
-print $css_tables->trtd_begin("topic-title") . "\n";
-view::print_icon_img($notes_path);
-print "<b>$notes_name</b>\n";
-print $css_tables->trtd_end() . "\n";
+   print $css_tables->trtd_begin("topic-title") . "\n";
+   view::print_icon_img($notes_path);
+   print "<b>$notes_name</b>\n";
+   print $css_tables->trtd_end() . "\n";
 
-print $css_tables->trtd_begin("topic-info") . "\n";
-view::print_modification($notes_path);
-print $css_tables->trtd_end() . "\n";
+   print $css_tables->trtd_begin("topic-info") . "\n";
+   view::print_modification($notes_path);
+   print $css_tables->trtd_end() . "\n";
 
-print $css_tables->trtd_begin("topic-text") . "\n";
-print "&nbsp;" unless (&view::print_dir_file($notes_path));
-print $css_tables->trtd_end() . "\n";
+   print $css_tables->trtd_begin("topic-text") . "\n";
+   print "&nbsp;" unless (&view::print_dir_file($notes_path));
+   print $css_tables->trtd_end() . "\n";
 
-print $css_tables->trtd_begin("topic-actions") . "\n";
-view::actions2($notes_path);
-print $css_tables->trtd_end() . "\n";
+   print $css_tables->trtd_begin("topic-actions") . "\n";
+   view::actions2($notes_path);
+   print $css_tables->trtd_end() . "\n";
 
-unless(view::is_index($notes_path))
-{
-print $css_tables->trtd_begin("topic-listing") . "\n";
-&view::list_files_html($notes_path);
-print "&nbsp;" unless &view::list_dirs_html($notes_path);
-print $css_tables->trtd_end() . "\n";
-}
+   unless(view::is_index($notes_path))
+   {
+      print $css_tables->trtd_begin("topic-listing") . "\n";
+      &view::list_files_html($notes_path);
+      print "&nbsp;" unless &view::list_dirs_html($notes_path);
+      print $css_tables->trtd_end() . "\n";
+   }
 
-print $css_tables->table_end() . "\n";
+   print $css_tables->table_end() . "\n";
 
-unless(view::get_view_mode("superlayout") eq "framed")
-{
-	print $css_tables->table_begin("topic-table") . "\n";
-	print $css_tables->trtd_begin("topic-actions") . "\n";
-	view::actions3($notes_path);
-	print $css_tables->trtd_end() . "\n";
-	print $css_tables->table_end() . "\n";
-}
+   unless(view::get_view_mode("superlayout") eq "framed")
+   {
+      print $css_tables->table_begin("topic-table") . "\n";
+      print $css_tables->trtd_begin("topic-actions") . "\n";
+      view::actions3($notes_path);
+      print $css_tables->trtd_end() . "\n";
+      print $css_tables->table_end() . "\n";
+   }
 
-#view::log($notes_path);
-return 1;
+   #view::log($notes_path);
+   return 1;
 }
 
 1;

@@ -3,7 +3,7 @@ use strict;
 # show information on a user, using the auth-lib
 
 # The auth-lib and all related scripts are part of WebKNotes
-# The WebKNotes system is Copyright 1996-1999 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
@@ -17,7 +17,6 @@ my($my_main) = auth::localize_sub(\&main);
 
 sub main
 {
-
 
 my $this_cgi = $ENV{'SCRIPT_NAME'};
 print "Content-type: text/html\n\n\n";

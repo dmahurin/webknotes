@@ -5,25 +5,25 @@ no strict 'refs';
 
 package browse_list;
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
 sub show_page
 {
    my($path) = @_;
-my $head_tags = view::get_style_head_tags();
+   my $head_tags = view::get_style_head_tags();
 
-print
+   print
 "<HTML>
 <head>
 <title>${path}</title>
 $head_tags
 </head>" .
 "<BODY class=\"topics-back\">";
-show($path);
-print "</BODY>\n";
-print "</HTML>\n";
+   show($path);
+   print "</BODY>\n";
+   print "</HTML>\n";
 }
 
 sub show

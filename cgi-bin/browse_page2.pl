@@ -13,10 +13,10 @@ package browse_page2;
 
 sub show_page
 {
-my(@paths) = @_;
-my $head_tags = view::get_style_head_tags();
+   my(@paths) = @_;
+   my $head_tags = view::get_style_head_tags();
 
-print <<"END";
+   print <<"END";
 <HTML>
 <head>
 <title>$view::define::index_title</title>
@@ -26,13 +26,12 @@ $head_tags
 END
    view::read_page_template();
    print $view::define::page_header if(defined($view::define::page_header));
-show(@paths);
+   show(@paths);
    print $view::define::page_footer if(defined($view::define::page_footer));
-print "</BODY>\n";
-print "</HTML>\n";
+   print "</BODY>\n";
+   print "</HTML>\n";
 
 }
-
 
 sub show
 {
@@ -50,55 +49,53 @@ sub show
 
    @notes_paths=("/") unless(@notes_paths);
 
-print $css_tables->table_begin("topic-table") . "\n";
-print $css_tables->trtd_begin("topic-text") . "\n";
+   print $css_tables->table_begin("topic-table") . "\n";
+   print $css_tables->trtd_begin("topic-text") . "\n";
 
-my $lastpath = "";
-foreach my $topic (@notes_paths)
-{
-   my @changes = pathchange($lastpath, $topic);
-   my $pathname = pop(@changes);
-   if(@changes)
+   my $lastpath = "";
+   foreach my $topic (@notes_paths)
    {
-   	my($changepath) = join('/', @changes);
-          print " <a href=\"" ,
-             &view::get_cgi_prefix() , 
-             $changepath . "\"><font color=\"#000000\">\n";
+      my @changes = pathchange($lastpath, $topic);
+      my $pathname = pop(@changes);
+      if(@changes)
+      {
+         my($changepath) = join('/', @changes);
+         print " <a href=\"" ,
+            &view::get_cgi_prefix() ,
+         $changepath . "\"><font color=\"#000000\">\n";
 
-   print "<p><b>$changepath</b><p>\n";
-   print "</font></a>\n";
+         print "<p><b>$changepath</b><p>\n";
+         print "</font></a>\n";
+      }
+      $pathname =~ s:\.(txt|wiki|htxt|html?)$::g;
+      print " <a href=\"" ,
+         &view::get_cgi_prefix() ,
+      $topic . "\"><font color=\"#000000\">\n";
+
+      print "<p><b>$pathname</b><p>\n";
+      print "</font></a>\n";
+
+
+      &view::print_dir_file($topic);
+      #print $css_tables->table_begin("topic-actions-table") . "\n";
+      #print $css_tables->trtd_begin("topic-actions") . "\n";
+      #view::actions2($topic);
+      #print $css_tables->trtd_end() . "\n";
+      #print $css_tables->table_end() . "\n";
+
+
+      $lastpath = $topic;
+
    }
-   $pathname =~ s:\.(txt|wiki|htxt|html?)$::g;
-          print " <a href=\"" ,
-             &view::get_cgi_prefix() , 
-             $topic . "\"><font color=\"#000000\">\n";
 
-   print "<p><b>$pathname</b><p>\n";
-   print "</font></a>\n";
+   print $css_tables->table_end() . "\n";
 
+   print $css_tables->trtd_begin("topic-actions") . "\n";
+   view::actions3('');
+   print $css_tables->trtd_end() . "\n";
+   print $css_tables->table_end() . "\n";
 
-   &view::print_dir_file($topic);
-#print $css_tables->table_begin("topic-actions-table") . "\n";
-#print $css_tables->trtd_begin("topic-actions") . "\n";
-#view::actions2($topic);
-#print $css_tables->trtd_end() . "\n";
-#print $css_tables->table_end() . "\n";
-
-
-$lastpath = $topic;
-
-
-}
-
-print $css_tables->table_end() . "\n";
-
-print $css_tables->trtd_begin("topic-actions") . "\n";
-view::actions3('');
-print $css_tables->trtd_end() . "\n";
-print $css_tables->table_end() . "\n";
-
-
-return 1;
+   return 1;
 }
 
 sub pathdiff
@@ -136,8 +133,3 @@ sub pathchange
    
    return (@path2 > 1? @path2_save: @path2); 
 }
-
- 
- 
- 
- 

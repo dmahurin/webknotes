@@ -16,7 +16,7 @@ no strict 'refs';
 # - Don Mahurin
 ############################################################
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # - dmahurin@users.sourceforge.net
 
