@@ -7,9 +7,9 @@ use strict;
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'view_lib.pl';
 
-#my($my_main) = view::localize_sub(\&main);
-#&$my_main;
-&main;
+my($my_main) = view::localize_sub(\&main);
+&$my_main;
+#&main;
 
 sub main
 {
