@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+#shows all use wkn and auth definitions and library calls in the given files
+
+for $file (@ARGV)
+{
+   if(open(FILE, $file))
+   {
+	while($line = <FILE>)
+        {
+           while($line=~ m#((auth|wkn)[\w:]*)::(\w+)#)
+           {
+             $defines{$1}->{$3} = 1;
+             $line = $';
+           }
+        }
+      
+      close(FILE);
+   }
+}
+for $ns (keys %defines)
+{
+    print "Name Space: $ns\n";
+    for $d (keys %{$defines{$ns}})
+    {
+       print "   $d\n";
+    }
+}

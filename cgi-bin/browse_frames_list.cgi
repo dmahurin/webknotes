@@ -36,7 +36,7 @@ if(defined($frame))
    if($frame eq "header")
    {
       print "<html><head><BASE TARGET=\"_parent\"></head>";
-      print &wkn::translate_html($wkn::define::index_header)
+      print ($wkn::define::index_header)
         if(defined($wkn::define::index_header));
       print "</html>\n";
    }
@@ -45,7 +45,7 @@ if(defined($frame))
       print "<html><head><BASE TARGET=\"body\"></head>\n";
       if(defined($wkn::define::index_footer))
       {
-         print &wkn::translate_html($wkn::define::index_footer, "");
+         print ($wkn::define::index_footer, "");
       }
       else
       {
