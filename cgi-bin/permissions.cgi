@@ -54,12 +54,9 @@ if( $dir =~ m:^(.*)$:)
 }
 $dir =~ s:^/+::;
 
-my $user = auth::get_user();
-my $user_info = auth::get_user_info($user);
-
 if( ! defined($permissions) )
 {
-   if( ! auth::check_file_auth( $user, $user_info, 'r', $dir ) )
+   if( ! auth::check_current_user_file_auth( 'r', $dir ))
    {
       print "You are not authorized to change permissions  on: $dir\n";
       exit 0;
@@ -96,7 +93,7 @@ EOT
 }
 else
 {
-   if( ! auth::check_file_auth( $user, $user_info, 'p', $dir ) )
+   if( ! auth::check_current_user_file_auth( 'p', $dir ))
    {
       print "You are not authorized to change permissions  on: $dir\n";
       exit 0;

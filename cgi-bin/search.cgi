@@ -31,8 +31,6 @@ my($my_main) = view::localize_sub(\&main);
 sub main
 {
 
-my($user) = auth::get_user(); # used for auth checking on find
-
 my(@skip_files) = ( '^README(\.html)?$', '^\.' );
 
 ############################################
@@ -279,8 +277,7 @@ DIR: while (@dirs)
 
    if ($found )
    {
-      if(auth::check_file_auth( $user, auth::get_user_info($user),
-         'r', $notes_subpath ))
+      if(auth::check_current_user_file_auth( 'r', $notes_subpath ))
       {
          &print_file_match_html($subpath, $file);
          $number_of_hits++;

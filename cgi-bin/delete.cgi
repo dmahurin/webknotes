@@ -65,8 +65,7 @@ if( ! defined ($user) )
    exit(0);
 }
 
-if( ! auth::check_file_auth( $user,
-   auth::get_user_info($user), 'd', $filepath ) )
+if(! auth::check_current_user_file_auth( 'd', $filepath ) )
 {
    print "You are not authorized to delete this file: $filepath\n";
    exit 0;

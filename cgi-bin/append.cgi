@@ -76,7 +76,6 @@ unless($file =~ m:^[^\.]+(\.(txt|html?|wiki))?$:)
 }
 
 my $user = auth::get_user();
-my $user_info = auth::get_user_info($user);
 
 #my $dir = ($file =~ m:/[^/]+$:) ? $` : "";
 
@@ -96,7 +95,7 @@ else
 {
    $acc_flag = 'a'; #append
 }
-if( ! auth::check_file_auth( $user, $user_info, $acc_flag, $file ) )
+if( ! auth::check_current_user_file_auth( $acc_flag, $file ))
 {
    print "You are not authorized(${acc_flag}) to access this file: $file\n";
    exit 0;
