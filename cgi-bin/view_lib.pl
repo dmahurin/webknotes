@@ -174,17 +174,13 @@ sub actions2
 {
    my($notes_path) = @_;
 
-#   my($dir_file) = filedb::default_file($notes_path);
-
-#print "dir file : $dir_file,$notes_path\n";
-#   $notes_path = filedb::path_dir($notes_path);
-   
-   my($notes_file_encoded) = url_encode_path(filedb::path_file($notes_path));
    my($notes_path_encoded) = url_encode_path($notes_path);
+   my($notes_dir_encoded) = url_encode_path(filedb::path_dir($notes_path));
+   my($notes_file_encoded) = url_encode_path(filedb::path_file($notes_path));
+
 # What was below for?
 #   $notes_path .= '/' if($notes_path ne "");
 
-#   $dir_file = url_encode_path($dir_file);
    my ($prefix,$suffix) = get_cgi_prefix("");
 
    if(auth::check_current_user_file_auth('m', $notes_path))
@@ -206,7 +202,7 @@ unless(is_index($notes_path))
    {
       print "[ <A HREF=\"${prefix}subscribe.cgi?path=$notes_path_encoded\">Subscribe</a> ] \n";
    }
-     $dir_uri = $filedb::define::doc_wpath . '/' . ${notes_path_encoded};
+     $dir_uri = $filedb::define::doc_wpath . '/' . ${notes_dir_encoded};
      $dir_uri .= "/" if($notes_path ne "");
       print "[ Raw \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
@@ -764,7 +760,8 @@ sub browse_show_page
    $layout = get_view_mode("layout")
       unless(defined($layout) and $layout ne "" and $layout ne "framed");
    $layout = $view::define::default_layout unless($layout);
-   require "browse_${layout}.pl";
+   $layout =~ m:^([^/]+)$:; # make sure no funny stuff (untainting)
+   require "browse_$1.pl";
    &{"browse_${layout}::show_page"}(@_);
 }
 
