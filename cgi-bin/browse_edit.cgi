@@ -13,8 +13,10 @@ $|=1;
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
-require 'auth_define.pl';
 require 'auth_lib.pl';
+require 'filedb_define.pl';
+
+auth::init();
 
 
 my($this_cgi) = "browse_edit.cgi";
@@ -35,7 +37,7 @@ unless (auth::check_current_user_file_auth( 'r',  $notes_path) )
 }
  
 
-my($real_path) = "$auth::define::doc_dir/${notes_path}";
+my($real_path) = "$filedb::define::doc_dir/${notes_path}";
 
 print <<"_EOT";
 <title>${notes_path}</title>
@@ -48,7 +50,7 @@ print $notes_path . '<br>';
    
 if(-f $real_path)
 {
-   print "[ <a href=\"$auth::define::doc_wpath/$notes_path_encoded\">View</a> ] \n";
+   print "[ <a href=\"$filedb::define::doc_wpath/$notes_path_encoded\">View</a> ] \n";
 	       
    if(auth::check_current_user_file_auth( 'm',  $notes_path) )
    {
@@ -62,9 +64,9 @@ if(auth::check_current_user_file_auth( 'd',  $notes_path) and
    print "[ <a href=\"delete.cgi?$notes_path_encoded\">Delete</a> ] \n";
 }
 
-if(-d $real_path and opendir(DIR, $real_path))
+if(-d $real_path)
 {
-   print "[ <a href=\"$auth::define::doc_wpath/$notes_path\">Browse</a> ] \n";
+   print "[ <a href=\"$filedb::define::doc_wpath/$notes_path\">Browse</a> ] \n";
    if(auth::check_current_user_file_auth( 'p',  $notes_path) )
    {
       print "[ <a href=\"permissions.cgi?path=$notes_path_encoded\">Permissions</a> ] \n";

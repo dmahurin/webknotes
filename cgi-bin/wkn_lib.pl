@@ -6,6 +6,7 @@
 # dmahurin@users.sourceforge.net
 
 require 'wkn_define.pl';
+require 'filedb_lib.pl';
 require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
@@ -14,9 +15,15 @@ my $wiki_name_pattern = "([A-Z][a-z]+){2,}";
 
 package wkn;
 
-my %view_mode; # used to store layout, theme, and target of wkn sessions
+use vars qw(%view_mode);
+local %view_mode; # used to store layout, theme, and target of wkn sessions
+#my(%view_mode); # used to store layout, theme, and target of wkn sessions
 
-my @current_args; # 
+sub init
+{
+   %view_mode = ();
+   auth::init();
+}
 
 sub url_encode_path
 {
@@ -55,11 +62,11 @@ sub url_encode_cgipath
   return $name;
 }
 
-
 sub url_unencode_path
 {
    my($path) = @_;
    $path=~s/%(..)/pack("c",hex($1))/ge;
+#   $path =~ s:\+: :g;
    return $path;
 }
 
@@ -122,7 +129,9 @@ sub strip_view_mode_args
 #some temporary hackery to make path= arg work
       elsif($arg =~ /^path=/)
       {
-         push(@args, $');
+         $arg = $';
+         $arg =~ s:\+: :g;
+         push(@args, $arg);
       }
       else
       {
@@ -146,40 +155,29 @@ sub actions2
 {
    my($notes_path) = @_;
 
-   my($is_dir);
-
-   my($dir_file);
-   if ( -f "$auth::define::doc_dir/$notes_path" )
-   {
-      $dir_file = $notes_path;
-      $notes_path =~ s:(/|^)[^/]+$::;
-   }
-   else
-   {
-      if( ! defined( $dir_file = &wkn::dir_file(${notes_path})))
-      {
-         $dir_file = "$notes_path/README.html";
-      }
-      $is_dir = 1;
-   }
+#   my($dir_file) = filedb::path_file($notes_path);
+#print "dir file : $dir_file,$notes_path\n";
+#   $notes_path = filedb::path_dir($notes_path);
+   
+   my($notes_file_encoded) = url_encode_path(filedb::path_file($notes_path));
    my($notes_path_encoded) = url_encode_path($notes_path);
 # What was below for?
 #   $notes_path .= '/' if($notes_path ne "");
 
-   $dir_file = url_encode_path($dir_file);
-
+#   $dir_file = url_encode_path($dir_file);
+   
    if(auth::check_current_user_file_auth('m', $notes_path))
    {
-      print "[ <A HREF=\"edit.cgi?file=$dir_file\">Edit</a> text ] \n";
+      print "[ <A HREF=\"edit.cgi?path=$notes_path_encoded\">Edit</a> text ] \n";
    }
-   elsif( auth::check_current_user_file_auth('a', $notes_path) )
+   if( auth::check_current_user_file_auth('a', $notes_path) )
    {
-      print "[ <A HREF=\"append.cgi#text?file=$dir_file\">Append</a> text ] \n";
+      print "[ <A HREF=\"append.cgi#text?path=$notes_path_encoded\">Append</a> text ] \n";
    }
    print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">New Topic</A> ]\n";
       print "[ Raw \n";
-   print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File</A> | \n";
-   print "<A HREF=\"$auth::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
+   print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
+   print "<A HREF=\"$filedb::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
       print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Access</a> ]\n";
    print "[ <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
    #   print "<br>\n";
@@ -219,18 +217,18 @@ sub print_link_html
 
 	if( $notes_path eq "" )
 	{
-		$real_path=$auth::define::doc_dir;
+		$real_path=$filedb::define::doc_dir;
 		$file = "";
 		$notes_wpath ="";
-		$web_path=$auth::define::doc_wpath;
+		$web_path=$filedb::define::doc_wpath;
 	}
 	else
 	{
-		$real_path="$auth::define::doc_dir/$notes_path";
+		$real_path="$filedb::define::doc_dir/$notes_path";
 		$notes_path =~ m:([^/*]*)$:;
 		$file = $1;
 		$notes_wpath = url_encode_path($notes_path);
-		$web_path="$auth::define::doc_wpath/${notes_wpath}";
+		$web_path="$filedb::define::doc_wpath/${notes_wpath}";
 	}
 
         return if(defined($wkn::define::skip_files) and $file =~ m/$wkn::define::skip_files/ ); 
@@ -248,17 +246,16 @@ sub print_link_html
               last SWITCH if ($file =~ m/^\./ );
               # skip the index files
               last
-                 if ($filename =~ m:^(index.html|index.htm|FrontPage.wiki|FrontPage|README|README.txt)$: );
+                 if ($file =~ m:^(index.html|index.htm|HomePage|FrontPage.wiki|FrontPage|README|README.txt)$: );
 
               $file_ext =~ /^\.url/ && do
               {
                  $link_type = "url";
-                 $link = get_file($notes_path);
+                 $link = filedb::get_file($notes_path);
                  $link_text = $file_base;
                  last SWITCH;
               };
-#                 $filename =~ m:$wiki_name_pattern: ) && do
-              $file_ext =~ /^\.wiki/ && do
+              ($file_ext =~ /^\.wiki$/ || $file =~ /^$wiki_name_pattern$/ )&& do
               {
                  $link_type = "wiki";
                  $link = &wkn::get_cgi_prefix() . $notes_wpath;
@@ -339,19 +336,19 @@ sub get_icon
 
 	if( $notes_path eq "" )
 	{
-		$real_path=$auth::define::doc_dir;
+		$real_path=$filedb::define::doc_dir;
 		$file = "";
 		$notes_wpath ="";
-		$web_path=$auth::define::doc_wpath;
+		$web_path=$filedb::define::doc_wpath;
 	}
 	else
 	{
-		$real_path="$auth::define::doc_dir/$notes_path";
+		$real_path="$filedb::define::doc_dir/$notes_path";
 		$notes_path =~ m:([^/*]*)$:;
 		$dir = $1;
 		$notes_wpath = $notes_path;
 		$notes_wpath = url_encode_path($notes_wpath);
-		$web_path="$auth::define::doc_wpath/${notes_wpath}";
+		$web_path="$filedb::define::doc_wpath/${notes_wpath}";
 	}
 	
         return () if($dir =~ /^\..*/ );
@@ -374,19 +371,19 @@ sub print_icon_img
 
 	if( $notes_path eq "" )
 	{
-		$real_path=$auth::define::doc_dir;
+		$real_path=$filedb::define::doc_dir;
 		$file = "";
 		$notes_wpath ="";
-		$web_path=$auth::define::doc_wpath;
+		$web_path=$filedb::define::doc_wpath;
 	}
 	else
 	{
-		$real_path="$auth::define::doc_dir/$notes_path";
+		$real_path="$filedb::define::doc_dir/$notes_path";
 		$notes_path =~ m:([^/*]*)$:;
 		$dir = $1;
 		$notes_wpath = $notes_path;
 		$notes_wpath = url_encode_path($notes_wpath);
-		$web_path="$auth::define::doc_wpath/${notes_wpath}";
+		$web_path="$filedb::define::doc_wpath/${notes_wpath}";
 	}
 	
 	if ( -d $real_path )
@@ -417,16 +414,15 @@ sub print_icon_img
 sub list_files_html
 {
    my($notes_path) = @_;
-   my($dir) = $auth::define::doc_dir;
+   my($dir) = $filedb::define::doc_dir;
    $dir .= "/$notes_path" unless( $notes_path eq "");
 
-   return () unless
-      opendir(DIR, $dir);
    my($rtn) = 0;
 
    # If you have index.html, not README.html, assume you want list files
    return 0 if( -f "$dir/FrontPage.wiki");
    return 0 if( -f "$dir/FrontPage");
+   return 0 if( -f "$dir/HomePage");
    return 0 if( -f "$dir/index.html");
    return 0 if( -f "$dir/index.htm");
 
@@ -446,7 +442,7 @@ sub list_files_html
         else
         {
                 print "hey, /'s ? not good.\n";
-                exit;
+                return 0;
         }
         if(print_link_html( "$notes_path/$file"))
         {
@@ -461,7 +457,7 @@ sub list_files_html
 sub list_dirs_html
 {
    my($notes_path) = @_;
-   my($dir) = $auth::define::doc_dir;
+   my($dir) = $filedb::define::doc_dir;
    $dir .= "/$notes_path" unless( $notes_path eq "");
 
 #   return 0 if( -f "$dir/FrontPage.wiki");
@@ -492,7 +488,7 @@ sub list_dirs_html
 sub list_html
 {
    my( $notes_path ) = @_;
-   my($dir) = $auth::define::doc_dir;
+   my($dir) = $filedb::define::doc_dir;
    $dir .= "/$notes_path" unless( $notes_path eq "");
    
    my($found) = 0;
@@ -520,64 +516,18 @@ sub list_html
    return $found;
 }
 
-# return notes dir that file is in
-sub file_dir
-{
-   my($notes_path) = @_;
-   return $notes_path if( -d "$auth::define::doc_dir/$notes_path");
-
-   if($notes_path =~ m:/[^/]+$:)
-   {
-      return $`;
-   }
-   return "";
-}
-
-
-# return default file in notes directory
-sub dir_file
-{
-	my($notes_path) = @_;
-
-	return $notes_path if( -f "$auth::define::doc_dir/$notes_path");
-
-	my($dir) = "$auth::define::doc_dir/$notes_path";
-	return "$notes_path/index.html" if ( -f "$dir/index.html" );
-	return "$notes_path/index.htm" if ( -f "$dir/index.htm" );
-	return "$notes_path/FrontPage" if ( -f "$dir/FrontPage" );
-	return "$notes_path/FrontPage.wiki" if ( -f "$dir/FrontPage.wiki" );
-	return "$notes_path/README.html" if ( -f "$dir/README.html" );
-	return "$notes_path/README" if ( -f "$dir/README" );
-        return ();
-}
-
 sub print_dir_file
 {
    my($notes_path) = @_;
 
-   my($full_path) = $auth::define::doc_dir;
-   $full_path .= "/$notes_path" unless ($notes_path eq "");
-
-   if( -d $full_path )
-   {
-      my($dir_file);
-      for $dir_file ( "index.html", "index.htm", "FrontPage", "FrontPage.wiki",
-         "README", "README.txt", "README.html")
-      {
-         if(-f "$full_path/$dir_file")
-         {
-            $notes_path .= "/$dir_file";
-            $full_path .= "/$dir_file";
-         }
-      }
-   }
+   my($file) = filedb::path_file($notes_path);
+   return () unless(defined($file));
+   my($full_path) = filedb::get_full_path($file);
    
-   if( -f $full_path )
-   {
-      my($file_type);
-      $notes_path =~ m:([^\/]+)$: or return ();
+      my($file_type) = ();
+      $file =~ m:([^\/]+)$: or return ();
       my($file_name) = $1;
-      if($notes_path =~ m:\.([^\.]+)$:)
+      if($file =~ m:\.([^\.]+)$:)
       {
          $file_type = $1;
          if($file_type =~ /^(c|h|c\+\+|cxx|hxx|idl|java)$/)
@@ -591,7 +541,7 @@ sub print_dir_file
          {
             $file_type = "txt";
          }
-         elsif( $file_name =~ m:([A-Z][a-z]+){2,}:)
+         elsif( $file_name =~ m:^([A-Z][a-z]+){2,}$:)
          {
             $file_type = "wiki" ;
          }
@@ -603,7 +553,7 @@ sub print_dir_file
       if(defined($file_type) && ( -f "filter_${file_type}.pl") )
       {
          require "filter_${file_type}.pl";
-         &filter::print_file($notes_path);
+         &filter::print_file($file);
       }
       else
       {
@@ -611,11 +561,6 @@ sub print_dir_file
       }
       
       return $notes_path;
-   }
-   else
-   {
-      return ();
-   }
 }
 
 sub create_modification_string
@@ -636,35 +581,24 @@ sub create_modification_string
 
 sub print_modification
 {
-	my($notes_path) = @_;
+   my($notes_path) = @_;
 
-        my ($dir_file);
-        if(! defined( $dir_file = wkn::dir_file($notes_path)) )
-        {
-           $dir_file = $notes_path;
-        }
+   my ($dir_file);
+   if(! defined( $dir_file = filedb::path_file($notes_path)) )
+   {
+       $dir_file = $notes_path;
+   }
 my($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
 $atime,$mtime,$ctime,$blksize,$blocks)
-           = stat("$auth::define::doc_dir/$dir_file");
+   = stat("$filedb::define::doc_dir/$dir_file");
 
-        my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+   my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
            localtime($mtime);
-        $year +=1900;
-        my(@months) = ( "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" );
-        my $mtime_str = "$year $months[$mon] $mday $hour:$min:$sec";
+   $year +=1900;
+   my(@months) = ( "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" );
+   my $mtime_str = "$year $months[$mon] $mday $hour:$min:$sec";
         
    print create_modification_string($mtime_str, auth::get_path_owner($notes_path), auth::get_path_group($notes_path));
-}
-
-sub get_file
-{
-        my($notes_file) = @_;
-
-        open(MYFILE, "$auth::define::doc_dir/$notes_file") || return ();
-        local $/ = undef;
-        my($text) = <MYFILE>;
-        close(MYFILE);
-        return($text);
 }
 
 sub print_file
@@ -672,7 +606,7 @@ sub print_file
 	my($notes_file) = @_;
         my($line);
 
-	open(MYFILE, "$auth::define::doc_dir/$notes_file") || return 0;
+	open(MYFILE, "$filedb::define::doc_dir/$notes_file") || return 0;
 	while(defined($line = <MYFILE>))
 	{
 		print($line);
@@ -689,7 +623,7 @@ sub log
    my $date=localtime;
    my $log = "$date:$user:$ENV{'REMOTE_ADDR'}:$ENV{'REMOTE_HOST'}\n";
 
-   if(open(LOG, ">>$auth::define::doc_dir/$notes_path/.log"))
+   if(open(LOG, ">>$filedb::define::doc_dir/$notes_path/.log"))
    {
       print LOG $log;
       close(LOG);
@@ -752,7 +686,7 @@ sub get_view_mode
      $val = $user_info->{ucfirst($param)};
   }
   return $val;
-   }
+}
 
 sub set_view_mode
 {

@@ -6,6 +6,10 @@ require 'wkn_define.pl';
 require 'wkn_lib.pl';
 push(@INC, $wkn::define::auth_inc);
 require 'auth_lib.pl';
+require 'filedb_lib.pl';
+
+wkn::init();
+auth::init();
 
 use CGI qw/:standard/;
 
@@ -58,7 +62,7 @@ sub wkn_save_file
       print "No file uploaded.";
       return;
    }
-   my $fullpath = array_to_path( $auth::define::doc_dir, $upload_path, $file);
+   my $fullpath = array_to_path( $filedb::define::doc_dir, $upload_path, $file);
    print "fullpath='$fullpath'\n";
    print h2('File name'),$file;
    print h2('File MIME type'),uploadInfo($file)->{'Content-Type'};

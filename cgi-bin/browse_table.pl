@@ -9,7 +9,6 @@ package browse;
 
 require "css_tables.pl";
 
-
 sub show_page
 {
    my($path) = @_;

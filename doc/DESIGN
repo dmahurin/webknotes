@@ -1,0 +1,46 @@
+
+The WebKNotes system is built in four basic layers:
+
+FileDB:: Provides low level file/directory access
+(Note that the migration from wkn_lib and other scripts is incomplete.)
+
+Auth:: Provides user and group directory based authentication
+(It is somewhat tied to the file layer, as it uses .dot files for
+ authentication information)
+
+Edit:: Allows basic web based editting of files and directories.
+   edit_dir.cgi -simple directory managment
+   edit.cgi  - simple file/note edit
+
+Browse/View:: Allows different views and layouts and knows how to interpret 
+different file types.
+
+add_topic.cgi should be only dependendent on FileDB and Auth, but it's late...
+
+-------
+Some specific notes on the Auth security:
+
+For user authentication, there are two paths:
+1. Use authentication built into the web server.
+In this case, you set a flag, and it trust the
+AUTH_USER env.
+
+2. Use webknotes authentication:
+In private directory there is a "users" directory.
+In the users directory, each user has a information file, nameed
+after the user.
+In the file is stored a "crypted" password.
+
+When a user logs in, what happens is:
+The password sent is "crypted" and and the crypt is checked against
+the user's info file.
+If it matches, a session key is generated from the crypt key and a crypted 
+random string.  The session key along with the users IP address are
+stored in a 'session' directory under the users name.
+The only cookie set is a user:session key.
+
+When the user does further actions, the session key and and ip address must
+be correct for that user, or the user is not considered logged in.
+
+This does mean that currently a user cannot be logged in from two separate places.
+

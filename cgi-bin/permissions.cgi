@@ -11,13 +11,15 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
 require 'auth_define.pl';
 require 'auth_lib.pl';
+require 'filedb_lib.pl';
 use CGI qw(:cgi-lib); 
+auth::init();
 
 #$this_cgi = $ENV{'SCRIPT_NAME'};
 my $this_cgi = "permissions.cgi";
 print "Content-type: text/html\n\n";
 
-# uses doc_dir and web_root in auth_lib.pl
+# uses doc_dir filedb_define.pl
 
 my $illegal_dir = "cgi-bin";
 
@@ -47,7 +49,7 @@ if( $dir =~ m:^(.*)$:)
 }
 $dir =~ s:^/+::;
 
-my $full_dir = "$auth::define::doc_dir/$dir";
+my $full_dir = "$filedb::define::doc_dir/$dir";
 
 
 my $user = auth::get_user();

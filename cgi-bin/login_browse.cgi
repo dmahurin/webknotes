@@ -13,6 +13,7 @@ require 'auth_define.pl';
 require 'auth_lib.pl';
 require 'wkn_lib.pl';
 use CGI qw(:cgi-lib);
+wkn::init();
 
 my(%in);
 &ReadParse(\%in);

@@ -15,6 +15,8 @@ The format is:
 The fields are:
 1.
    'o' - permissions are only applied if user is note directory owner.
+   'u' - permissions are only applied if user is a user (not anonymous).
+   'v' - (later) verified user (by email)
    'g' - permissions are only applied if user is in note directory group.
    'a' - all get these permissions (default)
 2.

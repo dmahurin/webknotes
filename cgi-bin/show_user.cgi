@@ -12,6 +12,8 @@ require 'auth_define.pl';
 require 'auth_lib.pl';
 use CGI qw(:cgi-lib); 
 
+auth::init();
+
 my $this_cgi = $ENV{'SCRIPT_NAME'};
 print "Content-type: text/html\n\n\n";
 

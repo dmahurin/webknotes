@@ -10,7 +10,6 @@ require 'css_tables.pl';
 
 package browse;
 
-
 sub show_page
 {
  my($path)=@_;
@@ -41,7 +40,7 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 print_main_topic_table($notes_path);
 print "<br>";
 
-exit unless
+return(0) unless
 opendir(DIR, "$auth::define::doc_dir/$notes_path");
 my $file;
 while($file = readdir(DIR))
@@ -57,7 +56,7 @@ while($file = readdir(DIR))
 	else
 	{
 		print "hey, /'s ? not good.\n";
-                exit;
+                return(0);
 	}
 	print_topic_table( "$notes_path/$file");	
 }

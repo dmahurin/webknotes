@@ -59,7 +59,7 @@ print css_tables::trtd_end() . "\n";
 
 print css_tables::trtd_begin("topic-listing") . "\n";
 
-my($toppath) = "$auth::define::doc_dir";
+my($toppath) = "$filedb::define::doc_dir";
 $toppath .= "/$notes_path" if( $notes_path ne "");
 
 my($notes_base) = $notes_path eq "" ? "" : "$notes_path/";
@@ -140,7 +140,7 @@ if(-d $toppath)
        }
        else
        {
-          print "$indent<li><a href=\"$auth::define::doc_wpath/$encoded_notes_path\">$name</a>\n";
+          print "$indent<li><a href=\"$filedb::define::doc_wpath/$encoded_notes_path\">$name</a>\n";
        }
    }
 }

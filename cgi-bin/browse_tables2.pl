@@ -34,11 +34,11 @@ sub show
 unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
-   exit(0);
+   return(0);
 }
 print_main_topic_table($notes_path);
 
-exit unless
+return(0) unless
 opendir(DIR, "$auth::define::doc_dir/$notes_path");
 my $file;
 while($file = readdir(DIR))

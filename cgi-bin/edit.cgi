@@ -9,9 +9,11 @@ use strict;
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
-require 'auth_define.pl';
 require 'auth_lib.pl';
+require 'filedb_lib.pl';
 use CGI qw(:cgi-lib); 
+
+auth::init();
 
 #$this_cgi = $ENV{'SCRIPT_NAME'};
 my $this_cgi = "edit.cgi";
@@ -22,45 +24,51 @@ my $illegal_dir = "cgi-bin";
 my %in;
 &ReadParse(\%in);
 
-my $file = $in{'file'};
-if(!defined( $file )) { $file=$ENV{'QUERY_STRING'}};
-if(!defined( $file ) or $file eq "" ) { $file=$ARGV[0]};
-if( !defined( $file ) or $file eq "" )
+my $path = $in{'path'};
+if(!defined( $path )) { $path=$ENV{'QUERY_STRING'}};
+if(!defined( $path )) { $path=$ARGV[0]};
+if( !defined( $path ) )
 {
-   print ("No file defined\n");
+   print ("No path defined\n");
    exit(0);
 }
 
-unless($file =~ m:^[^\.](\.(txt|html?|wiki))?$:)
-{
-   print "Not text file\n";
-   exit(0);
-}
-if($file =~ m:(^|/+)\.+:)
+if($path =~ m:(^|/+)\.+:)
 {
    print "Illegal chars\n";
    exit(0);
 }
-#untaint file
-if( $file =~ m:^(.*)$:)
+#untaint path 
+if( $path =~ m:^(.*)$:)
 {
-   $file = $1;
+   $path = $1;
 }
-$file =~ s:^/+::;
+$path =~ s:^/+::;
 
-$file = auth::url_unencode_path($file);
+$path = auth::url_unencode_path($path);
+my $encoded_path = auth::url_encode_path($path);
 
-my $full_file = "$auth::define::doc_dir/$file";
-
-if( $file =~ m:$illegal_dir: )
+if( $path =~ m:$illegal_dir: )
 {
    print "Illegal dir\n";
    exit(0);
 }
 
-if ( -d $full_file )
+my $file = &filedb::path_file($path);
+my $dir = &filedb::path_dir($path);
+
+unless(defined($file))
 {
-   print "Can't edit directory\n";
+    if(! defined($dir) || $dir eq $path )
+    { # directory with no key file or directory not exist
+       print "File or Directory does not exist\n";
+       exit(0);
+    }
+}
+
+unless($file =~ m:^[^\.]+(\.(txt|html?|wiki))?$:)
+{
+   print "Not text file\n";
    exit(0);
 }
 
@@ -72,17 +80,18 @@ my $dir = ($file =~ m:/[^/]+$:) ? $` : "";
 my $text = $in{'text'};
 
 my $acc_flag;
-if( ! defined ( $text ) ) # user has to have read access
+if( ! defined ( $text ) )
 {
    $acc_flag = 'r'; #read
 }
-elsif( -f $full_file ) # user has have modify access
+elsif( ! defined ($file) )
+{
+   $file = $path; # user specified file in path
+   $acc_flag = 'c'; #create
+}
+else
 {
    $acc_flag = 'm'; #modify
-}
-else # user has to have create access
-{
-   $acc_flag = 'c'; #create
 }
 if( ! auth::check_file_auth( $user, $user_info, $acc_flag, $file ) )
 {
@@ -90,9 +99,10 @@ if( ! auth::check_file_auth( $user, $user_info, $acc_flag, $file ) )
    exit 0;
 }
 
+my($full_file) = filedb::get_full_path($file);
 if( ! defined($text) )
 {
-   print( "FILE: $file <br>\n");
+   print( "FILE: $full_file <br>\n");
    print <<"EOT";
 <form action="$this_cgi" method="post">
 <pre>
@@ -110,7 +120,7 @@ EOT
    }
    print "<\/TEXTAREA>\n";
    print <<"EOT";
-<input type=hidden name=file value="$file">
+<input type=hidden name=path value="$path">
 <br><INPUT TYPE=submit VALUE="Save">
 </form>
 EOT
@@ -125,5 +135,7 @@ else
     $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
    print FOUT $text;
    close(FOUT);
+   print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$encoded_path\"></head><html>\n";
    print "wrote $file\n";
+   print "<html>";
 }

@@ -11,7 +11,10 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
 require 'auth_define.pl';
 require 'auth_lib.pl';
+require 'filedb_lib.pl';
 use CGI qw(:cgi-lib); 
+
+auth::init();
 
 my $this_cgi = "delete.cgi";
 print "Content-type: text/html\n\n\n";
@@ -63,7 +66,7 @@ if( ! auth::check_file_auth( $user,
    exit 0;
 }
 
-my($full_file) = auth::url_unencode_path("$auth::define::doc_dir/$file");
+my($full_file) = auth::url_unencode_path("$filedb::define::doc_dir/$file");
 
 if( ! defined($in{confirm}))
 {

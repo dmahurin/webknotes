@@ -1,0 +1,7 @@
+The support for mod_perl is in there.
+There may be one or two changes that I missed.
+You need "PerlSendHeader On" to turn the double header off.
+If you know the correct way, let me know.
+
+-don
+

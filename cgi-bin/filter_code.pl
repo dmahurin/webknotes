@@ -1,10 +1,10 @@
-
+use strict;
 package filter;
 
 sub print_file
 {
    my($notes_file) = @_;
-   my($text) = wkn::get_file($notes_file);
+   my($text) = filedb::get_file($notes_file);
    $notes_file =~ m:\.([^\.]+)$:;
 
    if(defined(&wkn::define::code_filter))

@@ -8,8 +8,8 @@ no strict 'refs';
 # dmahurin@users.sourceforge.net
 
 require 'wkn_lib.pl';
-package browse;
 
+package browse;
 
 sub show_page
 {
@@ -88,7 +88,7 @@ my $notes_name = $1;
 
 
 
-my($toppath) = $auth::define::doc_dir;
+my($toppath) = $filedb::define::doc_dir;
 $toppath .= "/$notes_path" if( $notes_path ne "");
 
 my($notes_base) = $notes_path eq "" ? "" : "$notes_path/";
@@ -166,7 +166,7 @@ if(-d $toppath)
              undef($dir_ref->{$filename});
              print "<a href=\"$this_script_prefix$notes_path_encoded&". 
                 join ('&' , wkn::url_encode_paths(flatten_tree($open_tree))) .
-                "\">". &wkn::text_icon($wkn::define::opened_icon_text, 
+                "\">". &wkn::icon_tag('[-]', 
                    $wkn::define::opened_icon) .
                 "</a>$LITEM_START1\n";
              $dir_ref->{$filename} = $save_ref;
@@ -176,7 +176,7 @@ if(-d $toppath)
 
              print "<table cellspacing=0 cellpadding=0 ><tr><td>" .
 #"<a href=\"browse_$mode.cgi?$encoded_subnotes_path\" $target>" .
-             &wkn::text_icon($wkn::define::dir_icon_text,
+             &wkn::icon_tag('[+]',
                 $wkn::define::dir_icon) .
 #"</a>" .
                 "</td></tr></table>" .
@@ -189,14 +189,14 @@ if(-d $toppath)
              print "<a href=\"$this_script_prefix$notes_path_encoded&" . 
                 join ('&' , wkn::url_encode_paths(flatten_tree($open_tree))) .
                 "\">" .
-                &wkn::text_icon($wkn::define::closed_icon_text, 
+                &wkn::icon_tag('[-]', 
                    $wkn::define::closed_icon) .
                 "</a>";
              print "</td></tr></table>";
              print "$LITEM_START1\n";
              undef($dir_ref->{$filename});
           }
-          my($dirfile) = &wkn::dir_file($notes_base . $fullpath);
+          my($dirfile) = &filedb::path_file($notes_base . $fullpath);
           if(1 || defined( $dirfile ))
           {
              print "<a href=\"${script_prefix}$encoded_subnotes_path\" $target>$name</a>";
@@ -223,15 +223,15 @@ if(-d $toppath)
        elsif($name =~ m:\.(html|txt)$:)
        {
           $name = $`;
-          print &wkn::text_icon($wkn::define::file_icon_text, 
-                   $wkn::define::file_icon) .
+          print &wkn::text_icon('[o]', 
+                   $wkn::define::file_icons->{"file"}) .
               "$LITEM_START1<a $target href=\"${script_prefix}$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
        else
        {
-          print &wkn::text_icon($wkn::define::file_icon_text, 
-                   $wkn::define::file_icon) . "$LITEM_START1<a $target href=\"$auth::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
+          print &wkn::icon_tag('[o]', 
+                   $wkn::define::file_icons->{"file"}) . "$LITEM_START1<a $target href=\"$filedb::define::doc_wpath/$encoded_subnotes_path\">$name</a>";
           print "$LITEM_END\n";
        }
    }

@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use strict;
 
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
@@ -11,10 +12,11 @@ package filter;
 sub print_file 
 {
    my($notes_file) = @_;
-   my($text) = wkn::get_file($notes_file);
+   my($text) = filedb::get_file($notes_file);
    return () if(! defined($text));
 
-   open(MYFILE, "$auth::define::doc_dir/$notes_file") || return 0;
+   open(MYFILE, "$filedb::define::doc_dir/$notes_file") || return 0;
+   my($line);
    while(defined($line = <MYFILE>))
    {
       if( $line =~ /^http:/ ||

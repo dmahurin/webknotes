@@ -1,0 +1,20 @@
+Ok,
+
+If you can't beat'em, assimilate ...
+
+I don't really understand why the wikis are so popular.
+So I gave up, and attempted to support .wiki as if it was a markup language.
+
+There's a importwiki tool included to mine some wikis.
+
+It remains unclear what mixing .wiki's and .wiki catagories and text and
+html really will look like.
+
+hopefully, people can use this in whatever way works.
+
+There are still some issues to work our as to how to properly wiki in
+a hierarchy.
+
+But some hierarchy has to help a little more than a flat directory for
+some casual browsing. Maybe I'll write an "auto hierarchy/auto link" program
+to generate a basic hierarchy.  Or maybe you will ...

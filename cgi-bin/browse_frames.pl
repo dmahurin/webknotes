@@ -11,11 +11,11 @@ package browse;
 sub show_page
 {
    my($notes_path) = @_;
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
-{
-   print "You are not authorized to access this path.\n";
-   return(0);
-}
+   unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+   {
+      print "You are not authorized to access this path.\n";
+      return(0);
+   }
 
 my($notes_path_encoded) = wkn::url_encode_path($notes_path);
 
@@ -53,7 +53,7 @@ if(defined($frame))
       }
       print "</html>\n";
    }
-   exit(0);
+   return(0);
 }
 
 &wkn::set_view_mode("layout", "frames");

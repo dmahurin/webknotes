@@ -12,6 +12,8 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'auth_define.pl';
 require 'auth_lib.pl';
 
+auth::init();
+
 print "Content-type: text/html\n\n\n";
 
 my $user = auth::get_user();

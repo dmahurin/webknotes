@@ -43,13 +43,13 @@ my $notes_name = $1;
 &wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
 &wkn::unset_view_mode("sublayout");
 
-my $OPENED_SYMBOL = &wkn::text_icon($wkn::define::opened_icon_text, 
+my $OPENED_SYMBOL = &wkn::icon_tag('[-]', 
                    $wkn::define::opened_icon);
-my $CLOSED_SYMBOL = &wkn::text_icon($wkn::define::closed_icon_text, 
+my $CLOSED_SYMBOL = &wkn::icon_tag('[+]', 
                    $wkn::define::closed_icon);
-my $FILE_SYMBOL = &wkn::text_icon($wkn::define::file_icon_text, 
-                   $wkn::define::file_icon);
-my $DIR_SYMBOL = &wkn::text_icon($wkn::define::dir_icon_text, 
+my $FILE_SYMBOL = &wkn::icon_tag('[o]', 
+                   $wkn::define::file_icons->{"file"});
+my $DIR_SYMBOL = &wkn::icon_tag('[o]', 
                    $wkn::define::dir_icon);
 
 print <<"EOT";
@@ -338,7 +338,7 @@ print <<"EOT";
 EOT
 # now populate the menu with the directories
 
-my($toppath) = "$auth::define::doc_dir";
+my($toppath) = "$filedb::define::doc_dir";
 $toppath .= "/$notes_path" if( $notes_path ne "");
 
 my($notes_base) = $notes_path eq "" ? "" : "$notes_path/";
@@ -420,7 +420,7 @@ if(-d $toppath)
        }
        else
        {
-          $link = "$auth::define::doc_wpath/$encoded_notes_path";
+          $link = "$filedb::define::doc_wpath/$encoded_notes_path";
             $count++;
        }
       print "$struct_prefix = new sectionObj();\n";

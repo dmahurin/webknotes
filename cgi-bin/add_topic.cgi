@@ -12,8 +12,11 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
 require 'auth_lib.pl';
+require 'filedb_lib.pl';
 use CGI qw(:cgi-lib);
 
+wkn::init();
+auth::init();
 umask(022);
 my %in;
 &ReadParse(\%in);
@@ -36,9 +39,10 @@ if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} 
    {
       my $copyfile = &auth::path_check("$notes_path/$in{'copy'}");
       $description = "";
-      if(open(COPYFILE, "$auth::define::doc_dir/$copyfile/README.html"))
+      if(open(COPYFILE, "$filedb::define::doc_dir/$copyfile/README.html"))
       {
          while(<COPYFILE>){$description .= $_;}
+         close(COPYFILE);
       }
    }
    else
@@ -49,6 +53,7 @@ if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} 
    exit 0;
 }
 
+my $notes_path_encoded = &wkn::url_encode_path($notes_path);
 $in{'topic_tag'} =~ m:^([^/]*)$:;
 my($topic_tag) = $1;
 
@@ -74,8 +79,10 @@ else
    if( &wkn::add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
    {
 
-#print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
-      wkn::browse_show_page($notes_path);
+      #wkn::browse_show_page($notes_path);
+      print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$notes_path_encoded\"></head><html><body>\n";
+print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
+print "</body></html>\n";
    }
    else
    {
@@ -92,7 +99,7 @@ sub print_form
   my($topic_tag, $text_type, $body) = @_;
   my(%sel_text_type);
   $sel_text_type{$text_type} = "selected";
-if( ! -e "$auth::define::doc_dir/$notes_path" )
+if( ! -e "$filedb::define::doc_dir/$notes_path" )
 {
    if( $notes_path =~ m:/([^/]+)$: )
    {
@@ -152,7 +159,7 @@ sub make_dir
 {
 	my($notes_path) = @_;
 
-	if(!mkdir("$auth::define::doc_dir/$notes_path", 0755 ))
+	if(!mkdir("$filedb::define::doc_dir/$notes_path", 0755 ))
 	{
 		return 0;
 	}
@@ -167,12 +174,12 @@ sub mkfile
 {
 	my($notes_filepath, $contents) = @_;
 
-	open(NFILE, "> $auth::define::doc_dir/${notes_filepath}" );
-
+	if(open(NFILE, "> $filedb::define::doc_dir/${notes_filepath}" ))
+        {
 	print NFILE $contents;
-
 	close(NFILE);
-	chmod 0644,"$auth::define::doc_dir/$notes_filepath";
+	chmod 0644,"$filedb::define::doc_dir/$notes_filepath";
+        }
 
 	return 1;
 }
@@ -231,7 +238,7 @@ if($should_make_dir)
 {
 if( ! &wkn::make_dir($notes_path))
 {
-#if ( -e "$auth::define::doc_dir${notes_path}/README" )
+#if ( -e "$filedb::define::doc_dir${notes_path}/README" )
 #	print("Notes path already exist. \nTopic not created\n");
 print "Failed to create dir: $notes_path\n";
 	return 0;
@@ -306,7 +313,7 @@ my ($dir, $full_path, $line);
 foreach $dir (@path_array)
 {
 	$temp_path="$temp_path/$dir";
-	$full_path="$auth::define::doc_dir${temp_path}";
+	$full_path="$filedb::define::doc_dir${temp_path}";
 	if( -r "${full_path}/.subscribed" )
 	{
 

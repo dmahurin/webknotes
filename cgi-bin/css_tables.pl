@@ -1,12 +1,14 @@
 #bug workarounds for css in tables
 
 package css_tables;
+
 sub box_begin
 {
    my($class) = @_;
    return '<table  width="100%" cellpadding=3 cellspacing=0 border=0><tr>' .
       "<td class=\"$class\">";
 }
+
 sub box_end
 {
    return "</td></tr></table>";
@@ -65,5 +67,7 @@ sub table_end
 {
    return "</table></div></div>";
 }
+
+
 
 1;

@@ -7,6 +7,8 @@ use strict;
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'wkn_lib.pl';
 
+wkn::init();
+
 wkn::content_header();
 my(@paths) = wkn::get_args();
 

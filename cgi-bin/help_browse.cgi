@@ -101,7 +101,7 @@ Just brose the notes directory using the web servers file browsing.
  
 <dl>
 <dt>
-<a href=\"$auth::define::doc_wpath/$notes_dir"> Browse Notes </a>
+<a href=\"$filedb::define::doc_wpath/$notes_dir"> Browse Notes </a>
 <dd>
 Just brose the notes directory using the web servers file browsing.
 </dl>

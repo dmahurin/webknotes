@@ -21,9 +21,12 @@ no strict 'refs';
 # - dmahurin@users.sourceforge.net
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-require 'auth_define.pl';
+require 'filedb_define.pl';
 require 'auth_lib.pl';
 require 'wkn_lib.pl';
+
+wkn::init();
+auth::init();
 
 my($user) = auth::get_user(); # used for auth checking on find
 
@@ -96,7 +99,7 @@ if ( ! defined($keywords) || ! defined($days_old)
 
 my($number_of_hits) = 0;
 
-my($search_root) = "$auth::define::doc_dir$notes_subpath" ;
+my($search_root) = "$filedb::define::doc_dir$notes_subpath" ;
 my(@dirs) = ( "$search_root" );
 opendir("DIR$#dirs", "$dirs[0]");
 
@@ -129,6 +132,7 @@ DIR: while (@dirs)
    next unless ($file =~ m:(^[^\.]+|html|\.(txt|html|htm))$:);
 
    $fullpath = join('/', @dirs, $file);
+   next if (-l $fullpath);
    $subpath = join('/', @dirs[1..$#dirs], $file);
 
    if (-d $fullpath)
@@ -459,13 +463,13 @@ sub print_file_match_html
     my $filename_enc =  wkn::url_encode_path($filename);
 
     my $prefix;
-    if( -d "$auth::define::doc_dir/$filename" || $filename =~ m:\.(htm|html|txt)|README:)
+    if( -d "$filedb::define::doc_dir/$filename" || $filename =~ m:\.(htm|html|txt)|README:)
     {
         $prefix = $match_prefix_url;
     }
     else
     {
-       $prefix = "$auth::define::doc_wpath/";
+       $prefix = "$filedb::define::doc_wpath/";
     }
     print <<EOT;
 <LI>
@@ -489,9 +493,9 @@ sub print_input_form_html
 <hr>
 
 <FORM METHOD="POST" ACTION="search.cgi">
-<B>Notes Subpath( optional ):</B> <INPUT TYPE="text" SIZE="30" NAME="notes_subpath" MAXLENGTH="80" VALUE="$notes_subpath" > <br>
-<hr>
 <B>Enter your keywords:</B> <INPUT TYPE="text" SIZE="30" NAME="keywords" value="$keywords" MAXLENGTH="80"> <br>
+<hr>
+<B>Notes Subpath( optional ):</B> <INPUT TYPE="text" SIZE="30" NAME="notes_subpath" MAXLENGTH="80" VALUE="$notes_subpath" > <br>
 <p>
 <INPUT TYPE=checkbox NAME="exact_match"> Exact Match Search <br>
 <INPUT TYPE=radio NAME="search_contents" VALUE="off" checked> Search Topic Keywords only <br>

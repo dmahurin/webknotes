@@ -22,25 +22,25 @@ sub smart_ref
    # ??
    if($ref =~ m:#: )
    {
-      $ref = "$auth::define::doc_wpath/$path_enc$ref";
+      $ref = "$filedb::define::doc_wpath/$path_enc$ref";
    }
    elsif( $ref =~ m:\.cgi(\?|$): ) # cgi script
    #elsif( $ref =~ m:^[^/]+\.cgi: ) # local cgi script
    {
-       if( -f "$auth::define::doc_dir/$path_enc/$ref")
+       if( -f "$filedb::define::doc_dir/$path_enc/$ref")
        {
           $path_enc =~ s:^/::;
           $path_enc =~ s:(/|^)[^/]*$:$1:; # strip off file
-          return $auth::define::doc_wpath . '/' . $path_enc . $ref_enc;
+          return $filedb::define::doc_wpath . '/' . $path_enc . $ref_enc;
        }
    }
    elsif($path_enc =~ m:/[^/]*$:) # strip off README.html or xxx.html
    {
-      $ref = "$auth::define::doc_wpath/$`/$ref";
+      $ref = "$filedb::define::doc_wpath/$`/$ref";
    }
    else
    {
-      $ref = "$auth::define::doc_wpath/$ref";
+      $ref = "$filedb::define::doc_wpath/$ref";
    }
    
    #collapse dir/.. to nothing
@@ -52,7 +52,7 @@ sub smart_ref
    }
    
    $ref =~ s:/+$::;
-   if($ref =~ m-^$auth::define::doc_wpath/*- )
+   if($ref =~ m-^$filedb::define::doc_wpath/*- )
    {
       return &wkn::get_cgi_prefix() . wkn::url_encode_path($');
    }
@@ -79,7 +79,7 @@ sub translate_html
    
    # translate relative image paths to full http paths
    my $this_path = ($notes_file =~ m:/[^/]*$:) ? "$`/" : "";
-   my $this_hpath = wkn::url_encode_path("$auth::define::doc_wpath/$this_path");
+   my $this_hpath = wkn::url_encode_path("$filedb::define::doc_wpath/$this_path");
    $text =~ s!(<img\s[^>]*src=\")([^:\/>\"]+)!$1$this_hpath$2!gi;
    
    return $text;

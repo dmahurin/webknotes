@@ -7,13 +7,14 @@ use strict;
 # dmahurin@users.sourceforge.net
 
 package browse;
+
 sub show_page
 {
   my($notes_path)=@_;
 unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
-   exit(0);
+   return(0);
 }
 
 
@@ -46,7 +47,7 @@ if(defined($frame))
       }
       print "</body></html>\n";
    }
-   exit(0);
+   return(0);
 }  
 my $this_cgi_script_prefix = wkn::get_cgi_prefix();
 &wkn::set_view_mode("layout", "list2");

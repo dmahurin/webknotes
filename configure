@@ -92,27 +92,16 @@ if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
    }
 }
 
-
-$public_subpath = "wkn";
-$public_dir = prompt_default("WKN public html dir (where by default, notes, icons, and themes live)", "$doc_root/$public_subpath");
-if($public_dir =~ m:^$doc_root/:)
-{
-   $in_doc_root = 1;
-   $public_subpath = $';
-}
-$public_wpath = prompt_default("WKN public html web path", "$doc_root_wpath/$public_subpath");
-
-mkdir($doc_root, 0755) if($in_doc_root);
-mkdir($public_dir, 0755);
-
-$notes_subpath = "$public_subpath/notes";
-$notes_dir = prompt_default("Notes file path (this is where the document tree lives)", "$doc_root/$notes_subpath");
+$notes_subpath = "docs";
+$notes_dir = prompt_default("Document file path (this is where the document tree lives)", "$doc_root/$notes_subpath");
 if($notes_dir =~ m:^$doc_root/:)
 {
    $in_doc_root = 1;
    $notes_subpath = $';
 }
 $notes_wpath = prompt_default("Notes web path", "$doc_root_wpath/$notes_subpath");
+
+mkdir($doc_root, 0755) if($in_doc_root);
 
 unless(-d $notes_dir)
 {
@@ -122,6 +111,17 @@ unless(-d $notes_dir)
       system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
    }
 }
+
+$public_subpath = "wkn";
+$public_dir = prompt_default("WKN public html dir (where by default, icons and themes live)", "$doc_root/$public_subpath");
+if($public_dir =~ m:^$doc_root/:)
+{
+   $in_doc_root = 1;
+   $public_subpath = $';
+}
+$public_wpath = prompt_default("WKN public html web path", "$doc_root_wpath/$public_subpath");
+
+mkdir($public_dir, 0755);
 
 $icon_subpath = "$public_subpath/icons";
 $theme_subpath = "$public_subpath/themes";
@@ -175,20 +175,27 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
 {
    
    
+
    unlink("$wkn_cgi_dir/auth_define.pl");
    if(open(FILE, ">$wkn_cgi_dir/auth_define.pl"))
    {
-      print FILE
-"#!/usr/bin/perl
-
-package auth::define;
-
+      print FILE 
+"package auth::define;
 \$private_dir = \"$private_web_dir\";
+\$path_permissions = { \"\" => \"+rn,o+mdc\"};
+1;
+";
+      close FILE;
+   }
+
+   unlink("$wkn_cgi_dir/filedb_define.pl");
+   if(open(FILE, ">$wkn_cgi_dir/filedb_define.pl"))
+   {
+      print FILE
+"package filedb::define;
+
 \$doc_dir = \"$notes_dir\";
 \$doc_wpath = \"$notes_wpath\";
-
-\$path_permissions = { \"\" => \"+rn,o+mdc\"};
-
 1;
 ";
       close FILE;
@@ -239,11 +246,8 @@ $default_theme = "don";
 $max_depth = 3;
 
 $opened_icon = "fminus.gif";
-$opened_icon_text = "[-]";
 $closed_icon = "fplus.gif";
-$closed_icon_text = "[+]";
 $dir_icon = "folder.gif";
-$dir_icon_text = "[+]";
 $file_icons = { "file" => "document.gif" };
 ';
       close FILE;

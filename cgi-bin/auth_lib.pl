@@ -2,6 +2,7 @@
 use strict;
 
 require 'auth_define.pl';
+require 'filedb_define.pl';
 
 # auth-lib - library used for user authentication for a web based system
 package auth;
@@ -12,8 +13,14 @@ package auth;
 # dmahurin@users.sourceforge.net
 
 # store current user and info, so we only get them once.
-my($current_user) = ();
-my($current_user_info) = ();
+use vars qw($current_user $current_user_info);
+local($current_user, $current_user_info);
+
+sub init
+{
+   $current_user = ();
+   $current_user_info = ();
+}
 
 sub init_private_dir()
 {
@@ -136,7 +143,7 @@ sub path_check
 sub get_path_group
 {
    my(@path) = @_;
-   my($gfile) = join('/', $auth::define::doc_dir, grep(/./,@path), '.group');
+   my($gfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.group');
    
    if ( -f $gfile and open (GFILE, $gfile))
    {
@@ -151,7 +158,7 @@ sub get_path_group
 sub get_path_owner
 {
    my(@path) = @_;
-   my($ofile) = join('/', $auth::define::doc_dir, grep(/./,@path), '.owner');
+   my($ofile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.owner');
    
    if ( -f $ofile and open (OFILE, $ofile))
    {
@@ -167,7 +174,7 @@ sub get_path_owner
 sub get_path_permissions
 {
    my(@path) = @_;
-   my($pfile) = join('/', $auth::define::doc_dir, grep(/./,@path), '.permissions');
+   my($pfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.permissions');
    if( -f $pfile and open(PFILE, $pfile ) )
    {
 
@@ -182,7 +189,7 @@ sub get_path_permissions
 sub set_path_group
 {
    my($group, @path) = @_;
-   my($gfile) = join('/', $auth::define::doc_dir, grep(/./,@path), '.group');
+   my($gfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.group');
    
    if ( open (GFILE, ">$gfile"))
    {
@@ -196,7 +203,7 @@ sub set_path_group
 sub set_path_permissions
 {
    my($permissions,@path) = @_;
-   my($pfile) = join('/', $auth::define::doc_dir, grep(/./,@path), '.permissions');
+   my($pfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.permissions');
    if( open(PFILE, ">$pfile" ) )
    {
       print PFILE "$permissions";
@@ -233,7 +240,7 @@ sub check_path_exists
 {
    my($path) = @_;
    
-   if( ! -e "$auth::define::doc_dir/$path" )
+   if( ! -e "$filedb::define::doc_dir/$path" )
    {
      #     print "Note not found: $auth::define::doc_dir/$notes_path<br>\n";
      #print "If you want, you can <a href=\"add_topic.cgi?notes_path=$notes_path_encoded\"> Add </a> the note yourself<br>\n";
@@ -246,19 +253,19 @@ sub check_file_auth
 {
   my($user, $user_info, $check_flag, $file_path) = @_;
   
-  return 1 if($user_info->{"Permissions"} =~ m:s:);
+  return 1 if(defined($user_info) && $user_info->{"Permissions"} =~ m:s:);
 
   my $have_auth_flags;
 
   my($file_dir) = $file_path;
-  if ( -f "$auth::define::doc_dir/$file_dir")
+  if ( -f "$filedb::define::doc_dir/$file_dir")
   {
      unless($file_dir =~ s:/[^/]*$::) #strip off file
      {
         $file_dir = "";
      }
   }
-  if( ! -d "$auth::define::doc_dir/$file_dir" )
+  if( ! -d "$filedb::define::doc_dir/$file_dir" )
   {
      return 0;     
   }
@@ -297,14 +304,20 @@ sub check_file_auth
   my $permissions;
   for $permissions (@path_permissions)
   {                
-     if($permissions =~ m:^(o|g|a)?(\+|-|=):)
+     if($permissions =~ m:^(o|u|g|a)?(\+|-|=):)
      {
-	if($1 eq 'o')
+	if($1 eq 'o') # owner of directory
 	{
 	   $have_auth_flags = change_flags($have_auth_flags, $', $2)
 	      if($is_owner);
 	}
-	elsif($1 eq 'g')
+        elsif($1 eq 'u') # user (not anonymous)
+        {
+           print "XXX\n" if (defined($user_info));
+          $have_auth_flags = change_flags($have_auth_flags, $', $2)
+             if(defined($user_info));
+        }
+	elsif($1 eq 'g') # in directory group
 	{
 	   $have_auth_flags = change_flags($have_auth_flags, $', $2 )
 	      if($in_group);
@@ -406,7 +419,9 @@ sub get_user_info
 {
    my($user) = @_;
    my(%info) = ();
-   return \%info unless (defined($user));
+# did I do below for some reason?
+#   return \%info unless (defined($user));
+   return () unless (defined($user));
    if(open(UFILE, "$auth::define::private_dir/users/$user"))
    {
       my($key, $value);
@@ -459,7 +474,6 @@ sub check_pass
 
    return ( $auth_pass eq "" or pcrypt1($pass) eq $auth_pass);
 } 
-
 
 sub pcrypt1
 {
