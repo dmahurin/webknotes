@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 my $runpath;
-if( $0 =~ m:/[^/]*$: ) { $runpath=$`; push @INC, $runpath }
+if( $0 =~ m:/[^/]*$: ) { $runpath=$`; push @INC, $runpath } else { $runpath='.'}
 require 'view_define.pl';
 require 'view_lib.pl';
 use CGI qw(:standard);
