@@ -108,8 +108,6 @@ opendir("DIR$#dirs", "$dirs[0]");
 my($line, $found, $dir_words, $subpath, $fullpath, $key_dir_depth);
 my(@not_found_words, $this_note_type, $searchfile, $file);
 
-my($debug) = 0;
-
 
 DIR: while (@dirs)
 {

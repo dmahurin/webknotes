@@ -24,20 +24,20 @@ print "Content-type: text/html\n\n\n";
 my %in;
 
 &ReadParse(\%in);
-my $username = $in{'group'};
-if( $username =~ m:[^\w-]: )
+my $groupname = $in{'group'};
+if( $groupname =~ m:[^\w-]: )
 {
   print "Illegal char\n";
   exit;
 }
 
-if( ! defined($username) )
+if( ! defined($groupname) )
 {
   print "Group not defined\n";
   exit;
 }
 
-my $group_info = &auth::get_group_info($username);
+my $group_info = &auth::get_group_info($groupname);
 
 print "
 <html>

@@ -27,7 +27,7 @@ if(defined($frame))
    if($frame eq "header")
    {
       print "<html><head><BASE TARGET=\"_parent\"></head>";
-      print $view::define::index_header
+      print "$view::define::index_header"
         if(defined($view::define::index_header));
       print "</html>\n";
    }
