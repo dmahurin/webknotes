@@ -16,14 +16,22 @@ package wkn;
 sub url_encode_path
 {
    my($path) = @_;
-   my $after;
-   if($path =~ m:(#|\.cgi):) # we don't want to encode after these
+   my ($skip, $after);
+   if($path =~ m:(#.*|\.cgi\?):) # don't encode cgi? and # #a name refs
    {
       $path = $`;
-      $after = $& . $';
+      $skip = $&;
+      $after = $';
    }
-   $path =~s/([^\w\/\.\~-])/sprintf("%%%02lx", unpack('C',$1))/ge;
-   return $path . $after;
+  
+   return url_encode_name($path) . $skip . url_encode_name($after);
+}
+
+sub url_encode_name
+{
+  my($name) = @_;
+  $name =~s/([^\w\/\.\~-])/sprintf("%%%02lx", unpack('C',$1))/ge;
+  return $name;
 }
 
 sub url_unencode_path
@@ -78,14 +86,14 @@ sub actions2
       #}
       #      if(auth::check_file_auth($user, $user_info, 'p', $notes_path))
       #{
-      #print "[ <A HREF=\"permissions.cgi?dir=${notes_path}\">Access</A> ]\n";
+      #print "[ <A HREF=\"permissions.cgi?path=${notes_path}\">Access</A> ]\n";
       #}
    }
    
       print "[ Edit \n";
    if(auth::check_file_auth($user, $user_info, 'm', $notes_path))
    {
-      print "<A HREF=\"edit.cgi?$dir_file\">File</a> | \n";
+      print "<A HREF=\"edit.cgi?file=$dir_file\">File</a> | \n";
    }
       print "<A HREF=\"browse_edit.cgi?$notes_path\">Directory</a> ]\n";
    print "[ Browse ";
@@ -657,24 +665,29 @@ sub print_file
 sub smart_ref
 {
    my( $file_path, $uref ) = @_;
+   if($uref =~ m:^#: )
+   {
+      return $uref;
+   }
    
    return $uref if ( $uref =~ m/^\w+:/ );
    return $uref if ( $uref =~ m:^/: );
    my $ref = url_unencode_path($uref);
-   if($ref =~ m:^#: )
-   {
-      return $ref;
-   }
-   elsif($ref =~ m:#: )
+
+   # ??
+   if($ref =~ m:#: )
    {
       $ref = "$auth::define::doc_wpath/$file_path$ref";
    }
-   #   elsif( $ref =~ m:\.cgi: ) # cgi script
-   elsif( $ref =~ m:^[^/]+\.cgi: ) # local cgi script
+   elsif( $ref =~ m:\.cgi(\?|$): ) # cgi script
+   #elsif( $ref =~ m:^[^/]+\.cgi: ) # local cgi script
+   {
+       if( -f "$auth::define::doc_dir/$file_path/$ref")
    {
        $file_path =~ s:^/::;
        $file_path =~ s:(/|^)[^/]*$:$1:; # strip off file
-       return $auth::define::doc_wpath . '/' . $file_path . $uref;
+       return $auth::define::doc_wpath . '/' . url_encode_path($file_path) . $uref;
+       }
    }
    elsif($file_path =~ m:/[^/]*$:) # strip off README.html or xxx.html
    {
@@ -745,7 +758,8 @@ sub translate_html
    
    # translate relative image paths to full http paths
    my $this_path = ($notes_file =~ m:/[^/]*$:) ? "$`/" : "";
-   $text =~ s!(<img\s[^>]*src=\")([^:\/>\"]+)!$1$auth::define::doc_wpath/$this_path$2!gi;
+   my $this_hpath = url_encode_path("$auth::define::doc_wpath/$this_path");
+   $text =~ s!(<img\s[^>]*src=\")([^:\/>\"]+)!$1$this_hpath$2!gi;
    
    return $text;
 }

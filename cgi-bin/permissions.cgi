@@ -24,7 +24,7 @@ my $illegal_dir = "cgi-bin";
 my %in;
 &ReadParse(\%in);
 
-my $dir = $in{'dir'};
+my $dir = $in{'path'};
 my $permissions = $in{'permissions'};
 my $group = $in{'group'};
 my $owner = $in{'owner'};
@@ -96,7 +96,7 @@ s - system privalege
 </pre>
 
 <form action="$this_cgi" method="post">
-<input type=hidden name=dir value="$dir">
+<input type=hidden name=path value="$dir">
 Permissions <input type=text name=permissions value="$permissions">   
 <br>Owner <input type=text name=owner value="$owner">   
 <br>Group <input type=text name=group value="$group">   

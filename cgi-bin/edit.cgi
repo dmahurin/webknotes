@@ -43,6 +43,8 @@ if( $file =~ m:^(.*)$:)
 }
 $file =~ s:^/+::;
 
+$file = auth::url_unencode_path($file);
+
 my $full_file = "$auth::define::doc_dir/$file";
 
 if( $file =~ m:$illegal_dir: )

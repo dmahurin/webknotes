@@ -10,6 +10,7 @@ print "Content-Type: text/html\n\n";
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'wkn_define.pl';
+require 'wkn_lib.pl';
 require 'auth_lib.pl';
 use CGI qw(:cgi-lib);
 
@@ -19,7 +20,6 @@ my %in;
 $in{'notes_path'} =~ m:^(.*)$:;
 my($notes_path) = $1;
 $notes_path=~ s:/$::;
-my($topic_tag) = $in{topic_tag} if(defined($in{topic_tag}));
 
 my($user) = auth::get_user();
 if( ! auth::check_file_auth( $user, auth::get_user_info($user),
@@ -29,9 +29,23 @@ if( ! auth::check_file_auth( $user, auth::get_user_info($user),
    exit(0);
 }
 
-if(!defined($in{'description'}))
+if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} eq "")
 {
-   print_form();
+   my $description;
+   if(defined($in{'copy'}) and $in{copy} ne ""  && ! defined($in{'description'}))
+   {
+      my $copyfile = &wkn::path_check("$notes_path/$in{'copy'}");
+      $description = "";
+      if(open(COPYFILE, "$auth::define::doc_dir/$copyfile/README.html"))
+      {
+         while(<COPYFILE>){$description .= $_;}
+      }
+   }
+   else
+   {
+      $description = $in{description};
+   }
+   print_form($in{'topic_tag'}, $description);
    exit 0;
 }
 
@@ -46,9 +60,13 @@ print "<TITLE>Adding Topic</TITLE></HEAD><BODY>\n";
 
 my($source_details) = " $ENV{'REMOTE_ADDR'}, $ENV{'REMOTE_HOST'}\n";
 
-if( ! $in{description} || ! $topic_tag )
+if( $in{description} eq "" )
 {
-	print("<br>Required field missing <br>\n");
+	print("<br>Required description missing <br>\n");
+}
+elsif( $topic_tag eq "")
+{
+	print("<br>Required topic tag missing <br>\n");
 }
 else
 {
@@ -70,6 +88,7 @@ $notes_path . '">' . "BACK TO NOTES:$notes_path</A>
 
 sub print_form
 {
+  my($topic_tag, $body) = @_;
 if( ! -e "$auth::define::doc_dir/$notes_path" )
 {
    if( $notes_path =~ m:/([^/]+)$: )
@@ -107,7 +126,7 @@ Text type<SELECT  WIDTH=33 NAME=\"text_type\">
 <br>
 Sub-Topic description(body) - (mailto:, http:, and &ltA HREF recognized )<br>
 <INPUT TYPE=\"hidden\" NAME=\"notes_path\" value=\"$notes_path\">
-<textarea NAME=\"description\" rows=24 cols=75></textarea><P>
+<textarea NAME=\"description\" rows=24 cols=75>$body</textarea><P>
 EOT
 print "WARNING: You are not logged in. You will NOT be able to edit this later.\n" unless(defined($user));
 

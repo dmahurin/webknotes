@@ -37,9 +37,11 @@ sub get_user()
          $auth::define::allow_remote_user_auth eq $ENV{AUTH_TYPE});
       return () unless defined(my $user = $ENV{REMOTE_USER});
       return $user if( -f "$auth::define::private_dir/users/$user");
-      return $user unless($auth::define::autoadd_remote_auth_users == 1);
+      return $user unless($auth::define::autoadd_remote_auth_users);
       
-      return () unless( auth::modify_user_info(auth::check_user_name($user), 
+      $user=auth::check_user_name($user);
+      return () unless($user);
+      return () unless( auth::write_user_info($user, 
 	 ("PassKey"=>"*",
          "AuthRoot"=>$auth::define::newuser_path,
 	    "Permissions"=>$auth::define::newuser_flags, 

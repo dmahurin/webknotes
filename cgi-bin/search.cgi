@@ -452,10 +452,19 @@ sub print_file_match_html
 
     my $filename_enc =  wkn::url_encode_path($filename);
 
+    my $prefix;
+    if( -d "$auth::define::doc_dir/$filename" || $filename =~ m:\.(htm|html|txt)|README:)
+    {
+        $prefix = $match_prefix_url;
+    }
+    else
+    {
+       $prefix = "$auth::define::doc_wpath/";
+    }
     print <<EOT;
 <LI>
 <B>
-<A HREF="$match_prefix_url$filename_enc">
+<A HREF="$prefix$filename_enc">
 $title</A> ($filename)
 </B>
 <BR>

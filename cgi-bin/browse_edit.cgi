@@ -69,7 +69,7 @@ if(-d $real_path and opendir(DIR, $real_path))
    print "[ <a href=\"$auth::define::doc_wpath/$notes_path\">Browse</a> ] \n";
    if(auth::check_file_auth( $user, $user_info, 'p',  $notes_path) )
    {
-      print "[ <a href=\"permissions.cgi?dir=$notes_path_encoded\">Permissions</a> ] \n";
+      print "[ <a href=\"permissions.cgi?path=$notes_path_encoded\">Permissions</a> ] \n";
    }
    if(auth::check_file_auth( $user, $user_info, 'u',  $notes_path) )
    {
