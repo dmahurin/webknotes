@@ -137,7 +137,7 @@ sub is_file
 sub get_hidden_data
 {
    my($path, $name) = @_;
-   my($file) = get_full_path($path, $name);
+   my($file) = get_full_path($path, ".$name");
   
    if ( -f $file and open (FILE, $file))
    {
@@ -152,7 +152,7 @@ sub get_hidden_data
 sub set_hidden_data
 {
    my($path, $name, $value) = @_;
-   my($file) = get_full_path($path, $name);
+   my($file) = get_full_path($path, ".$name");
    unless(defined($value))
    {
       return 1 unless( -f $file);
