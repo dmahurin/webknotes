@@ -189,7 +189,7 @@ if(-d $toppath)
              print "<a href=\"$this_script_prefix$notes_path_encoded&" . 
                 join ('&' , view::url_encode_paths(flatten_tree($open_tree))) .
                 "\">" .
-                &view::icon_tag('[-]', 
+                &view::icon_tag('[+]', 
                    $view::define::closed_icon) .
                 "</a>";
              print "</td></tr></table>";
