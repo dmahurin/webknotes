@@ -32,7 +32,9 @@ sub extract_wiki
   for (@topfiles) { $processed{$_} = 1;}
   while(@topfiles)
   {
+     print @topfiles . ' : ';
      my($wiki) = pop(@topfiles);
+     
      print "$wiki\n";
 
      if(-f $wiki)
@@ -70,6 +72,12 @@ sub extract_wiki
         $text =~ s:&amp;:&:gi; 
         $text =~ s:&lt;:<:gi; 
         $text =~ s:&gt;:>:gi; 
+        
+        if(defined($ENV{REQUIRED_WORDS}))
+        {
+           next unless($text =~ m:\b($ENV{REQUIRED_WORDS})\b:i);
+        }
+           
         if($text =~ m:^\s*(Describe $wiki here\.\s*)?$:s)
         {
            print "$wiki is Blank\n";
@@ -82,6 +90,15 @@ sub extract_wiki
         sleep(1); #so they don't complain
      }
 
+     while($text =~ m:\[\[([^\]]+)\]\]:)
+     {
+        unless(defined($processed{$1}))
+        {
+           push(@topfiles, $1) ;
+           $processed{$1} = 1;
+        }
+        $text = $';
+     }
      while($text =~ m:\b(([A-Z][a-z]+){2,})\b:)
      {
         unless(defined($processed{$1}))
