@@ -25,6 +25,12 @@ my(%symbols);
 
 
 my($user);
+
+if($<)
+{
+   $user = getpwuid($<)
+}
+
 my($package) = "main";
 
 # need local for var_eval
@@ -40,12 +46,7 @@ unless(defined($wkn_cgi_dir) and -f "$wkn_cgi_dir/filedb_define.pl" and
 
    &chomp_slashs(parse_httpd());
 
-
-if($<)
-{
-   $user = getpwuid($<)
-}
-elsif((!defined($user)) or $user eq "nobody")
+if((!defined($user)) or $user eq "nobody")
 {
    $user = "www";
 }
@@ -136,7 +137,9 @@ while(defined(my $line = <IN>))
      }
      $default = $$varref if(defined($$varref));
     
-     next if(!defined($default)); # no default or previous user value
+     # skip if no default or previous user value (hash's have no default)
+     next if( $type ne "HASH" && !defined($default));
+
      push(@{$symbols{$package}}, $var) if( ! defined($hashvar) and $package ne "main");
      next if($type eq "HASH"); # manually configured
      
@@ -264,8 +267,8 @@ if(prompt_default("Create private web dir",
 }
 
    my $admin_user = "admin";
-   if( ! -f "$filedb::define::private_dir/users/$admin_user" and
-      prompt_default("Create Admin login as '$admin_user'", 'y', "(y|n)") eq "y")
+   $default = ( -f "$filedb::define::private_dir/users/$admin_user" ) ? "n" : "y";
+   if( prompt_default("Create Admin login as '$admin_user'", $default, "(y|n)") eq "y")
    {
       my($admin_password, $admin_password_check);
       while(1)
