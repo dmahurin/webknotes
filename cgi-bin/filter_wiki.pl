@@ -149,7 +149,7 @@ sub FilterBodyText {
     # replace [[ ]] links with a URL translation token
     while(s/\[\[([^\]]+)\]\]/$TranslationToken$InPlaceUrl$TranslationToken/)
     {
-      $InPlaceUrls[$InPlaceUrl] = $1;
+      $InPlaceUrls[$InPlaceUrl++] = $1;
     }
 
     # replace raw url with URL markers
