@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 use strict;
-package browse_tabtop;
+package browse_tabs;
 # single table version of main WebKNotes script table version
 
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin.
