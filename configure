@@ -187,7 +187,7 @@ package auth::define;
 \$doc_dir = \"$notes_dir\";
 \$doc_wpath = \"$notes_wpath\";
 
-\$path_permissions = { \"\" => \"+rn\"};
+\$path_permissions = { \"\" => \"+rn,o+mdc\"};
 
 1;
 ";
