@@ -1,3 +1,7 @@
+- support of indented (tabbed) paragraphs in htxt.
+- make illegal dir pattern configurable.
+
+
 subscribe.cgi -
 possibly subscription options stored in private_dir/subscriptions/USER/path_with_dots
 Options are:
