@@ -1,6 +1,7 @@
 Better documentation - INSTALL.
 
 Smarter configure script that learns better from your previous answers.
+configure should parse existing definitions and use those as defaults.
 
 Have another level of users that get passwords via email.(to verify address)
 

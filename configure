@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use strict;
 
 my($user);
 if($<)
@@ -10,22 +11,24 @@ else
    $user = "www";
 }
 
-my ($doc_root, $cgi_root, $cgi_root_wpath,
+my ($web_doc_root, $cgi_root, $cgi_root_wpath,
    $user_dir) =
    &chomp_slashs(parse_httpd());
    
-$default = ($< && $user ne "www") ? "u" : "r";
+my $default = ( $< && $user ne "www") ? "u" : "r";
+
+my ($private_web_dir, $web_doc_root_wpath);
    
 if(prompt_default("Install in web Root or User directory", $default, "(r|u)") eq "r")
 {
-   $doc_root = "/home/httpd/html"
-      unless(defined($doc_root));
+   $web_doc_root = "/home/httpd/html"
+      unless(defined($web_doc_root));
    $cgi_root = "/home/httpd/cgi-bin"
       unless(defined($cgi_root));
    $cgi_root_wpath = "/cgi-bin"
       unless(defined($cgi_root_wpath));
-   $doc_root_wpath = "";
-   if($doc_root =~ m:[^/]+$:)
+   my $web_doc_root_wpath = "";
+   if($web_doc_root =~ m:[^/]+$:)
    {
       $private_web_dir = "$`private";
    }
@@ -34,16 +37,16 @@ else
 {
    if(defined($user_dir))
    {
-      $doc_root = "$ENV{\"HOME\"}/$user_dir";
+      $web_doc_root = "$ENV{\"HOME\"}/$user_dir";
    }
    else
    {
-      $doc_root = "$ENV{\"HOME\"}/public_html";
+      $web_doc_root = "$ENV{\"HOME\"}/public_html";
    }
    undef $cgi_root;
    undef $cgi_root_wpath;
-   $doc_root_wpath = "/~$ENV{\"USER\"}";
-   if($doc_root =~ m:[^/]+$:)
+   $web_doc_root_wpath = "/~$ENV{\"USER\"}";
+   if($web_doc_root =~ m:[^/]+$:)
    {
       $private_web_dir = "$`web_private";
    }
@@ -51,16 +54,16 @@ else
 
 unless($cgi_root)
 {
-   $cgi_root = "$doc_root/cgi-bin";
-   $cgi_root_wpath = "$doc_root_wpath/cgi-bin";
+   $cgi_root = "$web_doc_root/cgi-bin";
+   $cgi_root_wpath = "$web_doc_root_wpath/cgi-bin";
 }
-$webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
+my $webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
 
-$wkn_cgi_subpath = "wkn";
-$wkn_cgi_dir = prompt_default("webknotes cgi-bin directory", "$cgi_root/$wkn_cgi_subpath");
-if($wkn_cgi_dir =~ m:^$doc_root/:)
+my $wkn_cgi_subpath = "wkn";
+my $wkn_cgi_dir = prompt_default("webknotes cgi-bin directory", "$cgi_root/$wkn_cgi_subpath");
+if($wkn_cgi_dir =~ m:^$web_doc_root/:)
 {
-   mkdir($doc_root, 0755);
+   mkdir($web_doc_root, 0755);
 }
 if($wkn_cgi_dir =~ m:^$cgi_root/:)
 {
@@ -68,7 +71,7 @@ if($wkn_cgi_dir =~ m:^$cgi_root/:)
    $wkn_cgi_subpath = $';
 }
 
-$wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
+my $wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
 
 mkdir($wkn_cgi_dir, 0755);
 
@@ -92,16 +95,17 @@ if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
    }
 }
 
-$notes_subpath = "docs";
-$notes_dir = prompt_default("Document file path (this is where the document tree lives)", "$doc_root/$notes_subpath");
-if($notes_dir =~ m:^$doc_root/:)
+my $notes_subpath = "docs";
+my $notes_dir = prompt_default("Document file path (this is where the document tree lives)", "$web_doc_root/$notes_subpath");
+my $in_web_doc_root = 0;
+if($notes_dir =~ m:^$web_doc_root/:)
 {
-   $in_doc_root = 1;
+   $in_web_doc_root = 1;
    $notes_subpath = $';
 }
-$notes_wpath = prompt_default("Notes web path", "$doc_root_wpath/$notes_subpath");
+my $notes_wpath = prompt_default("Notes web path", "$web_doc_root_wpath/$notes_subpath");
 
-mkdir($doc_root, 0755) if($in_doc_root);
+mkdir($web_doc_root, 0755) if($in_web_doc_root);
 
 unless(-d $notes_dir)
 {
@@ -109,35 +113,37 @@ unless(-d $notes_dir)
    if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
    {
       system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
+      mkdir("$notes_dir/webknotes", 0755);
+      system("cp '$webknotes_base/doc'/* $notes_dir/webknotes");
    }
 }
 
-$public_subpath = "wkn";
-$public_dir = prompt_default("WKN public html dir (where by default, icons and themes live)", "$doc_root/$public_subpath");
-if($public_dir =~ m:^$doc_root/:)
+my $public_subpath = "wkn";
+my $public_dir = prompt_default("WKN public html dir (where by default, icons and themes live)", "$web_doc_root/$public_subpath");
+if($public_dir =~ m:^$web_doc_root/:)
 {
-   $in_doc_root = 1;
+   $in_web_doc_root = 1;
    $public_subpath = $';
 }
-$public_wpath = prompt_default("WKN public html web path", "$doc_root_wpath/$public_subpath");
+my $public_wpath = prompt_default("WKN public html web path", "$web_doc_root_wpath/$public_subpath");
 
 mkdir($public_dir, 0755);
 
-$icon_subpath = "$public_subpath/icons";
-$theme_subpath = "$public_subpath/themes";
-$icons_dir = prompt_default("Icons file path", "$doc_root/$icon_subpath");
-if($icons_dir =~ m:^$doc_root/:)
+my $icon_subpath = "$public_subpath/icons";
+my $theme_subpath = "$public_subpath/themes";
+my $icons_dir = prompt_default("Icons file path", "$web_doc_root/$icon_subpath");
+if($icons_dir =~ m:^$web_doc_root/:)
 {
    $icon_subpath = $';
 }
-$icons_wpath = prompt_default("Icons web path", "$doc_root_wpath/$icon_subpath");
+my $icons_wpath = prompt_default("Icons web path", "$web_doc_root_wpath/$icon_subpath");
 
-$themes_dir = prompt_default("Themes file path", "$doc_root/$theme_subpath");
-if($themes_dir =~ m:^$doc_root/:)
+my $themes_dir = prompt_default("Themes file path", "$web_doc_root/$theme_subpath");
+if($themes_dir =~ m:^$web_doc_root/:)
 {
    $theme_subpath = $';
 }
-$themes_wpath = prompt_default("Themes web path", "$doc_root_wpath/$theme_subpath");
+my $themes_wpath = prompt_default("Themes web path", "$web_doc_root_wpath/$theme_subpath");
 
 
 if(prompt_default("Copy sample icons", ( -d $icons_dir )? "n" : "y",
@@ -201,10 +207,11 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
       close FILE;
    }
    
-   $admin_user = $< ? getpwuid($<) : "admin";
+   my $admin_user = $< ? getpwuid($<) : "admin";
    $default = ( -f "$private_web_dir/users/$admin_user" ) ? "n" : "y";
    if(prompt_default("Create Admin login as '$admin_user'", $default, "(y|n)") eq "y")
    {
+      my($admin_password, $admin_password_check);
       while(1)
       {
          system "stty -echo";
@@ -219,7 +226,7 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
          }
          else { last };
       }
-      push(@INC, "$wkn_cgi_dir/$cgi_subpath");
+      push(@INC, "$wkn_cgi_dir");
       require "auth_lib.pl";
       if(! auth::write_user_info($admin_user,
          { "PassKey"=>auth::pcrypt1($admin_password),
@@ -253,17 +260,17 @@ $file_icons = { "file" => "document.gif" };
       close FILE;
    }
 }
-$default_layout = "table";
-$default_theme = "don";
+my $default_layout = "table";
+my $default_theme = "don";
 if(prompt_default("Generate top level index", "y", "(y|n)") eq "y")
 {
-   $index_file = prompt_default("Name of index file", "$public_dir/index.html");
-   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/help_browse.cgi '' >$index_file";
+   my $index_file = prompt_default("Name of index file", "$public_dir/index.html");
+   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/browse.cgi '' >$index_file";
    print "Running command: $command\n\n";
    system($command);
 }
 
-$wpath_prefix = 'localhost' if($wkn_cgi_wpath =~ m:^/:);
+my $wpath_prefix = 'localhost' if($wkn_cgi_wpath =~ m:^/:);
 print "\nhttp://$wpath_prefix$wkn_cgi_wpath/help_browse.cgi\n";
 print "http://$wpath_prefix$public_wpath/\n";
 
@@ -279,7 +286,7 @@ sub prompt_default
    {
       print "$prompt $choices [$default]: ";
    }
-   $line = <STDIN>;
+   my $line = <STDIN>;
    chomp($line);
    $line = $default if($line eq "");
    
@@ -290,7 +297,7 @@ sub prompt_default
 sub parse_httpd
 {
 
-   my($line, $doc_root, $script_root, $script_alias, $user_dir);
+   my($line, $web_doc_root, $script_root, $script_alias, $user_dir, $conf);
    
    for $conf ( "/etc/httpd/conf/httpd.conf", "/etc/httpd/conf/srm.conf" )
    {
@@ -299,7 +306,7 @@ sub parse_httpd
       {
          if($line =~ m:^\s*DocumentRoot\s+:)
          {
-            ($doc_root) = split_args($');
+            ($web_doc_root) = split_args($');
          }
          if($line =~ m:^\s*ScriptAlias\s+:)
          {
@@ -312,11 +319,11 @@ sub parse_httpd
       }
       close(HCONF);
    }
-   if(!defined($doc_root))
+   if(!defined($web_doc_root))
    {                             
       print "Warning: http configuration not found\n";
    }
-   return ($doc_root, $script_root, $script_alias, $user_dir);
+   return ($web_doc_root, $script_root, $script_alias, $user_dir);
 }
 
 sub split_args
