@@ -62,7 +62,7 @@ sub main
 
    if(filedb::is_dir($notes_path))
    {
-      print "[ <a href=\"$filedb::define::doc_wpath/$notes_path\">Browse</a> ] \n";
+      print "[ <a href=\"$filedb::define::doc_wpath/$notes_path_encoded/\">Browse</a> ] \n";
       if(auth::check_current_user_file_auth( 'p',  $notes_path) )
       {
          print "[ <a href=\"permissions.cgi?path=$notes_path_encoded\">Permissions</a> ] \n";
