@@ -4,9 +4,11 @@ use strict;
 
 package filter_wiki;
 
-my $TranslationToken = "###TOKEN###";
+require 'view_define.pl';
 
-my $linkWord = "[A-Z][a-z]+";
+my $TranslationToken = "\@\@\@TOKEN\@\@\@";
+
+my $linkWord = "[A-Z][a-z,0-9]+";
 my $LinkPattern = "($linkWord){2,}";
 
 sub EscapeMetaCharacters {
@@ -51,8 +53,9 @@ sub file_exists
 sub AsAnchor {
   my($notes_path, $title) = @_;
   my($temp);
-  my($view_url) =  &view::get_cgi_prefix() . $notes_path . "/";
-  my($add_url) =  "http://web/cgi-bin/wkn/add_topic.cgi?notes_path=$notes_path&text_type=wiki&topic_tag=";
+  my($notes_path_encoded) = view::url_encode_path($notes_path);
+  my($view_url) =  &view::get_cgi_prefix() . $notes_path_encoded . "/";
+  my($add_url) =  "http://web/cgi-bin/wkn/add_topic.cgi?notes_path=${notes_path_encoded}&text_type=wiki&topic_tag=";
 
   my($file) = file_exists($notes_path, $title);
   defined($file)
@@ -94,8 +97,9 @@ sub PrintBodyText {
 
 
 
+    my $empty = s/^\s*$/<p>/;
 #    s/^\s*$/<p>/                  && ($code = '...');             
-    s/^\s*$/<p>/          &&      &EmitCode(\@codes,"", 0);            
+    $empty          &&      &EmitCode(\@codes,"", 0);            
 #    /^\s*$/ && $code ne "P" &&  &EmitCode(\@codes,"P", 0);
     s/^\;:(\s+)//              && &EmitCode(\@codes,"blockquote", length $1);
    
@@ -121,7 +125,9 @@ sub PrintBodyText {
     s/\[(\d+)\]/&AsLink($1)/geo;
     s/$TranslationToken(\d+)$TranslationToken/&InPlaceUrl(\@InPlaceUrls,$1)/geo;
 #    s/\[Search\]/$SearchForm/;
-    print "$_\n";
+    print $_;
+    print "<br>" unless($empty || @codes);
+    print "\n";
   }
   &EmitCode(\@codes, "", 0);
 }

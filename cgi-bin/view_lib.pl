@@ -193,7 +193,7 @@ sub actions2
    if ( $notes_path ne "" )
    {      
       # /,non-/'s,/* 
-      my $parent_notes = $notes_path;
+      my $parent_notes = $notes_path_encoded;
       $parent_notes =~ s:(^|/)[^/]*/?$::;
 
      my $parent_notes_ref = 

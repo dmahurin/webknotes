@@ -47,6 +47,12 @@ sub trtd_begin
    return &{"${$this}::trtd_begin"}(@_);
 }
 
+sub td_next
+{
+   my $this = shift;
+   return &{"${$this}::td_next"}(@_);
+}
+
 sub trtd_end
 {
    my $this = shift;

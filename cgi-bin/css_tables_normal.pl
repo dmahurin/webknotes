@@ -19,6 +19,12 @@ sub trtd_begin
    return "<tr><td class=\"$class\" style=\"padding: 5\">";
 }
 
+sub td_next
+{
+   my($class) = @_;
+   return "</td><td class=\"$class\" style=\"padding: 5\">";
+}
+
 sub trtd_end
 {
    return "</td></tr>";
