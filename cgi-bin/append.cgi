@@ -113,14 +113,14 @@ if( ! defined($text) )
    $text =~ s#&#&amp;#g;
    $text =~ s#<#&lt;#g;
    $text =~ s#>#&gt;#g;
-   print "<PRE>$text</PRE>\n";
-print "<a name=\"text\"\><hr></a>\n";
-print "<form><TEXTAREA wrap=true rows=22 cols=65 >";
-   print "<\/TEXTAREA>\n";
+   print "<pre>$text</pre>\n";
+print "<a name=\"form\"\><hr></a>\n";
+print "<form><textarea name=\"text\"\ wrap=true rows=22 cols=65 >";
+   print "<\/textarea>\n";
    print <<"EOT";
-<input type=hidden name=path value="$path">
-<input type=hidden name=query value="$query">
-<br><INPUT TYPE=submit VALUE="Save">
+<input type="hidden" name="path" value="$path">
+<input type="hidden" name="query" value="$query">
+<br><input type="submit" value="Save">
 </form>
 EOT
 }

@@ -193,7 +193,7 @@ sub actions2
    }
    if( auth::check_current_user_file_auth('a', $notes_path) )
    {
-      print "[ <A HREF=\"${prefix}append.cgi#text?path=$notes_path_encoded$suffix\">Append</a> text ] \n";
+      print "[ <A HREF=\"${prefix}append.cgi#form?path=$notes_path_encoded$suffix\">Append</a> text ] \n";
    }
 
   
