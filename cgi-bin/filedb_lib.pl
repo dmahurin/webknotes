@@ -269,7 +269,7 @@ sub unset_all_hidden_data
 sub append_hidden_data
 {
    my($path, $name, $value) = @_;
-   my($file) = get_full_path($path, $name);
+   my($file) = get_full_path($path, ".$name");
    return 1 unless(defined($value));
   
    if ( open (FILE, ">>$file"))
