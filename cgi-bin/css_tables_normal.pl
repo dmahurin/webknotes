@@ -15,14 +15,14 @@ sub box_end
 
 sub trtd_begin
 {
-   my($class) = @_;
-   return "<tr><td class=\"$class\" style=\"padding: 5\">";
+   my($class, $flags) = @_;
+   return "<tr><td $flags VALIGN=\"TOP\" class=\"$class\" style=\"padding: 5\">";
 }
 
 sub td_next
 {
-   my($class) = @_;
-   return "</td><td class=\"$class\" style=\"padding: 5\">";
+   my($class, $flags) = @_;
+   return "</td><td $flags class=\"$class\"  VALIGN=\"TOP\" style=\"padding: 5\">";
 }
 
 sub trtd_end
@@ -35,7 +35,7 @@ sub table_begin
 {
    my($class, $props) = @_;
 #   return "<table cellspacing=0 cellpadding=0 border=0 class=\"$class\">";
-   return "<table cellspacing=0 class=\"$class\">";
+   return "<table width=\"100%\" cellspacing=0 class=\"$class\">";
 # . 
 #     "<td class=\"$class-border\"><table $props cellpadding=0 cellspacing=0 border=0 class=\"$class\">";
 }
@@ -54,8 +54,8 @@ return "</table>";
 package css_tables0;
 sub td_begin
 {
-   my($class) = @_;
-   return "<td class=\"$class\"><div class=\"$class-border\">";
+   my($class, $flags) = @_;
+   return "<td $flags class=\"$class\"><div class=\"$class-border\">";
 }
 
 sub td_end

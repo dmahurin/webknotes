@@ -204,40 +204,32 @@ sub check_file_auth
   
   return 1 if(defined($user_info) && $user_info->{"Permissions"} =~ m:s:);
 
-  my $have_auth_flags;
+  my $have_auth_flags = "";
+  my ($owner, $group);
 
-  my($file_dir) = $file_path;
-  if ( -f "$filedb::define::doc_dir/$file_dir")
+  my(@path_permissions) = split(/,/, $auth::define::default_permissions );
+  if(defined($file_path))
   {
-     unless($file_dir =~ s:/[^/]*$::) #strip off file
+     my($file_dir) = filedb::path_dir($file_path);
+     return 0 unless(defined($file_dir));
+
+     push(@path_permissions, split(/,/, &filedb::get_hidden_data($file_dir, "permissions"))); 
+     $owner = filedb::get_hidden_data($file_dir, "owner");
+     $group = filedb::get_hidden_data($file_dir, "group");
+  
+     if(defined($user_info  
+        and $file_path =~ m:^$user_info->{"AuthRoot"}:))
      {
-        $file_dir = "";
+        $have_auth_flags = $user_info->{"Permissions"};
      }
   }
-  if( ! -d "$filedb::define::doc_dir/$file_dir" )
-  {
-     return 0;     
-  }
-  my(@path_permissions) = split(/,/, $auth::define::default_permissions );
-  push(@path_permissions, split(/,/, &filedb::get_hidden_data($file_dir, "permissions"))); 
   
-  my $owner = filedb::get_hidden_data($file_dir, "owner");
   my $is_owner = (defined($owner) && $user eq $owner);
-  my $group = filedb::get_hidden_data($file_dir, "group");
   my $group_info;
   my $in_group = (defined($group) && 
      defined($group_info = get_group_info($group)) &&
      $group_info->{"Members"} =~ m:(^|,)$user(,|$): );
   
-  if(defined($user_info  
-     and $file_path =~ m:^$user_info->{"AuthRoot"}:))
-  {
-     $have_auth_flags = $user_info->{"Permissions"};
-  }
-  else
-  {
-     $have_auth_flags = "";
-  }
   my $permissions;
   for $permissions ( @path_permissions)
   {                
@@ -329,7 +321,10 @@ sub write_user_info
    my $key;
    for $key ( keys %$user_info)
    {
+      if(defined($user_info->{$key}))
+      {
       print UFILE "$key: $user_info->{$key}\n";
+      }
    }
    flock(UFILE,LOCK_UN);
    close(UFILE);

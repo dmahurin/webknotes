@@ -21,11 +21,12 @@ use Cwd;
 sub path_dir
 {
    my($path) = @_;
-   return $path if( -d "$filedb::define::doc_dir/$path");
+   return $path if( $path eq "" or -d "$filedb::define::doc_dir/$path");
 
    if($path =~ m:/[^/]+$:)
    {
-      return ( -d $` ) ? $` : ();
+      $path = $`;
+      return ( $path eq "" or -d "$filedb::define::doc_dir/$path") ? $path : ();
    }
    return "";
 }

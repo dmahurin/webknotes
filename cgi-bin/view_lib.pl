@@ -142,7 +142,7 @@ sub strip_view_mode_args
          $arg =~ s:\+: :g;
          push(@args, $arg);
       }
-      elsif(! ($arg =~ m:=:))
+      else
       {
          push(@args, $arg);
       }
@@ -218,19 +218,17 @@ EOT
 sub print_link_html
 {
 	my( $notes_path ) = @_;
-        my($web_path, $notes_wpath, $file, $real_path);
+        my($web_path, $notes_wpath, $file);
         my($found) = 0;
 
 	if( $notes_path eq "" )
 	{
-		$real_path=$filedb::define::doc_dir;
 		$file = "";
 		$notes_wpath ="";
 		$web_path=$filedb::define::doc_wpath;
 	}
 	else
 	{
-		$real_path="$filedb::define::doc_dir/$notes_path";
 		$notes_path =~ m:([^/*]*)$:;
 		$file = $1;
 		$notes_wpath = url_encode_path($notes_path);
@@ -239,7 +237,7 @@ sub print_link_html
 
         return if(defined($view::define::skip_files) and $file =~ m/$view::define::skip_files/ ); 
         $file = &view::define::filename_filter($file) if(defined(&view::define::filename_filter));
-	if ( -f $real_path )
+	if ( filedb::is_file($notes_path) )
 	{
            my($link, $link_type, $link_text);
 
@@ -300,15 +298,12 @@ sub print_link_html
            my $link_icon = &view::file_type_icon_tag($link_type);
            print "<A HREF=\"$link\">$link_icon${link_text}</a>";
         }
-	elsif ( -d $real_path )
+	elsif ( filedb::is_dir($notes_path) )
 	{
 		return 0 if($file =~ /^\..*/ );
 		
 		my($icon_image) = $view::define::dir_icon;
-                if ( -r "${real_path}/.icon")
-                {
-                        $icon_image = filedb::get_hidden_data($notes_path, "icon");
-		}
+                $icon_image = filedb::get_hidden_data($notes_path, "icon");
 		if(defined($icon_image))
 		{
 			print '<A HREF="',
@@ -334,29 +329,7 @@ sub print_link_html
 sub get_icon
 {
 	my( $notes_path ) = @_;
-        my($web_path, $notes_wpath, $file, $real_path);
-        my($dir);
 
-	if( $notes_path eq "" )
-	{
-		$real_path=$filedb::define::doc_dir;
-		$file = "";
-		$notes_wpath ="";
-		$web_path=$filedb::define::doc_wpath;
-	}
-	else
-	{
-		$real_path="$filedb::define::doc_dir/$notes_path";
-		$notes_path =~ m:([^/*]*)$:;
-		$dir = $1;
-		$notes_wpath = $notes_path;
-		$notes_wpath = url_encode_path($notes_wpath);
-		$web_path="$filedb::define::doc_wpath/${notes_wpath}";
-	}
-	
-        return () if($dir =~ /^\..*/ );
-	
-            
         my($icon_image) = filedb::get_hidden_data($notes_path, "icon");
         $icon_image = $view::define::dir_icon unless(defined($icon_image));
         return  "$view::define::icons_wpath/$icon_image" if(defined($icon_image));
@@ -366,27 +339,8 @@ sub get_icon
 sub print_icon_img
 {
 	my( $notes_path ) = @_;
-        my($web_path, $notes_wpath, $file, $real_path);
-        my($dir);
-
-	if( $notes_path eq "" )
-	{
-		$real_path=$filedb::define::doc_dir;
-		$file = "";
-		$notes_wpath ="";
-		$web_path=$filedb::define::doc_wpath;
-	}
-	else
-	{
-		$real_path="$filedb::define::doc_dir/$notes_path";
-		$notes_path =~ m:([^/*]*)$:;
-		$dir = $1;
-		$notes_wpath = $notes_path;
-		$notes_wpath = url_encode_path($notes_wpath);
-		$web_path="$filedb::define::doc_wpath/${notes_wpath}";
-	}
 	
-	if ( -d $real_path )
+	if ( filedb::is_dir($notes_path) )
 	{
 		return if($dir =~ /^\..*/ );
 		
@@ -589,17 +543,6 @@ sub print_modification
    print create_modification_string(filedb::get_mtime($notes_path), filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"));
 }
 
-sub print_file
-{
-	my($notes_file) = @_;
-        my($line);
-
-	my $text = filedb::get_file($notes_file);
-        return 0 unless(defined($text));
-        print $text;
-        return 1;
-}
-
 sub log
 {
    my($notes_path) = @_;
@@ -750,9 +693,13 @@ sub persist_view_mode
       my $theme = $view::view_mode{"theme"};
       my $layout = $view::view_mode{"layout"};
       my ($sublayout) = $view::view_mode{"sublayout"};
+undef($theme) if($theme eq "");
+undef($layout) if($layout eq "");
+undef($sublayout) if($sublayout eq "");
 
       my($user_info) = auth::get_current_user_info();
-      if(defined($theme) && defined($layout) && defined($sublayout) &&
+#defined($theme) && defined($layout) && defined($sublayout) &&
+      if(
          ($user_info->{"Theme"} ne $theme ||
                     $user_info->{"Layout"} ne $layout ||
                     $user_info->{"Sublayout"} ne $sublayout)
@@ -781,11 +728,11 @@ sub enclose_topic_info
    }
    else
    {
-require "css_tables.pl";
-my $css_tables = new css_tables;
-        return "<br><br>" . $css_tables->box_begin("topic-info") . "\n" .
-      $text .
-$css_tables->box_end()  ;
+       require "css_tables.pl";
+       my $css_tables = new css_tables;
+       return "<br><br>" . $css_tables->box_begin("topic-info") . "\n" .
+         $text .
+         $css_tables->box_end()  ;
    }
 }
 

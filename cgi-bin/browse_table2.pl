@@ -50,27 +50,32 @@ my($notes_name) = $1;
 
 print $css_tables->table_begin("topic-table") . "\n";
 
-print $css_tables->trtd_begin("topic-title") . "\n";
+print $css_tables->trtd_begin("topic-title", 'colspan="2"') . "\n";
 view::print_icon_img($notes_path);
 print "<b>$notes_name</b>\n";
 print $css_tables->trtd_end() . "\n";
 
-print $css_tables->trtd_begin("topic-info") . "\n";
+print $css_tables->trtd_begin("topic-info", 'colspan="2"') . "\n";
 view::print_modification($notes_path);
 print $css_tables->trtd_end() . "\n";
 
 
 
-print $css_tables->trtd_begin("topic-actions") . "\n";
+print $css_tables->trtd_begin("topic-actions", 'colspan="2"') . "\n";
 view::actions2($notes_path);
 print $css_tables->trtd_end() . "\n";
 
-print $css_tables->trtd_begin("topic-listing") . "\n";
-&view::list_files_html($notes_path);
-print "&nbsp;" unless &view::list_dirs_html($notes_path);
+print $css_tables->trtd_begin("topic-text") . "\n";
+print "&nbsp;" unless 
+&view::print_dir_file($notes_path);
 
-print $css_tables->td_next("topic-text") . "\n";
-print "&nbsp;" unless (&view::print_dir_file($notes_path));
+print $css_tables->td_next("topic-listing") . "\n";
+print "&nbsp;" unless 
+(
+&view::list_files_html($notes_path)
+||
+&view::list_dirs_html($notes_path)
+);
 print $css_tables->trtd_end() . "\n";
 
 print $css_tables->table_end() . "\n";

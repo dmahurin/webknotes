@@ -39,7 +39,7 @@ my $http_base = get_http_location();
 #	$message .= "Content-Base: \"$http_base\"\n";
 $message .= "\n";
           
-my $browse_link = $http_base . 'browse.cgi?' . view::url_encode_path("$notes_path_short");
+my $browse_link = $http_base . 'login.cgi?next=browse.cgi&path=' . view::url_encode_path("$notes_path_short");
 $message .= "<a href=\"$browse_link\">$browse_link</a>\n<br><br>\n";
 
 $message .= "<hr>\n\n";
@@ -60,7 +60,7 @@ $message .= "\n";
 
 $message .= "<hr>\n";
 $message .= view::create_modification_string(filedb::get_mtime($notes_path), filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"));
-$message .= "<br>Subscribed to WKN path: $temp_path<br>\n\n";
+$message .= "<br><a href=\"login.cgi?next=subscribe.cgi&path=" . view::url_encode_path($temp_path) . "\">Subscribed</a> to WKN path: $temp_path<br>\n\n";
 
 $message .= "--${boundary}--\n";
 
@@ -84,7 +84,7 @@ $message .= "--${boundary}--\n";
 sub get_http_location
 {
    my $url = "http://";
-   $url .= defined($ENV{SERVER_NAME})? $ENV{SERVER_NAME}:$ENV{SERVER_ADDR};
+   $url .= defined($ENV{HTTP_HOST})? $ENV{HTTP_HOST} : (defined($ENV{SERVER_NAME})? $ENV{SERVER_NAME}:$ENV{SERVER_ADDR});
    $url .= ":$ENV{SERVER_PORT}" unless ($ENV{SERVER_PORT} eq 80);
    $ENV{SCRIPT_NAME} =~ m:[^/]+$:;
    $url .= $` if(defined($`));

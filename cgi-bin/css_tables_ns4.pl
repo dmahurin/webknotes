@@ -16,16 +16,16 @@ sub box_end
 
 sub trtd_begin
 {
-   my($class) = @_;
-   return "<tr><td class=\"$class-border\">" . 
+   my($class, $flags) = @_;
+   return "<tr><td  $flags VALIGN=\"TOP\" class=\"$class-border\">" . 
       '<table  width="100%" cellpadding=6 cellspacing=1 border=0><tr>' . 
-      "<td class=\"$class\">";
+      "<td class=\"$class\"  VALIGN=\"TOP\" >";
 }
 
 sub td_next
 {
-   my($class) = @_;
-   return "</td><td class=\"$class\">";
+   my($class, $flags) = @_;
+   return "</td><td $flags VALIGN=\"TOP\" class=\"$class\">";
 }
 
 sub trtd_end
@@ -38,7 +38,7 @@ sub table_begin
 {
    my($class, $props) = @_;
    return "<table width=\"100\%\" cellspacing=0 cellpadding=2 border=0><tr>" . 
-      "<td class=\"$class-border\"><table width=\"100\%\" $props cellpadding=0 cellspacing=0 border=0 class=\"$class\">";
+      "<td  VALIGN=\"TOP\" class=\"$class-border\"><table width=\"100\%\" $props cellpadding=0 cellspacing=0 border=0 class=\"$class\">";
 }
 
 sub table_end

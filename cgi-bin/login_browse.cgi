@@ -53,7 +53,6 @@ print "Content-type: text/html\n\n";
 $user = auth::get_user();
 if(defined($user))
 {
-print "PATH : $paths[0]\n";
    view::browse_show_page($paths[0]);
    exit(0);
 }
