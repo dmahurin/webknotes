@@ -2,7 +2,7 @@
 # tool to replace all !/perl lines at the top of perl scripts
 
 $perl = shift(@ARGV);
-unless(defined($perl) and $perl =~ m:perl: )
+unless(defined($perl) and $perl =~ m:(perl|speedy): )
 {
    print "Usage: perlpath NEW_PERL_LOC scripts ...\n";
    exit(-1);
