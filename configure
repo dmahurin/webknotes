@@ -82,7 +82,7 @@ if( ! -d $notes_dir )
       print "Error creating director\n" unless(mkdir($notes_dir,0755));
       if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
       {
-	 system("cp -r '$webknotes_base/example/public/notes'/* $notes_dir");
+	 system("cp -r '$webknotes_base/sample_notes'/* $notes_dir");
       }
    }
 }
