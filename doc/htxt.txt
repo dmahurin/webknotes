@@ -1,6 +1,0 @@
-HTXT files are txt files with simple Hyper links and some implied
-text formatting.
-
-Links are in the form <<rellink>> or <<urllink>> or [[rellink]] or [[urllink]]
-
-Where rellink is a relative link to a directory or file or to another htxt file (specifying the extention is optional).
