@@ -113,6 +113,6 @@ Sample themes included.
 -cvs client support
 -file access is now nearly all done via filedb_lib
 -files are locked for write and append
--subscribtion turned back on (subscribtion is still manual)
+-subscription turned back on (subscription is still manual)
 -new configure script that remembers your previous configuration (exept filters)
 -verify email mechanism
