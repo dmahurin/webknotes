@@ -109,7 +109,7 @@ Sample themes included.
 -css browser hacks. 
 -auto back loading
 
-0.A.x
+0.A.x/1.0
 -cvs client support
 -file access is now nearly all done via filedb_lib
 -files are locked for write and append
