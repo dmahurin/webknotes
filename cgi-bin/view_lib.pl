@@ -795,7 +795,7 @@ sub read_page_template
    $filename .= "page_template.html";
    if(open(F, $filename))
    {
-      undef $/;
+      local $/ = undef;
       $text = <F>;
       close(F);
       if($text =~ m:<\%\$page\%/>:)

@@ -76,8 +76,6 @@ unless( $file =~ m:^[^\.]+$: || $file =~ m:^[^\.]+(\.(txt|html?|wiki))?$: )
    exit(0);
 }
 
-#my $dir = ($file =~ m:/[^/]+$:) ? $` : "";
-
 my $text = $in{'text'};
 
 my $acc_flag;
@@ -94,9 +92,9 @@ else
 {
    $acc_flag = 'm'; #modify
 }
-if(! auth::check_current_user_file_auth( $acc_flag, $file ) )
+if(! auth::check_current_user_file_auth( $acc_flag, $dir ) )
 {
-   print "You are not authorized(${acc_flag}) to access this file: $file\n";
+   print "You are not authorized(${acc_flag}) to access this file: $dir/$file\n";
    exit 0;
 }
 

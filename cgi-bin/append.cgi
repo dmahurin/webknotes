@@ -95,7 +95,7 @@ else
 {
    $acc_flag = 'a'; #append
 }
-if( ! auth::check_current_user_file_auth( $acc_flag, $dirfile ))
+if( ! auth::check_current_user_file_auth( $acc_flag, $dir ))
 {
    print "You are not authorized(${acc_flag}) to access this file: $dirfile\n";
    exit 0;
