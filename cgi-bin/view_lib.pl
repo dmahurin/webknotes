@@ -468,6 +468,7 @@ sub list_html
         next if($file eq $dfile);
 
         next unless(print_link_html( "$notes_path/$file"));
+        print "<br>\n";
         $found = 1;
         
    }
