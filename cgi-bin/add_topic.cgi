@@ -92,11 +92,6 @@ print "</body></html>\n";
 	print("<br>Topic creation was unsuccessful<br>\n");
    }
 }
-print "<br><A HREF=\""
-. &wkn::default_scriptprefix() .
-$notes_path . '">' . "BACK TO NOTES:$notes_path</A>
-</BODY></HTML>\n";
-
 }
 
 sub print_form

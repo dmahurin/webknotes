@@ -166,7 +166,6 @@ sub actions2
    my($notes_path) = @_;
    if ( $notes_path ne "" )
    {      
-      $notes_path = url_encode_path($notes_path);
       # /,non-/'s,/* 
       my $parent_notes = $notes_path;
       $parent_notes =~ s:(^|/)[^/]*/?$::;
