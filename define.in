@@ -2,7 +2,7 @@
 PACKAGE filedb
 STRING doc_wpath "Web document path" "${web_doc_root_wpath}/docs"
 STRING doc_dir "Document base path" "${web_doc_root}/docs"
-BOOL use_cvs "Use cvs client for CVS directories" "0"
+BOOL use_cvs "Use cvs client for CVS directories"
 STRING private_dir "Private directory" "${HOME}/web_private"
 
 PACKAGE auth

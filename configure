@@ -1,9 +1,31 @@
 #!/usr/bin/perl
 
+#use strict;
+
+my $wkn_cgi_dir;
+
+if(@ARGV and $ARGV[0] =~ m:^--cgi=:)
+{
+	$wkn_cgi_dir = $';
+}
+
+# need local for var_eval
 local($HOME) = $ENV{HOME};
+
+my(%symbols);
+
 
 my($user);
 my($package) = "main";
+
+# need local for var_eval
+local ($web_doc_root, $cgi_root, $cgi_root_wpath,
+   $user_dir);
+
+unless(defined($wkn_cgi_dir) and -f "$wkn_cgi_dir/filedb_define.pl" and
+-f "$wkn_cgi_dir/view_define.pl")
+{
+
 if($<)
 {
    $user = getpwuid($<)
@@ -13,9 +35,9 @@ else
    $user = "www";
 }
 
-# need local for var_eval
-local ($web_doc_root, $cgi_root, $cgi_root_wpath,
+($web_doc_root, $cgi_root, $cgi_root_wpath,
    $user_dir) =
+
    &chomp_slashs(parse_httpd());
 
 print "$web_doc_root, $cgi_root, $cgi_root_wpath\n";
@@ -53,8 +75,9 @@ unless($cgi_root)
    $cgi_root_wpath = "$web_doc_root_wpath/cgi-bin";
 }
 
-my $wkn_cgi_dir = prompt_default("cgi-bin install directory", "$cgi_root/wkn");
+   $wkn_cgi_dir = prompt_default("cgi-bin install directory", "$cgi_root/wkn");
 
+}
 
 exit unless(open(IN, "define.in"));
 while(defined(my $line = <IN>))
@@ -84,6 +107,7 @@ close(IN);
 
 #INSTALLATION follows
 
+my $default;
 if(-d $wkn_cgi_dir )
 {
   $default = "n";
@@ -117,7 +141,7 @@ if(prompt_default("Copy webknotes cgi-bin", $default, "(y|n)") eq "y")
       my $perl = `which perl`; chomp $perl;
       my $perldef = $perl eq '/usr/bin/perl'? "" : "-DCOMMAND=$perl";
       system("cc $perldef util/sperl_user.c -o $wkn_cgi_dir/sperl_$user");
-      $rtn = $? << 8;
+      my $rtn = $? << 8;
       if($rtn) { print "There was a problem compiling sperl_user.c\n";}
       else
       {
@@ -137,7 +161,7 @@ for my $pack (keys %symbols)
    open(DFILE, ">$wkn_cgi_dir/${pack}_define.pl");
    print DFILE "package ${pack}::define;\n\n";
    
-   for $var (@{$symbols{$pack}})
+   for my $var (@{$symbols{$pack}})
    {
       if(ref ${"${pack}::define::$var"} eq "HASH")
       {
@@ -162,7 +186,7 @@ for my $pack (keys %symbols)
 
 unless(defined($filedb::define::doc_dir) and -d $filedb::define::doc_dir)
 {
-   print "Error creating directory: $notes_dir\n" unless(mkdir($filedb::define::doc_dir,0755));
+   print "Error creating directory: $filedb::define::doc_dir\n" unless(mkdir($filedb::define::doc_dir,0755));
    if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
    {
       system("cp -r 'sample_notes'/* $filedb::define::doc_dir");
@@ -186,7 +210,7 @@ if(prompt_default("Copy sample themes", ( -d $view::define::themes_dir )? "n" : 
 }
 
 # upgrade to 1.0
-if(defined($auth::define_private_dir && !defined ($filedb::define::private_dir))
+if(defined($auth::define::private_dir && !defined ($filedb::define::private_dir)))
 {
    $filedb::define::private_dir = $auth::define_private_dir;
    undef $auth::define_private_dir;
@@ -203,12 +227,12 @@ unless(-d $filedb::define::private_dir or
    }
    else
    {
-      print "Error making directory: $auth::define::private_dir\n";
+      print "Error making directory: $filedb::define::private_dir\n";
    }
 }
 
    my $admin_user = "admin";
-   if( ! -f "$auth::define::private_dir/users/$admin_user" and
+   if( ! -f "$filedb::define::private_dir/users/$admin_user" and
       prompt_default("Create Admin login as '$admin_user'", 'y', "(y|n)") eq "y")
    {
       my($admin_password, $admin_password_check);
@@ -238,7 +262,7 @@ unless(-d $filedb::define::private_dir or
       }
    }
 
-print "Try this link:\nhttp://localhost$cgi_root_wpath/wkn/browse.cgi\n";
+#print "Try this link:\nhttp://localhost$cgi_root_wpath/wkn/browse.cgi\n";
 
 sub parse_httpd
 {
