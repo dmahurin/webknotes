@@ -35,7 +35,7 @@ sub EmitCode {
     {push (@$codes, ($code)); 
      print "<$code>\n"}
   if (${$codes}[$#$codes] ne $code)
-    {print "</${$code}[$#$codes]><$code>\n";
+    {print "</${$codes}[$#$codes]><$code>\n";
      ${$codes}[$#$codes] = $code;}
 }
 # --------------------------------------------------------  EmitCode

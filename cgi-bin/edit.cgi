@@ -69,7 +69,7 @@ unless(defined($file))
     }
 }
 
-unless($file =~ m:^[^\.]+(\.(txt|html?|wiki))?$:)
+unless( $file =~ m:^[^\.]+$: || $file =~ m:^[^\.]+(\.(txt|html?|wiki))?$: )
 {
    print "Not text file\n";
    exit(0);

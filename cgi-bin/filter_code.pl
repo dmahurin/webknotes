@@ -13,8 +13,9 @@ sub print_file
    }
    else
    {
+      $text =~ s:<:&lt;:g;
+      $text =~ s:>:&gt;:g;
       $text= "<pre>${text}</pre>\n";
-
    }
    print $text;
 }

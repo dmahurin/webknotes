@@ -25,6 +25,8 @@ sub print_file
       {
          $line = "<A HREF=\"$line\">$line</A>\n";
       }
+      while($line =~ s/<<([^>]+)>>/sprintf("<a href=\"%s\">${1}<\/a>",&link_translate::smart_ref($notes_file,$1))/gie) { }
+
 
       $line = &link_translate::translate_html($line, $notes_file);
 
