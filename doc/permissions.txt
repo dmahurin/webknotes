@@ -7,6 +7,7 @@ m - modify
 d - delete
 s - system privalege
 i - inherit permissions
+u - upload
 
 When checking for permission, the following happens:
 if user is logged in: 

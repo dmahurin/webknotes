@@ -31,15 +31,15 @@ if( !defined( $file ) or $file eq "" )
    exit(0);
 }
 # make sure no part of the path starts with '.', untaint $file in process
-if( $file =~ m:^(/*[^\./][^/]+)+$: ) 
-{
-   $file = $&;
-}
-else
-{
-   print "hey buddy, whats up?\n";
-   exit(0);
-}
+#if( $file =~ m:^(/*[^\./][^/]+)+$: ) 
+#{
+#   $file = $&;
+#}
+#else
+#{
+#   print "hey buddy, whats up?\n";
+#   exit(0);
+#}
 
 $file =~ s:^/+::;
 my $full_file = "$auth::define::doc_dir/$file";
@@ -47,6 +47,12 @@ my $full_file = "$auth::define::doc_dir/$file";
 if( $file =~ m:$illegal_dir: )
 {
    print "Illegal dir\n";
+   exit(0);
+}
+
+if ( -d $full_file )
+{
+   print "Can't edit directory\n";
    exit(0);
 }
 
@@ -105,7 +111,7 @@ EOT
 </form>
 EOT
 print "<hr>\n";
-   if( auth::check_file_auth( $user, "/$file", 'p' ) )
+   if( auth::check_file_auth( $user, 'p', "/$file" ) )
    {
    print <<"EOT";
 <form action="permissions.cgi" method="post">
@@ -114,7 +120,7 @@ print "<hr>\n";
 </form>
 EOT
    }
-   if( auth::check_file_auth( $user, "/$file", 'd' ) )
+   if( auth::check_file_auth( $user, 'd', "/$file" ) )
    {
    print <<"EOT";
 <form action="delete.cgi" method="post">

@@ -567,7 +567,6 @@ sub print_tfile
 	open(MYFILE, "$wkn::define::notes_dir/$notes_file") || return 0;
   	while(defined($line = <MYFILE>))
 	{
-		chomp($line);
 		if( $line =~ /^http:/ ||
 			$line =~ /^ftp:/ ||
                         $line =~ s/^mailto:// )
@@ -577,6 +576,13 @@ sub print_tfile
                 
                 $line = translate_html($line, $notes_file);
 
+		if($line =~ m:^( +):)
+                {
+                   my $a = $1;
+                   my $b = $';   
+                   $a =~ s:\s:&nbsp;:g;
+                   $line = $a . $b;
+                }
        		print("$line<br>");
 	}
         close(MYFILE);
