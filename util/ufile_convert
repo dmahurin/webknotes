@@ -1,0 +1,86 @@
+#!/usr/local/bin/perl5
+# script to convert old web knotes user and group files to the new
+# more verbose and expandable format.
+
+for $file (@ARGV)
+{
+   if(open(FILE, $file))
+   {
+      my($line) = <FILE>;
+      chomp($line);
+      my(@fields) = split(':', $line);
+      close(FILE);
+      if(@fields == 2)
+      {
+         open(FILE, $file);
+         my($line);
+         {
+            local $/;
+            undef $/;
+            $line = <FILE>;
+         }
+         chomp($line);
+         ($front, %hdrs) = split (/\n*^(\S*?):\s*/m, $line);
+         close(FILE);
+         
+         for $key(keys %hdrs)
+         {
+            print "$key = $hdrs{$key},";
+         }
+         print "\n";
+         #         print "$line\n";
+         next;
+      }
+      if(@fields < 3 || (@fields > 3 && @fields < 7 ) || @fields > 9)
+      {
+         my $num = @fields;
+         print "unknown file type($num) for file: $file\n";
+         next;
+      }
+      if(open(FILE, ">$file"))
+      {
+         if(@fields == 3) #group file
+         {
+            print FILE "Members: " . shift(@fields) . "\n";
+            print FILE "Permissions: " . shift(@fields) . "\n";
+            print FILE "Commment: " . shift(@fields) . "\n";
+         }
+         elsif(@fields == 7) #old user file
+         {
+            print FILE "PassKey: " . shift(@fields) . "\n";
+            print FILE "AuthRoot: " . shift(@fields) . "\n";
+            print FILE "Permissions: " . shift(@fields) . "\n";
+            print FILE "Name: " . shift(@fields) . "\n";
+            print FILE "Email: " . shift(@fields) . "\n";
+            print FILE "Webpage: \n";
+            print FILE "FromHost: " . shift(@fields) . "\n";
+            print FILE "FromIP: " . shift(@fields) . "\n";
+         }
+         elsif(@fields == 8) #latest one line user file
+         {
+            print FILE "PassKey: " . shift(@fields) . "\n";
+            print FILE "AuthRoot: " . shift(@fields) . "\n";
+            print FILE "Permissions: " . shift(@fields) . "\n";
+            print FILE "Name: " . shift(@fields) . "\n";
+            print FILE "Email: " . shift(@fields) . "\n";
+            print FILE "Webpage: " . shift(@fields) . "\n";
+            print FILE "FromHost: " . shift(@fields) . "\n";
+            print FILE "FromIP: " . shift(@fields) . "\n";
+         }
+         elsif(@fields == 9) #latest one line user file with incorrect extra field
+         {
+            print FILE "PassKey: " . shift(@fields) . "\n";
+            print FILE "AuthRoot: " . shift(@fields) . "\n";
+            print FILE "Permissions: " . shift(@fields) . "\n";
+            print FILE "Name: " . shift(@fields) . "\n";
+            print FILE "Email: " . shift(@fields) . "\n";
+            print FILE "Webpage: " . shift(@fields) . "\n";
+            print FILE "FromHost: " . shift(@fields) . "\n";
+            shift(@fields);
+            print FILE "FromIP: " . shift(@fields) . "\n";
+         }
+         
+         close(FILE);
+      }
+   }
+}
