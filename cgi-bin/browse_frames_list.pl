@@ -49,14 +49,14 @@ if(defined($frame))
    }
    return(0);
 }  
-my $this_cgi_script_prefix = view::get_cgi_prefix();
+
+my $this_script_prefix = view::get_cgi_prefix();
 &view::set_view_mode("layout", "list2");
-my $list_cgi_script_prefix = view::get_cgi_prefix();
+my $list_script_prefix = view::get_cgi_prefix();
 &view::set_view_mode("layout", &view::get_view_mode("sublayout"));
 &view::unset_view_mode("sublayout");                          
-my $cgi_script_prefix = view::get_cgi_prefix();
+my $script_prefix = view::get_cgi_prefix();
 
-#print "$cgi_script_prefix, $list_cgi_script_prefix, $this_cgi_script_prefix\n";
 print "<html> <head>\n";
 print "<title>$view::define::index_title</title>\n" 
   if(defined($view::define::index_title));
@@ -69,7 +69,7 @@ if(defined($view::define::index_header))
 {
 print <<"EOT";
   <frameset rows = "60,*">
-   <frame src="${this_cgi_script_prefix}frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
+   <frame src="${this_script_prefix}frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
       marginheight="0" scrolling="no">
 EOT
 }
@@ -80,11 +80,11 @@ print "<frameset>\n";
 print <<"EOT";
     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
-   <frame src="${list_cgi_script_prefix}target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
-   <frame src="${this_cgi_script_prefix}frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
+   <frame src="${list_script_prefix}target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
+   <frame src="${this_script_prefix}frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
                  marginheight="0" scrolling="no">
         </frameset>
-   <frame src="${cgi_script_prefix}$notes_path_encoded" name="body" marginwidth="0" marginheight=
+   <frame src="${script_prefix}$notes_path_encoded" name="body" marginwidth="0" marginheight=
 "0">
     </frameset>
   </frameset>
