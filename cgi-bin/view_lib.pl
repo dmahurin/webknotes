@@ -544,7 +544,7 @@ sub print_dir_file
    # view specific mods
    if($file_type eq "html")
    {
-      $text =~ s#<hr\s+title="Modified\s([\d\s\:-]+)(\sby\s+([^\"]+))?"\s*>#&enclose_topic_info(view::create_modification_string($1,$3))#ge;
+      $text =~ s#<hr\s+title="(Modified\s([\d\s\:-]+)(\sby\s+([^\"]+))?)"\s*>#&enclose_topic_info($1)#ge;
    }
    print $text;
    return $notes_path;
