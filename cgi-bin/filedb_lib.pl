@@ -377,7 +377,9 @@ sub join_paths
 sub wpath_to_uri
 {
   my($path) = @_;
-  return ($path ne "")?"/$path/":"/";
+  $path = ($path ne "")?"/$path/":"/";
+  $path =~ s://:/:g;
+  return $path;
 }
 
 sub get_private_data
