@@ -285,7 +285,7 @@ sub print_link_html
 
                            last SWITCH;
                         };
-			$file_ext =~ /^\.(txt|html|htm)/ && do
+			$file_ext =~ /^\.(txt|html|htm|wiki)/ && do
                         {
                            print "<A HREF=\"" .
                               &wkn::get_cgi_prefix() .
@@ -633,6 +633,12 @@ sub print_dir_file
 		{
 			wkn::print_hfile($notes_path);
 		}
+                elsif( $notes_path =~ m:\.wiki$:)
+                {
+                   require "translate_wiki.pl" or print "translator not found\n";
+                   &wiki_translate::translate_print(get_file($notes_path));
+
+                }
 		elsif(defined(&wkn::define::code_filter) && 
                 $notes_path =~ /\.(c|h|c\+\+|cxx|hxx|idl|java)$/ )
                 {
@@ -715,7 +721,7 @@ sub get_file
 {
         my($notes_file) = @_;
 
-        open(MYFILE, "$wkn::define::notes_dir/$notes_file") || return 0;
+        open(MYFILE, "$auth::define::doc_dir/$notes_file") || return ();
         local $/ = undef;
         my($text) = <MYFILE>;
         close(MYFILE);
