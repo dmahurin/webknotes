@@ -17,5 +17,11 @@ The solution I came up with is a method called "localize_sub" in each
 main package file. A query main function is "converted" my these functions
 to localize the globals to that function.
 
--don
+---
+
+Problem remaining: You can't run mod_perl scripts setuid.
+This means that the only way to have wkn work is to have 'www', 'web' or 'httpd' own everything, and run the cgi scripts with no setuid.
+This is not secure.
+
+Maybe what we need is setuid SpeedyCGI.
 
