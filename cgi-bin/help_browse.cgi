@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
+require 'view_define.pl';
+require 'view_lib.pl';
 
 print "Content-Type: text/html\n\n";
 print "<html><head>

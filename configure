@@ -231,11 +231,11 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
       }
    }
 
-   unlink("$wkn_cgi_dir/wkn_define.pl");
-   if(open(FILE, ">$wkn_cgi_dir/wkn_define.pl"))
+   unlink("$wkn_cgi_dir/view_define.pl");
+   if(open(FILE, ">$wkn_cgi_dir/view_define.pl"))
    {
       print FILE
-"package wkn::define;
+"package view::define;
 \$icons_wpath = \"$icons_wpath\"; 
 \$themes_wpath = \"$themes_wpath\";
 \$themes_dir = \"$themes_dir\";" , 

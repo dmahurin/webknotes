@@ -23,7 +23,7 @@ no strict 'refs';
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 require 'filedb_define.pl';
 require 'auth_lib.pl';
-require 'wkn_lib.pl';
+require 'view_lib.pl';
 
 wkn::init();
 auth::init();

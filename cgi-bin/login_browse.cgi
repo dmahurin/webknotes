@@ -11,7 +11,7 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
 require 'auth_define.pl';
 require 'auth_lib.pl';
-require 'wkn_lib.pl';
+require 'view_lib.pl';
 use CGI qw(:cgi-lib);
 wkn::init();
 

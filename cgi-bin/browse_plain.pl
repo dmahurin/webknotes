@@ -7,7 +7,7 @@ use strict;
 # For information regarding the Copying policy read 'LICENSE'
 # dmahurin@users.sourceforge.net
 
-require 'wkn_lib.pl';
+require 'view_lib.pl';
 
 package browse;
 

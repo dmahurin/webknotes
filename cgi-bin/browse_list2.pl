@@ -7,7 +7,7 @@ no strict 'refs';
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-require 'wkn_lib.pl';
+require 'view_lib.pl';
 
 package browse;
 

@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 my $runpath;
 if( $0 =~ m:/[^/]*$: ) { $runpath=$`; push @INC, $runpath }
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
+require 'view_define.pl';
+require 'view_lib.pl';
 use CGI qw(:standard);
 wkn::init();
 

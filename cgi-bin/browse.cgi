@@ -5,7 +5,7 @@ use strict;
 # dmahurin@users.sourceforge.net
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-require 'wkn_lib.pl';
+require 'view_lib.pl';
 
 wkn::init();
 

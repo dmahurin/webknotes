@@ -9,8 +9,8 @@ use strict;
 print "Content-Type: text/html\n\n";
 
 if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
+require 'view_define.pl';
+require 'view_lib.pl';
 require 'auth_lib.pl';
 require 'filedb_lib.pl';
 use CGI qw(:cgi-lib);
