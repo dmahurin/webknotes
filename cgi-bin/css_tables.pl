@@ -12,7 +12,7 @@ sub new
 
    #Netscape
    # Mozilla/4.75 [en] (X11; U; Linux 2.4.1 i686)
-   if($agent =~ m:^Mozilla/4:)
+   if(! defined($agent) or $agent =~ m:^Mozilla/4:)
    {
       $class = "css_tables_ns4";
    }
