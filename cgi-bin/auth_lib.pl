@@ -11,7 +11,7 @@ no strict 'subs'; # for lock constants
 package auth;
 
 # The auth-lib and all related scripts are part of WebKNotes
-# The WebKNotes system is Copyright 1996-1999 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -133,8 +133,8 @@ sub path_check
    my($path) = @_;
  
    #take off leading and trailing /'s and remove \'s
-   $path =~ s:^/*::;
-   $path =~ s:/*$::;
+   $path =~ s:^/+::;
+   $path =~ s:/+$::;
    $path =~ s:\\::g;
    if ( $path =~ m:(/|^)\.\.($|/):)
    {

@@ -287,6 +287,7 @@ if($should_make_dir)
 {
    $file_ext = "";
    &filedb::put_file("$parent_path/$topic", $default_file, $message);
+   &filedb::touch_path("$parent_path/$topic");
 }
 else
 {

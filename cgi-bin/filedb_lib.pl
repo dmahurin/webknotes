@@ -3,7 +3,7 @@ use strict;
 
 # note/file/directory access
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -61,6 +61,13 @@ sub get_mtime
       $atime,$mtime,$ctime,$blksize,$blocks)
       = stat(get_full_path($dir_file));
    return $mtime;
+}
+
+sub touch_path
+{
+   my($path) = @_;
+   my $full_path = get_full_path($path);
+   return utime(undef,time, $full_path);
 }
 
 sub default_file

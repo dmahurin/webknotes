@@ -2,7 +2,7 @@
 # main WebKNotes functions
 #use strict;
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -339,7 +339,7 @@ sub print_link_html
 		{
 			print '<A HREF="',
                         &view::get_cgi_prefix() ,
-                        "${notes_wpath}" ,
+                        "${notes_wpath}/" ,
                         '">';
                         $icon_image =~ m:([^/\.]*)[^/]*$:;
                         print &view::icon_tag("[>]", $icon_image);
@@ -349,7 +349,7 @@ sub print_link_html
 		{
                    print "<A HREF=\"",
                    &view::get_cgi_prefix() ,
-			"$notes_wpath",
+			"$notes_wpath/",
 			'">', $file,
                         "</A>\n";
 		}
@@ -410,7 +410,7 @@ sub list_files_html
 	next if( filedb::is_dir($notes_path, $file));
         next if($file eq $dfile);
 
-        if(print_link_html( "$notes_path/$file"))
+        if(print_link_html( filedb::join_paths($notes_path,$file)))
         {
            $rtn = 1;
            print "<br>\n";
@@ -434,7 +434,7 @@ sub list_dirs_html
 	next if( filedb::is_file($notes_path, $file));
 
         print "<br>" if ($found);
-        next unless(print_link_html( "$notes_path/$file"));
+        next unless(print_link_html(filedb::join_paths($notes_path,$file)));
         $found = 1;
         
    }

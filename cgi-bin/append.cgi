@@ -3,7 +3,7 @@ use strict;
 # CGI script to edit a file using auth-lib user verification
 
 # The auth-lib and all related scripts are part of WebKNotes
-# The WebKNotes system is Copyright 1996-1999 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -146,9 +146,14 @@ my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $m
    $header .= "\n";
    
    filedb::append_file($dir, $file, $header . $text); 
-   if(defined($user) and $dir eq $path)
+
+   if($dir eq $path)
    {
-      filedb::set_hidden_data($dir, "last-modify-user", $user);
+      &filedb::touch_path($path);
+      if(defined($user) and $dir eq $path)
+      {
+         filedb::set_hidden_data($dir, "last-modify-user", $user);
+      }
    }
    if(auth::check_current_user_file_auth( 'M', $dir ))
    {
