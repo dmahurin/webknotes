@@ -36,7 +36,6 @@ sub AsAnchor
    if( $ref =~ m:^[a-z]+\://[^/]+:)
    {
       #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
-      #$link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$file), $file);
       $link = "<a href=\"$ref\">$ref</a>";
    }
    elsif( filedb::is_dir($path, $ref))

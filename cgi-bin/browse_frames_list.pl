@@ -50,8 +50,6 @@ sub show_page
       return(0);
    }
 
-   #my ($this_bprefix, $this_bsuffix) = view::get_cgi_prefix();
-
    &view::set_view_mode("frame", "header");
    my ($header_bprefix, $header_bsuffix) = view::get_cgi_prefix();
    &view::set_view_mode("frame", "footer");

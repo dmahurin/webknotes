@@ -93,7 +93,7 @@ if(-d $toppath)
 {
    # old code that provided a link the higher directory
 #   my($dirfile) = &view::dir_file($notes_path);
-#   if(1 || defined( $dirfile ))
+#   if(defined( $dirfile ))
    #   {
 #      my $topname;
 #      print "$LSTART$LITEM_START";
