@@ -633,7 +633,7 @@ sub get_cgi_prefix
    my ($prefix, $suffix);
    $suffix = "";
 
-   if($ENV{SCRIPT_NAME} =~ m:/index.cgi:)
+   if($ENV{SCRIPT_NAME} =~ m:/index_browse.cgi:)
    {
       if(!defined($script))
       {
