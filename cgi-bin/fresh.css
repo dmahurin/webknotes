@@ -1,0 +1,81 @@
+.topics-back
+{
+  background: #bbddff;
+}
+
+A:link { color: #336699 }
+A:visited { color: #336699 }
+A:active { color: #336699 }
+
+.topic-text
+{
+  background: #ffffff;
+  color: #000000;
+}
+
+.topic-title
+{
+  background: #ffffff;
+  color: #000000;
+}
+
+
+.sub-topic-title-border
+{
+  border: 1px none;
+  border: 1px solid black;
+  background: black;
+}
+
+.sub-topic-title
+{
+ background: #000000;
+ color: #ffffff;
+}
+
+.sub-topic-title A:link { color: #aaccee }
+.sub-topic-title A:visited { color: #aaccee }
+.sub-topic-title A:active { color: #FFEEEE }
+
+.topic-info
+{
+  font-style: italic; 
+  background: #ffffff;
+  color: #000000;
+}
+
+
+.topic-table-border {
+  background: black;
+  border: 1px solid black;
+}
+
+
+.topic-table {
+   background: #ffffff;
+   border: 1px none;
+}
+
+
+.topic-actions {
+   background: #000000;
+   color: #ffffff;
+}
+
+
+.topic-actions A:link { color: #aaccee }
+.topic-actions A:visited { color: #aaccee }
+.topic-actions A:active { color: #FFEEEE }
+
+
+.topic-actions-border {
+  border: 1px solid black;
+  background: black;
+}
+
+.topic-listing {
+   background: #CCCCCC;
+}
+
+
+                                                s

@@ -1,0 +1,41 @@
+
+.topics-back
+{
+  background: #002000;
+}
+
+A:link { color: #dddd00 }
+A:visited { color: #dddd00 }
+A:active { color: #AAffff }
+
+.topic-title
+{
+ color: #ffffcc;
+}
+
+.sub-topic-title
+{
+ color: #ffffcc;
+}
+
+.topic-text
+{
+  color: #ffffff;
+}
+
+
+.topic-info
+{
+  font-style: italic; 
+  font-size: smaller;
+  color: #ffffff;
+}
+
+.topic-actions {
+  color: #ffffff;
+}
+
+.topic-listing {
+   color: #CCCCCC;
+}
+

@@ -24,7 +24,7 @@ my $line;
 while(defined($line = <SCRIPT>))
 {
    #prefix relative paths with the cgi path
-   $line =~ s#\b(action=\"|href=\"|src=\")(?![^/]+:|/)#$1$cgi_wpath/$2#gi;
+   $line =~ s#\b(action=\"|href=\"|src=\"|class=\")(?![^/]+:|/)#$1$cgi_wpath/$2#gi;
    print $line;
 }
 close(SCRIPT);

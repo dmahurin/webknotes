@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+
+for $file (@ARGV)
+{
+   next if($file eq "." or $file eq "..");
+   if($file =~ m:\.html?$:)
+   {
+      $topic = $`;
+      next if($topic eq "README" or $topic eq "index");
+      mkdir ($topic, 0755);
+      rename ($file, "$topic/README.html");
+   }
+}

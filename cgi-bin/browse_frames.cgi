@@ -17,8 +17,6 @@ else
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
 
-my $mode = defined ($wkn::define::frames_mode) ? $wkn::define::frames_mode :
-$wkn::define::mode;
 
 my(@args) = split('&', $ENV{QUERY_STRING});
 my($frame, $notes_path_encoded);

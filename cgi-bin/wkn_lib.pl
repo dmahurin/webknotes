@@ -13,6 +13,8 @@ my $img_border = " border=0 hspace=3";
 
 package wkn;
 
+my %view_mode; # used to store layout, theme, and target of wkn sessions
+
 sub url_encode_path
 {
    my($path) = @_;
@@ -99,7 +101,7 @@ sub actions2
    print "[ Browse ";
    print "<A HREF=\"$auth::define::doc_wpath/${notes_path}\">Directory</A> | \n";
    print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File Only</A> \n";
-   print "| <A HREF=\"browse_help.cgi?$notes_path\">Other method</A> ]\n";
+   print "| <A HREF=\"" . &wkn::get_cgi_prefix("browse_help.cgi") . "$notes_path\">Other method</A> ]\n";
    #   print "<br>\n";
 }
 
@@ -119,7 +121,7 @@ sub actions3
 		$parent_notes =~ s:(^|/)[^/]*/?$::;
 
                 $parent_notes_ref = 
-                   &wkn::mode_to_scriptprefix($wkn::define::mode) .
+                   &wkn::get_cgi_prefix() .
                    $parent_notes;
 		$notes_dir = "$notes_path/";
 print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
@@ -183,7 +185,7 @@ sub print_link_html
                         $file_ext =~ /^\.(c|h|c\+\+|cxx|hxx|idl|java)$/ && do
                         {
                            print "<A HREF=\"" .
-                              &wkn::mode_to_scriptprefix($wkn::define::mode) .
+                              &wkn::get_cgi_prefix() .
                               $notes_wpath . '">';
                            print &wkn::text_icon($wkn::define::file_icon_text, $wkn::define::file_icon);
                            
@@ -194,7 +196,7 @@ sub print_link_html
 			$file_ext =~ /^\.(txt|html|htm)/ && do
                         {
                            print "<A HREF=\"" .
-                              &wkn::mode_to_scriptprefix($wkn::define::mode) .
+                              &wkn::get_cgi_prefix() .
                               $notes_wpath . '">';
                            print &wkn::text_icon($wkn::define::file_icon_text, $wkn::define::file_icon);
                            
@@ -226,7 +228,7 @@ sub print_link_html
 		if(defined($icon_image))
 		{
 			print '<A HREF="',
-                        &wkn::mode_to_scriptprefix($wkn::define::mode) ,
+                        &wkn::get_cgi_prefix() ,
                         "${notes_wpath}" ,
                         '">';
                         $icon_image =~ m:([^/\.]*)[^/]*$:;
@@ -237,7 +239,7 @@ sub print_link_html
 		else
 		{
                    print "<A HREF=\"",
-                   &wkn::mode_to_scriptprefix($wkn::define::mode) ,
+                   &wkn::get_cgi_prefix() ,
 			"$notes_wpath",
 			'">', $file,
                         "</A>\n";
@@ -380,8 +382,9 @@ sub list_dirs_html
         { $file = $1; }
         else
         { die "hey, /'s ? not good.\n"; }
+        print "<br>" if ($found);
 
-        print "<br>\n" if(print_link_html( "$notes_path/$file"));
+        next unless(print_link_html( "$notes_path/$file"));
         $found = 1;
         
    }
@@ -391,7 +394,8 @@ sub list_dirs_html
 
 sub list_html
 {
-	my( $notes_path ) = @_;
+   my( $notes_path ) = @_;
+   my($found) = 0;
 
 	if ( ! -d "$auth::define::doc_dir/$notes_path" )
 	{
@@ -434,7 +438,8 @@ sub list_html
 				last SWITCH if ($file =~ /\~$/ );
 				last SWITCH if ($file =~ /^README(\.html)?$/ );
 				last SWITCH if ($file eq "index.html" );
-				last SWITCH if ($file eq "index.htm" );
+                                last SWITCH if ($file eq "index.htm" );
+                                $found = 1;
 				$file_ext =~ /^\.html/ && do
 				{
 					print "<A HREF=\"${web_path}/",
@@ -477,7 +482,7 @@ sub list_html
 			{
 				next;
 			}
-		
+		        $found = 1;
                         my($icon_image) = $wkn::define::dir_icon;
 
 	                if ( -r "${real_path}/${file}/.icon" and
@@ -490,7 +495,7 @@ sub list_html
                 if(defined($icon_image))
                 {
 		print '<A HREF="',
-                        &wkn::mode_to_scriptprefix($wkn::define::mode) ,
+                        &wkn::get_cgi_prefix() ,
                         "${notes_wdir}${wfile}",
                         '">';
                         print &wkn::text_icon("[x]", $icon_image);
@@ -499,7 +504,7 @@ sub list_html
 			else
 			{
 				print '<A HREF="',
-                                &wkn::mode_to_scriptprefix($wkn::define::mode) ,
+                                &wkn::get_cgi_prefix() ,
 				"${notes_wdir}$wfile",
 				'">',
 				$label, "</A><br>\n";
@@ -507,7 +512,7 @@ sub list_html
 		}	
 	}
 	close(NOTESDIR);
-	return 1;
+	return $found;
 }
 
 sub dir_file
@@ -714,7 +719,7 @@ sub smart_ref
    $ref =~ s:/+$::;
    if($ref =~ m-^$auth::define::doc_wpath/*- )
    {
-      return &wkn::mode_to_scriptprefix($wkn::define::mode) . url_encode_path($');
+      return &wkn::get_cgi_prefix() . url_encode_path($');
    }
    elsif(defined(%wkn::define::wpath_prefix_translation))
    {
@@ -783,15 +788,55 @@ sub log
    }
 }
 
-sub mode_to_scriptprefix
+sub get_cgi_prefix
 {
-   my ( $mode ) = @_;
-   return "browse_" . $mode . ".cgi?";
+   my ($script) = shift; # optionally start with a cgi script
+   
+   unless($script)
+   {
+     $script = "browse_" . 
+      ( $wkn::view_mode{"layout"}
+            || $wkn::define::default_layout )
+         . ".cgi";
+   }
+   my($prefix) = "${script}?";
+         
+   if($wkn::view_mode{"theme"})
+   {
+      $prefix .= ( "theme=" . $wkn::view_mode{"theme"} . "&" );
+   }
+   if($wkn::view_mode{"target"})
+   {
+      $prefix .= ( "target=" . $wkn::view_mode{"target"} . "&" );
+   }
+   if($wkn::view_mode{"frame"})
+   {
+      $prefix .= ( "frame=" . $wkn::view_mode{"frame"} . "&" );
+   }
+   return $prefix;
 }
 
-sub default_scriptprefix
+# parse off the first part of the cgi args that define theme, layout, and
+# target
+sub parse_view_mode
 {
-   return "browse_" . $wkn::define::mode . ".cgi?";
+   my($cgi_arg_str) = @_;
+   
+   while($cgi_arg_str =~ m:^(theme|layout|target|frame)=([^&]*)&?:)
+   {
+      $wkn::view_mode{$1} = $2;
+      $cgi_arg_str = $';
+   }
+   return $cgi_arg_str;
+}
+
+# return html to set style/css to current theme
+sub get_style_header_string
+{
+   my $theme = $wkn::view_mode{"theme"};
+   $theme =  $wkn::define::default_theme unless($theme);
+   return "<LINK HREF=\"$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
+      MEDIA=\"screen\" type=\"text/css\" >\n";
 }
 
 sub path_check
@@ -841,3 +886,4 @@ sub text_icon
       return $text;
    }
 }
+1;

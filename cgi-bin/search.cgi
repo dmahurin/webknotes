@@ -44,11 +44,11 @@ my($exact_match) = ( $in{'exact_match'} eq "on" );
 my($file_mask) = $in{'file_mask'};
 my($note_type) = $in{'note_type'};
 my($debug) = defined($in{debug});
-my($notes_mode) = $in{notes_mode} if($in{notes_mode});
+
+$wkn::view_mode{"layout"} = $in{notes_mode} if($in{notes_mode});
 
 ##
-my($match_prefix_url) =  &wkn::mode_to_scriptprefix(
-      defined($notes_mode) ? $notes_mode : $wkn::define::mode);
+my($match_prefix_url) =  &wkn::get_cgi_prefix();
 
 my($notes_subpath) =  "$in{'notes_subpath'}";
 

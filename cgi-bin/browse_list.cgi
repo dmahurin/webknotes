@@ -12,14 +12,18 @@ if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
 require 'wkn_define.pl';
 require 'wkn_lib.pl';
+require 'css_tables.pl';
 
 local $wkn::define::mode = "list";
-my $notes_path_encoded = $ENV{QUERY_STRING};
+
+my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
+
 my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
 exit(0) unless(defined($notes_path));
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
+
 
 my($user) = auth::get_user();
 if( ! auth::check_file_auth( $user, auth::get_user_info($user),
@@ -29,38 +33,36 @@ if( ! auth::check_file_auth( $user, auth::get_user_info($user),
    exit(0);
 }
 
-print <<"END";
-<HTML>
-<head>
-</head>
-<BODY $wkn::attr::body>
-END
+my $style = wkn::get_style_header_string();
 
-print "<table border=0 cellpadding=8>\n";
-print "<tr><td $wkn::attr::td_description>\n";
-if(&wkn::print_dir_file($notes_path))
-{
-   print "</td></tr>\n";
-   print "<tr><td $wkn::attr::td_list>\n";
-}
+print
+"<HTML>
+<head>
+<title>${notes_path}</title>
+$style
+</head>" .
+"<BODY class=\"topics-back\">";
+
+print css_tables::table_begin("topic-table") . "\n";
+
+print css_tables::trtd_begin("topic-text") . "\n";
+&wkn::print_dir_file($notes_path);
+print css_tables::trtd_end() . "\n";
+
+print css_tables::trtd_begin("topic-title") . "\n";
 wkn::print_icon_img($notes_path);
-print "<b>$notes_name</b> - ";
+print "<b>$notes_name</b>";
+print css_tables::trtd_end() . "\n";
+
+print css_tables::trtd_begin("topic-info") . "\n";
 wkn::print_modification($notes_path);
-#print "<table><tr><td rowspan=2>";
-#wkn::print_icon_img($notes_path);
-#print "</td><td><b>$notes_name</b><br><td></tr><tr><td>\n";
-#wkn::print_modification($notes_path);
-#print "</td></tr></table>\n";
-print "</td></tr>\n";
-print "<tr><td $wkn::attr::td_list>\n";
-#if(&wkn::list_files_html($notes_path))
-#{
-#   print "</td></tr>\n";
-#   print "<tr><td $wkn::attr::td_list>\n";
-#}
+print css_tables::trtd_end() . "\n";
+
+print css_tables::trtd_begin("topic-actions") . "\n";
 wkn::actions2($notes_path);
-print "</td></tr>\n";
-print "<tr><td $wkn::attr::td_list>\n";
+print css_tables::trtd_end() . "\n";
+
+print css_tables::trtd_begin("topic-listing") . "\n";
 
 my($toppath) = "$auth::define::doc_dir";
 $toppath .= "/$notes_path" if( $notes_path ne "");
@@ -108,7 +110,7 @@ if(-d $toppath)
        elsif (-d "$toppath/$fullpath" )
        {
           print "$indent<li><a href=\"" ,
-          &wkn::mode_to_scriptprefix($wkn::define::mode),
+          &wkn::get_cgi_prefix(),
              $encoded_notes_path , "\">";
           if(defined($wkn::define::max_depth) and $depth >= $wkn::define::max_depth)
           {
@@ -138,7 +140,7 @@ if(-d $toppath)
        {
           $name = $`;
           print "$indent<li><a href=\"" .
-          &wkn::mode_to_scriptprefix($wkn::define::mode),
+          &wkn::get_cgi_prefix(),
           $encoded_notes_path. "\">$name</a>\n";
        }
        else
@@ -147,14 +149,14 @@ if(-d $toppath)
        }
    }
 }
-print "</table>\n";
-print "</td></tr>\n";
-print "<td><tr>\n";
-print "<table border=0 cellpadding=8>\n";
-print "<tr><td $wkn::attr::td_list>\n";
-wkn::actions3($notes_path);
-print "</td></tr>\n";
+print css_tables::trtd_end() . "\n";
+print css_tables::table_end() . "\n";
 
-print "</table>\n";
+print css_tables::table_begin("topic-table") . "\n";
+print css_tables::trtd_begin("topic-actions") . "\n";
+wkn::actions3($notes_path);
+print css_tables::trtd_end() . "\n";
+print css_tables::table_end() . "\n";
+
 print "</BODY>\n";
 print "</HTML>\n";

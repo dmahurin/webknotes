@@ -39,8 +39,6 @@ my $INDENT = " ";
 my $LSTART = "<table border=0 cellspacing=0 >";
 my $LEND = "</table>";
 my $LITEM_START = "<tr><td valign=\"top\">";
-#my $LITEM_START = "<tr $wkn::attr::td_highlight><td valign=\"top\" $wkn::attr::td_highlight >";
-#my $LITEM_START1 = "</td><td $wkn::attr::td_list nowrap=1 >";
 my $LITEM_START1 = "</td><td nowrap=1 >";
 my $LITEM_END0 = "<br>";
 my $LITEM_END = "</td></tr>";
@@ -49,26 +47,32 @@ my $CLOSED_SYMBOL = "[+]";
 my $OPENED_SYMBOL = "[-]";
 my $FILE_SYMBOL = "[.]";
 
-my(@cgi_args) = split(/\&/, $ENV{QUERY_STRING});
-
 local $wkn::define::frames_mode = $wkn::define::mode
   unless defined ($wkn::define::frames_mode);
 my $mode = $wkn::define::frames_mode;
-my $this_script_prefix = "browse_list2.cgi?";
 
 
-my $notes_path_encoded = shift(@cgi_args);
-my $target = "";
-if($notes_path_encoded =~ m:^target=:)
+my ($arg);
+my($theme);
+my $notes_path_encoded;
+my $notes_path_encoded = &wkn::parse_view_mode($ENV{QUERY_STRING});
+
+my $target;
+if($wkn::view_mode{"target"})
 {
-   $this_script_prefix .= "target=$'&";
-   $target = "target=\"$'\"";
-   $notes_path_encoded = shift(@cgi_args);
+   $target = "target=\"$wkn::view_mode{\"target\"}\"";
 }
+
+my $this_script_prefix = wkn::get_cgi_prefix("browse_list2.cgi");
+undef($wkn::view_mode{"target"}); # don't want to pass target to main script
+my $script_prefix = wkn::get_cgi_prefix();
+
+my($notes_path_encoded, @paths) = split(/\&/, $notes_path_encoded);
+
 my($notes_path) = &wkn::path_check(&wkn::url_unencode_path($notes_path_encoded));
 exit(0) unless(defined($notes_path));
 
-my $open_tree = unflatten_tree(unencode_paths(@cgi_args));
+my $open_tree = unflatten_tree(unencode_paths(@paths));
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
@@ -81,28 +85,15 @@ if( ! auth::check_file_auth( $user, auth::get_user_info($user),
    exit(0);
 }
 
+my $style = wkn::get_style_header_string();
+
 print
 "<HTML>
 <head>
+<title>${notes_path}</title>
+$style
 </head>" .
-#defined($wkn::attr::body) ? "<body " . $wkn::attr::body . ">" :
-"<BODY>";
-
-#print "<table border=0 cellpadding=8>\n";
-#print "<tr><td $wkn::attr::td_description>\n";
-#if(&wkn::print_dir_file($notes_path))
-#{
-#   print "</td></tr>\n";
-#   print "<tr><td $wkn::attr::td_list>\n";
-#}
-#wkn::print_icon_img($notes_path);
-#print "<b>$notes_name</b> - ";
-#wkn::print_modification($notes_path);
-#print "</td></tr>\n";
-#print "<tr><td $wkn::attr::td_list>\n";
-#wkn::actions2($notes_path);
-#print "</td></tr>\n";
-#print "<tr><td $wkn::attr::td_list>\n";
+"<BODY class=\"topic-listing\">";
 
 my($toppath) = $auth::define::doc_dir;
 $toppath .= "/$notes_path" if( $notes_path ne "");
@@ -215,11 +206,11 @@ if(-d $toppath)
           my($dirfile) = &wkn::dir_file($notes_base . $fullpath);
           if(1 || defined( $dirfile ))
           {
-             print "<a href=\"browse_$mode.cgi?$encoded_subnotes_path\" $target>$name</a>";
+             print "<a href=\"${script_prefix}$encoded_subnotes_path\" $target>$name</a>";
           }
           else
           {
-             print "$name (<a href=\"" . &wkn::default_scriptprefix() . $encoded_subnotes_path . "\" $target>*</a>)";
+             print "$name (<a href=\"" . $script_prefix . $encoded_subnotes_path . "\" $target>*</a>)";
           }
 
           if(defined($dir_ref->{$filename}))
@@ -252,15 +243,6 @@ if(-d $toppath)
        }
    }
 }
-#print "</table>\n";
-#print "</td></tr>\n";
-#print "<td><tr>\n";
-#print "<table border=0 cellpadding=8>\n";
-#print "<tr><td $wkn::attr::td_list>\n";
-#wkn::actions3($notes_path);
-#print "</td></tr>\n";
-
-#print "</table>\n";
 print "</BODY>\n";
 print "</HTML>\n";
 

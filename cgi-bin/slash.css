@@ -1,0 +1,69 @@
+.topics-back
+{
+  background: #000000;
+}
+
+A:link { color: #006666 }
+A:visited { color: #006666 }
+
+.topic-text
+{
+  background: #ffffff;
+  color: #000000;
+}
+
+
+.topic-title
+{
+  background: #006666;
+  color: #ffffff;
+}
+
+.topic-title a:link {color: #ffffff}
+.topic-title a:visited {color: #ffffff}
+
+.sub-topic-title-border
+{
+  border: 1px none;
+  border: 1px solid black;
+  background: black;
+}
+
+.sub-topic-title
+{
+   background: #cccccc;
+   color: #000000;
+}
+
+.topic-info
+{
+  font-style: italic; 
+  background: #ffffff;
+  color: #000000;
+}
+
+
+.topic-table-border {
+  background: black;
+  border: 1px solid black;
+}
+
+
+.topic-table {
+   background: #ffffff;
+   border: 1px none;
+}
+
+
+.topic-actions {
+   background: #cccccc;
+   color: #000000;
+}
+
+
+.topic-listing {
+   background: #CCCCCC;
+}
+
+
+                                                s

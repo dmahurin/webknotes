@@ -1,0 +1,71 @@
+.topics-back
+{
+  background: #AAAAAA;
+}
+
+.topic-text-border
+{
+  border: 1px none;
+  border: 1px solid black;
+  background: black;
+}
+
+
+.topic-text { background: #CCCCCC ;color: #000000;}
+
+
+.topic-title { background: #00AAAA; color: black }
+.topic-title-border
+{
+  border: 1px none;
+  border: 1px solid black;
+  background: black;
+}
+
+.sub-topic-title { background: #cccccc; color: black }
+.sub-topic-title-border
+{
+  border: 1px none;
+  border: 1px solid black;
+  background: black;
+}
+
+.topic-info
+{
+  font-style: italic; 
+  font-size: smaller;
+  background: #AAAAAA;
+  color: #000000;
+}
+
+.topic-info-border
+{
+  border: 1px none;
+  border: 1px solid black;
+  background: black;
+}
+
+.topic-table-border {
+  background: green;
+  border: 1px solid green;
+}
+
+.topic-table { background: #CCCCCC }
+
+
+.topic-actions {background: #AAAAAA}
+
+.topic-actions-border {
+  border: 1px solid black;
+  background: black;
+}
+
+.topic-listing {background: #AAAAAA}
+
+.topic-listing-border {
+  border: 1px none;
+  border: 1px solid black;
+  background: black;
+}
+
+                                                s

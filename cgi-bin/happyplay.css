@@ -1,0 +1,91 @@
+a:link { color: #000099}
+a:visited { color: #000099}
+.topics-back
+{
+  background: #ffffff;
+}
+
+.topic-title
+{
+ background: #008000;
+ color: #ffff80;
+}
+
+.topic-title-border
+{
+ background: #008000;
+}
+
+.sub-topic-title
+{
+ background: #ffff80;
+ color: #000000;
+}
+
+.sub-topic-title-border
+{
+ background: yellow;
+}
+
+.topic-info
+{
+  font-style: italic; 
+  font-size: smaller;
+  background: #aaaaaa;
+  color: #000000;
+}
+
+.topic-info-border
+{
+  background: #aaaaaa;
+}
+
+
+.topic-text
+{
+  background: #c0c0c0;
+  color: #000000;
+}
+
+.topic-text-border
+{
+  background: #cccccc;
+}
+
+
+.topic-table-border {
+  background: green;
+  border: 1px solid green;
+}
+
+//topic-table-border {
+//  background: green;
+//  border: 1px none;
+//  background: blue;
+//  padding: 5;
+//}
+
+.topic-table {
+   background: #ffffff;
+   border: 1px none;
+}
+
+
+.topic-actions {
+   background: #90c060;
+}
+
+.topic-actions-border {
+   background: #AACCCC;
+}
+
+.topic-listing {
+   background: #CCCCCC;
+   color: #000000;
+}
+
+.topic-listing-border {
+   background: #CCCCCC;
+}
+
+                                                s
