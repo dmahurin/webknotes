@@ -1,0 +1,35 @@
+What you need to get started:
+
+Perl5 - installed as /usr/bin/perl
+(if somewhere else, you need to modify all .cgi scripts using (util/perlpath) )
+
+CGI.pm - part of standard Perl 5 dist.
+
+A [[setuid]] mechanism. ./Configure will also ask about this.
+
+To configure and install, run:
+./Configure
+This will create the define files, copy the cgi-bin directory and create an admin user.
+
+This starting point will be something like: httpd://localhost/cgi-bin/wkn/browse.cgi, depending on the location of your cgi-bin.
+
+Also, in the util directory is a script called 'cgitohtml', which will
+create a static file from a cgi script, given the cgi base.
+
+
+Examples:
+
+simple case:
+
+ util/cgitohtml /~awebuser/cgi-bin
+ ~awebuser/public_html/cgi-bin/browse.cgi ""
+
+Or, really specifically, on my dma web page (they use cgi-wrap for cgi scripts),
+I do:
+
+ util/cgitohtml /cgi-bin/cgiwrap/dmahurin/wkn
+ ~dmahurin/public_html/cgi-bin/wkn/browse.cgi "layout=page" \
+ "" "wknbook" "Computer/Linux" "" \
+ "People/Don Mahurin" "colspan=2" "People/Don Mahurin/Projects/wkn" \
+ > ~/public_html/index.html
+

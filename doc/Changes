@@ -116,3 +116,5 @@ Sample themes included.
 -subscription turned back on (subscription is still manual)
 -new configure script that remembers your previous configuration (exept filters)
 -verify email mechanism
+-superlayout/layout more sane than layout/sublayout
+-documentation in htxt

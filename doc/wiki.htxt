@@ -1,7 +1,3 @@
-Ok,
-
-If you can't beat'em, assimilate ...
-
 I don't really understand why the wikis are so popular.
 So I gave up, and attempted to support .wiki as if it was a markup language.
 
@@ -10,7 +6,7 @@ There's a importwiki tool included to mine some wikis.
 It remains unclear what mixing .wiki's and .wiki catagories and text and
 html really will look like.
 
-hopefully, people can use this in whatever way works.
+Hopefully, people can use this in whatever way works.
 
 There are still some issues to work our as to how to properly wiki in
 a hierarchy.

@@ -1,8 +1,0 @@
-WebKNotes is a web based knowledge database of notes written in Perl using a plain file hierarchy as a database.
-
-Some features:
-   Notes/subtopics about anything added by any user. 
-   Search facility. 
-   User Authentication 
-   Users can edit notes they created. 
-   Notes can be viewed a few different ways or browsed as files.

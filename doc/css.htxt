@@ -1,0 +1,27 @@
+To create a new theme, I suggest that you start with an existing one.
+
+Here are the classes that you can add styles to:
+
+   topics-back - The background behind topic boxes
+   topic-table - Each topic table
+   topic-title - The title in a topic table
+   topic-info - Modification and owner of topic
+   topic-text - text body of topic
+   topic-actions - Action bar associated with topic
+   topic-listing - Listing of sub topics 
+
+There are longstanding bugs with various browsers with regards to CSS.
+For this reason, some hackery was needed. The workaround for Netscapes problems
+with borders required a containing border table to be create for each class
+that you want a border for:
+
+   topic-table-border, topic-title-border, topic-info-border,
+   topic-text-border, topic-actions-border, topic-listing-border.
+
+In these definitions, for Netscape to work properly, 
+you must repeat and background and border information
+that you placed in the complete css definition.
+
+Also, do not use padding definitions. No workaround exist for bugs here.
+
+The [[css_tables]] classes serves to work around CSS bugs in existing browsers.

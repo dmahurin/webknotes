@@ -1,0 +1,20 @@
+subscribe.cgi -
+possibly subscription options stored in private_dir/subscriptions/USER/path_with_dots
+Options are:
+  n - non-recursive
+
+Configure should save setup constants only used for configuaration in 
+setup_define.pl (in directory that Configure is ran from).
+
+possibilities for email verified:
+ - Ability to Add topics via EMAIL
+ - Email subscription.
+   - auto-subscribe to topics that you create
+   - [un/]subscribe to other/all topics
+ - Ability to usubscribe ALL.
+ - Ability to reply to a knotes email and have it put in DB
+ - Ability to subscribe to a flat dir or the dir tree.
+
+MAYBE SOMEDAY::
+ - Database backend
+

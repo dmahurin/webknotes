@@ -1,0 +1,8 @@
+Layouts and themes are saved with a user settings. For anonymous users,
+the settings are passed along with each request.
+You can change the layout and theme, by choosing "Layout/theme" at the
+bottom of the page.  If you wish to create your own theme, see [[css]].
+
+The layout of the file and directory listing can also be changed.
+Also there can be a "super layout" specified. This is actually a layout that
+contains another layout. Typically this is a framed layout or nothing.  

@@ -2,5 +2,7 @@ An optional file page_template.html may exist in your installed cgi-bin
 directory.  This file is expected to be an html template, where the
 actual output of the cgi will replace the XML tage:
 <%$page%/>
+
 The content before the tag will become the page_header.
+
 The content after the tag will become the page_footer.

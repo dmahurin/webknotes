@@ -1,0 +1,7 @@
+
+If use_cvs is defined in filedb::define, each directory with a CVS
+directory is assumed to be cvs, and changes will be commited when added,
+edited or appended.
+
+It is assumed that such cvs directories are not externally changed.
+

@@ -1,0 +1,37 @@
+WebKNotes is a web based Knowledge database of notes written in
+Perl, stored in a plain file ( text / html / [[wiki]] / [[htxt]] ) hierarchy. 
+
+Topics can be added, modified and viewed by authenticated or anonymous users.
+
+In raw access mode, Upload files, delete files and change [[permissions]] and group of a topic.
+
+Pages can be viewed with different [[layouts and themes]].
+
+Users can [[subscribe]] to topics and recieve mail on modification.
+
+WebKNotes can serve as a web server [[browse index hander]],
+so that the web server natively uses webknotes to index directories and view files.
+
+
+
+Webknotes can be ran using [[mod_perl]].
+
+Modifications can be tracked with [[cvs]].
+
+All notes can be wrapped in a common [[page_template]].
+
+Uses of WebKNotes:
+
+  - Hierarchy of text documents, viewable and/or modifiable by
+    a group of people.
+  - Wiki like db, with ability to have hierarchy and mix with
+    html, text, and htxt files.
+  - Use like a news group and archive system using the [[subscribe|subcription]] feature.
+  - Convert existing html document tree as is into modifiable and themable pages.
+
+
+Dowload WebKNotes at [[http://sourceforge.net/projects/webknotes]].
+See the [[install|installation]] information to get started.
+
+If you have a suggestion that is not on my [[todo]] list, let me ( [[mailto:dmahurin@users.sourceforge.net]] ) know.
+

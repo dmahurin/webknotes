@@ -1,12 +1,13 @@
 To allow one user to own and modify all the notes (via the cgi scripts),
 you need one of these on your web server:
-    -setuid perl enabled(suidperl)
+
+   -setuid perl enabled(suidperl)
        chmod u+s *.cgi
-    -cgi-wrap - http://www.unixtools.org/cgiwrap/
-    -setuid apache module(suEXEC) enabled.
+   -cgi-wrap - http://www.unixtools.org/cgiwrap/
+   -setuid apache module(suEXEC) enabled.
        http://www.apache.org/docs/suexec.html
-     -use setuid_wrapper that was available with perl4
-     -compile and use util/sperl_user.c
+   -use setuid_wrapper that was available with perl4
+   -compile and use util/sperl_user.c
        cd util
        cc sperl_user.c -o sperl_`whoami`
        chmod a+x,u+s sperl_`whoami`

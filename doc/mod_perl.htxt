@@ -1,10 +1,8 @@
-The support for mod_perl is in there.
-There may be one or two changes that I missed.
+Webknotes supports mod_perl.
 You need "PerlSendHeader On" to turn the double header off.
-If you know the correct way, let me know.
 
 Before, I use a couple of globals for two purposes:
-  - keep track of current layout in view_lib.p
+  - keep track of current layout in view_lib.pl
   - for caching user_info and user for calls in a query.
 
 Basically when I put it in mod_perl strange things happened because,
@@ -17,9 +15,10 @@ The solution I came up with is a method called "localize_sub" in each
 main package file. A query main function is "converted" my these functions
 to localize the globals to that function.
 
----
 
-Problem remaining: You can't run mod_perl scripts setuid.
+Problem remaining: 
+
+You can't run mod_perl scripts setuid.
 This means that the only way to have wkn work is to have 'www', 'web' or 'httpd' own everything, and run the cgi scripts with no setuid.
 This is not secure.
 

@@ -1,0 +1,4 @@
+A user can turn off or on subscription for a particular topic using the "Subscribe" button on each topic page.
+
+A user must have permission 'S' to subscribe, and other users must have permission 'M' to generate 
+subscription mail.  See [[permissions]].
