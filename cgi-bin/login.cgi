@@ -83,7 +83,7 @@ Password <input type=password name="password" size=20><p>
 <p>
 New users: Create a <a href="add_user.cgi">new account</a>.
 <p>
-Or, skip the login, and <a href="$next">login anonymously</a>.
+Or, skip the login, and <a href="$next$path_encoded">login anonymously</a>.
 </body>
 </html>
 END
