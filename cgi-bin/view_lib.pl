@@ -339,16 +339,14 @@ sub print_link_html
 	{
 		return 0 if($file =~ /^\..*/ );
 		
-		my($icon_image) = $view::define::dir_icon;
-                $icon_image = filedb::get_hidden_data($notes_path, "icon");
-		$icon_image = $view::define::dir_icon unless(defined($icon_image));
+		my($icon_image) = get_icon($notes_path, $view::define::dir_icon);
 		if(defined($icon_image))
 		{
 			print '<A HREF="',
                         $bprefix ,
                         "${notes_wpath}/" , $bsuffix,
                         '">';
-                        $icon_image =~ m:([^/\.]*)[^/]*$:;
+#                        $icon_image =~ m:([^/\.]*)[^/]*$:;
                         print &view::icon_tag("[+]", $icon_image);
                         print "$file</A>\n";
                 }
@@ -369,8 +367,12 @@ sub get_icon
 	my( $notes_path ) = @_;
 
         my($icon_image) = filedb::get_hidden_data($notes_path, "icon");
-        $icon_image = $view::define::dir_icon unless(defined($icon_image));
-        return  "$view::define::icons_wpath/$icon_image" if(defined($icon_image));
+        $icon_image = $default_icon unless(defined($icon_image));
+	if(defined($icon_image))
+	{
+		return $filedb::define::doc_wpath . '/' . filedb::join_paths( $filedb::define::doc_wpath, $notes_path, $icon_image) if(filedb::is_file($notes_path, $icon_image));
+        	return "$view::define::icons_wpath/$icon_image" 
+	}
         return ();
 }
 
@@ -382,11 +384,10 @@ sub print_icon_img
 	{
 		return if($notes_path =~ /^\..*/ ); # needed?
 		
-		my($icon_image) = filedb::get_hidden_data($notes_path, "icon");
-		$icon_image = $view::define::dir_icon unless(defined($icon_image));
+		my($icon_image) = get_icon($notes_path, $view::define::dir_icon);
                 if(defined($icon_image))
                 {
-			$icon_image =~ m:([^/\.]*)[^/]*$:;
+#			$icon_image =~ m:([^/\.]*)[^/]*$:;
                         
                         print &view::icon_tag("[+]", $icon_image);
                         
@@ -716,7 +717,7 @@ sub icon_tag
    my($text, $icon ) = @_;
    if(defined($icon))
    {
-      return "<img src=\"$view::define::icons_wpath/$icon\" $img_border " .
+      return "<img src=\"$icon\" $img_border " .
          "alt=\"$text\"" . ">";
    }
    else
