@@ -69,12 +69,11 @@ I put a new configure script out in CVS that creates a default index, and
  prints out the URL address of the default index and browse_help.cgi as a 
  last step.
 
-Starting points would be:
-cgi-bin/wkn/browse_notes.cgi
-cgi-bin/wkn/browse_help.cgi
+The starting points would be:
+cgi-bin/wkn/browse.cgi
 
 
-A main index.html file can be generated with 'cgitohtml' util.
+Also a static main index.html file can be generated with 'cgitohtml' util.
 
 A simple case would be:
 
@@ -85,7 +84,7 @@ Or, really specifically, on my web page(they use cgi-wrap for cgi scripts),
 I do:
 
 webknotes/util/cgitohtml /cgi-bin/cgiwrap/dmahurin/wkn
-~dmahurin/public_html/cgi-bin/wkn/browse_page.cgi \
+~dmahurin/public_html/cgi-bin/wkn/browse.cgi "layout=page" \
 "" "wknbook" "Computer/Linux" "" \
 "People/Don Mahurin" "colspan=2" "People/Don Mahurin/Projects/wkn" \
 > ~/public_html/index.html

@@ -1,8 +1,6 @@
 Better documentation - INSTALL.
 
-Smart configure script that defaults to your current configuration.
-
-Ability to set default theme and layout for user.
+Smarter configure script that learns better from your previous answers.
 
 Have another level of users that get passwords via email.(to verify address)
 
@@ -17,11 +15,13 @@ With email verified users, this could allow:
 
 CVS - Allow the notes to sit in CVS
 
-Database - Add a database backend - maybe someday
-
-Some other possible future additions:
+MAYBE SOMEDAY::
+- Database backend
 - Abreviations for note paths.(KN:fvwm = KN:/X/window_managers/fvwm)
 - Ability to download the entire archive(as a tar.gz file) or part of it.
+
+DONE::
+Ability to set default theme and layout for user.
 
 Don Mahurin
 mailto:dmahurin@users.sourceforge.net

@@ -10,37 +10,78 @@
 <h3>About</h3>
 
 <p>
-WebKNotes is a web based Knowledge database
-of notes, featuring:
+<i>WebKNotes</i> is a web based Knowledge database
+of notes written in Perl, stored in a plain file (text/html) hierarchy.
+An existing static web page hierarchy can be changed into a interactive
+system by using WebKnotes.
 
 <ul TYPE=disc>
-<li>Notes/subtopics about anything added by any user.
+<li>Notes and subtopics about anything added by any user.
 <li>Search facility.
 <LI>User Authentication
 <LI>Users can edit notes they created.
 <LI>Notes can be viewed using several different methods, or the files can just be browsed.
 </ul>
 
-The WebKNotes system is written in Perl and uses a file hierarchy for a database.
- 
+WebKnotes is:
+<ul>
+<li> like plain web pages, but anyone can add and edit pages online.
+<li> like newsgroups, but the hiearchy grows, as every note is a catagory.
+<li> like Wiki, but notes are organized in a hiearchy, and notes are plain html.
+<li> like Slashdot, but not database backed. Webknotes currently would probably not scale well to that level.
+</ul>
 <p>
 WebKNotes is written and maintained by <a href="mailto:dmahurin@users.sourceforge.net">
 Don Mahurin</a>.
-<h3>Licence</h3>
-
 <p>
-WebKNotes is available under a
-<a href="LICENSE">General ARTISTIC license</a>.
+<h3>Project</h3>
+CVS, Forums, Bug tracking  and other project stuff are available on the
+<a href="http://sourceforge.net/projects/webknotes"><img src="sf-button.png" alt="sourceforge"> Project</a> Page
+.
 <p>
-<b>Funding this project:</b><br>
-If you like this or anything else that I do, feel free to get on x.com and
-transfer money($0.50, $5, $50, $500,...)
-to me (dmahurin@users.sourceforge.net).<br>
-I will be further encouraged to make cool enhancments.<br>
-If you are not an x.com member, use my 
-<a href="https://www.x.com/new_account.asp?Referrer=dmahurin@users.sourceforge.net">
-referral</a>. I think I get $5 or something.
+<a href="http://download.sourceforge.net/webknotes/">Download</a> WebKnotes on
+the sourceforge download site.
+<p>
 
+<h3>Install</h3>
+Basically, just unpack the archive somewhere, and run ./configure. It will ask questions, install everything, and create the configuration files.
+
+<h3>Running</h3>
+
+The installation process should have copied all the scripts to a cgi-bin directory.
+The main script that you run is browse.cgi.
+Use the the cgi-bin path that you chose to run this script.
+<DL>
+<DT> Example:
+<DD>
+   http://yoursite/cgi-bin/wkn/browse.cgi
+   <br>
+   http://yourispsite/~yourusername/cgi-bin/wkn/browse.cgi
+</DL>
+<p>
+From there you can login, add topics, edit topics, and get file level access.
+<p>
+The "User Accounts" link will allow you to  add and modify user permissions.
+For this, use the administration user created by the configuration script. If for some reason, you have no administration user.  You can manually edit a users file(in private directory) and add an 's' to the permissions.
+
+<h3>More Information</h3>
+
+<a href="defines.txt">defines.txt</a> - All configuration definitions
+<p>
+<a href="wiki.txt">wiki.txt</a> - Information on support for Wiki "format"
+<p>
+<a href="css.txt">css.txt</a> - Information on CSS class definitions
+<p>
+<a href="css_tables.txt">css_tables.txt</a> - Information on CSS bug work arounds
+<p>
+<a href="permissions.txt">permissions.txt</a> - List of all the user/group permissions
+<p>
+<a href="mod_perl.txt">mod_perl.txt</a> - Description of support for mod_perl
+<p>
+
+<h3>Copying</h3>
+
+WebKNotes is distrubuted under a <a href="LICENSE">General ARTISTIC license</a>.
 
 <h3>Disclaimer</h3>
 
@@ -48,35 +89,56 @@ referral</a>. I think I get $5 or something.
 I claim no responsibility for this package.  If it harms something
 in any way whatsoever, It's not my fault.  If you do not understand
 the risks involved in using this package, do not use it.
+       
 
-<h3>Project</h3>
-CVS, Forums, Bug tracking  and other project stuff are available on the
-<a href="http://sourceforge.net/project/?group_id=3306">Web KNotes Project Page</a>
-.
-<p>
-<a href="http://download.sourceforge.net/webknotes/">Dowload</a> WebKnotes on
-the sourceforge download site.
-<p>
-or for old versions, go to
-the previous
-<a href="http://www.dma.org/~dmahurin/files/software/wkn">files area</a>
-on dma.org.
-<p>
 
 <h3>Sample</h3>
 If you have not seen WebKNotes in action look at <a href="http://www.dma.org/dmahurin">my homepages</a>.
 <br>
 The default look of the page is a News page. Some  other ways of viewing are:
-<a href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse_table.cgi">
+<a
+href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse.cgi?layout=table">
 table </a>,
-<a href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse_tables.cgi">
+<a
+href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse.cgi?layout=tables">
 tables</a>,
-<a href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse_tables2.cgi">
+<a
+href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse.cgi?layout=tables2">
 expanded tables</a>, and
-<a href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse_frames_list.cgi">
+<a
+href="http://www.dma.org/cgi-bin/cgiwrap/dmahurin/wkn/browse.cgi?layout=frames_list&layout2=table">
 Frames List</a>
 .
+<h3>More Samples - Themes ( <b>NEW! )</b></h3>
+Now WebKNotes has themes as CSS descriptions
+<p>
+Here are some examples on sourceforge:
+<p>
+<a href="http://webknotes.sourceforge.net/cgi-bin/wkn/browse.cgi?theme=forge">
+SourceForge like</a>
+<br>
+<a href="http://webknotes.sourceforge.net/cgi-bin/wkn/browse.cgi?layout=tables&theme=fresh&sites/Freshmeat/">Freshmeat like</a>
+<br>
+<a href="http://webknotes.sourceforge.net/cgi-bin/wkn/browse.cgi?layout=tables&theme=happyfree&sites/FreeDOS/">Freedos/Happy Peguin like</a>
+<br>
+<a
+href="http://webknotes.sourceforge.net/cgi-bin/wkn/browse.cgi?layout=tables&theme=happyplay&sites/FreeDOS/">More Happy Peguin like</a>
+<br>
+<a href="http://webknotes.sourceforge.net/cgi-bin/wkn/browse.cgi?layout=tables&theme=slash&sites/Slashdot">Slashdot like</a>
+<br>
+<a
+href="http://webknotes.sourceforge.net/cgi-bin/wkn/browse.cgi?layout=tables&theme=darkplay&sites/Slashdot">Linux Games  like</a>
+<p>
+(You can't currently add anything notes on the wkn on sourceforge)
+<p>
+<b>Supporting this project:</b>
+<p>
+This project is FREE. Though if you feel like sending money to my paypal
+account(dmahurin@users.sourceforge.net), go ahead.
+<p>
+Probably the best support now is just having people <b>use it and tell me about it</b>.
 
+<p>
 <h3>Feedback, bug reports, success/horror stories</h3>
 
 e-mail me: <a href="mailto:dmahurin@users.sourceforge.net">Don Mahurin</a>.
