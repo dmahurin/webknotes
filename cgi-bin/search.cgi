@@ -49,12 +49,12 @@ my($file_mask) = $in{'file_mask'};
 my($note_type) = $in{'note_type'};
 my($debug) = defined($in{debug});
 
-my($notes_mode);
-if($in{notes_mode})
-{
-  $notes_mode = $in{notes_mode};
-  $view::view_mode{"layout"} = $notes_mode;
-}
+#my($notes_mode);
+#if($in{notes_mode})
+#{
+#  $notes_mode = $in{notes_mode};
+#  $view::view_mode{"layout"} = $notes_mode;
+#}
 
 ##
 my($match_prefix_url) =  &view::get_cgi_prefix();
@@ -75,15 +75,15 @@ $days_old = $in{days_old2} if($days_old eq "" and defined($in{'days_old2'}));
 
 my(@keyword_list) = split(/\s+/,$keywords);
 
-if ( ! defined($keywords) || ! defined($days_old) 
+if ( (! defined($keywords)) || (! defined($days_old) )
    || $keywords eq "" && (  $days_old eq "" || $days_old > 100 ) )
 {
    print "$keywords\n" unless(!defined($days_old));
-   &print_input_form_html;
+   &print_input_form_html($keywords, $notes_subpath, $days_old);
    exit;
 } # End of if keywords
 
-&print_header_html;
+&print_header_html(\%in);
 
 #
 # We traverse the whole directory structure under $root_web_path
@@ -277,7 +277,7 @@ DIR: while (@dirs)
    {
       if(auth::check_current_user_file_auth( 'r', $notes_subpath ))
       {
-         &print_file_match_html($subpath, $file);
+         &print_file_match_html($subpath, $file, $match_prefix_url);
          $number_of_hits++;
       }
    }
@@ -288,6 +288,7 @@ if (! $number_of_hits)
    &print_no_match_html;
 }
 &print_footer_html;
+}
 
 # directory has non-hidden, non README files            
 sub dir_has_files
@@ -406,29 +407,34 @@ sub find_keyword
  
 sub print_header_html
 {
+   my($in) = @_;
     print <<EOT;
 <HTML><HEAD><TITLE>search results</TITLE></HEAD>
 <BODY>
 <H2>Your search for:  
 EOT
-    if( $keywords )
+    if( $in->{keywords} )
     {
-       print "keywords = $keywords,<br>";
+       print "keywords = $in->{keywords},<br>";
     }
 
-    if( $notes_subpath )
+    if( $in->{notes_subpath} )
     {
-       print "WebKNotes subpath = $notes_subpath,<br> ";
+       print "WebKNotes subpath = $in->{notes_subpath},<br> ";
     }
 
-    if( $days_old )
+    if( $in->{days_old} )
     {
-       print "days_old = $days_old,<br>";
+       print "days_old = $in->{days_old},<br>";
+    }
+    elsif ( $in->{days_old2} )
+    {
+       print "days_old = $in->{days_old2},<br>";
     }
 
-    if( $note_type )
+    if( $in->{note_type} )
     {
-       print "note_type = $note_type,<br>";
+       print "note_type = $in->{note_type},<br>";
     }
 
     print "<br>appeared at the following locations:</H2><HR><UL>";
@@ -456,7 +462,7 @@ EOT
 
 sub print_file_match_html
 {
-    my($filename, $title) = @_;
+    my($filename, $title, $match_prefix_url) = @_;
 
     my $filename_enc =  view::url_encode_path($filename);
 
@@ -482,6 +488,7 @@ EOT
 # form to input keywords
 sub print_input_form_html
 {
+    my($keywords, $notes_subpath, $days_old) = @_;
     print <<EOT;
 <HTML>
 <HEAD>
@@ -517,7 +524,6 @@ sub print_input_form_html
 <OPTION VALUE="unanswered_question">Unanswered Questions
 </SELECT>
 <hr>
-<INPUT TYPE=hidden NAME="notes_mode" VALUE="$notes_mode">
 <INPUT TYPE="SUBMIT" VALUE="Do Search">
 <INPUT TYPE="RESET" VALUE="Clear this form">
 </FORM>
@@ -525,5 +531,4 @@ sub print_input_form_html
 
 EOT
 
-}
 }
