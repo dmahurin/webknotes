@@ -130,7 +130,7 @@ else
    
    if( $owner eq "")
    {
-      unef($owner);
+      undef($owner);
       print "No owner defined for: $dir<br>\n";
 
    }
