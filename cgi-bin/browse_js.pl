@@ -48,7 +48,7 @@ my $OPENED_SYMBOL = &view::icon_tag('[-]',
 my $CLOSED_SYMBOL = &view::icon_tag('[+]', 
                    $view::define::closed_icon);
 my $FILE_SYMBOL = &view::icon_tag('[o]', 
-                   $view::define::file_icons->{"file"});
+                   $view::define::file_icon);
 my $DIR_SYMBOL = &view::icon_tag('[o]', 
                    $view::define::dir_icon);
 
