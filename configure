@@ -25,6 +25,10 @@ if(prompt_default("Install in web Root or User directory", $default, "(r|u)") eq
    $cgi_root_wpath = "/cgi-bin"
       unless(defined($cgi_root_wpath));
    $doc_root_wpath = "";
+   if($doc_root =~ m:[^/]+$:)
+   {
+      $private_web_dir = "$`private";
+   }
 }
 else
 {
@@ -39,10 +43,10 @@ else
    undef $cgi_root;
    undef $cgi_root_wpath;
    $doc_root_wpath = "/~$ENV{\"USER\"}";
-}
-if($doc_root =~ m:[^/]+$:)
-{
-   $private_web_dir = "$`private";
+   if($doc_root =~ m:[^/]+$:)
+   {
+      $private_web_dir = "$`web_private";
+   }
 }
 
 unless($cgi_root)
