@@ -63,7 +63,6 @@ elsif( ! defined ( $in{'users'}))
 <form method="POST" action="$this_cgi">
    <input type=hidden name="group" value="$in{group}">
 Users <input type=text name="users" value="$group_info->{"Members"}" size=20>(user1,user2,...)<br>
-   Permissions <input type=text name="permissions" value="$group_info->{"Permissions"}" size=20><br>
 Comment <input type=text name="comment" value="$group_info->{"Comment"}" size=20><br>
 <input type=submit value="Modify"> <input type=reset>
 </form>
@@ -80,7 +79,6 @@ else
    }
    elsif(! auth::write_group_info($group, 
    { "Members"=>$in{'users'}, 
-   "Permissions"=>$in{'permissions'}, 
    "Comment"=>$in{'comment'}}))
    {
       print "Sorry: Could not modify group info.\n";
