@@ -53,7 +53,12 @@ sub set_user
 
 sub get_user
 {
-   return $current_user if(defined($current_user));
+   if(defined($current_user))
+   {
+      return $current_user if($current_user ne "");
+      return ();
+   }
+   $current_user = "";
    my($chip,$value);
    my(%cookie);
    foreach (split(/; /, $ENV{'HTTP_COOKIE'}))
@@ -63,39 +68,45 @@ sub get_user
    }
    unless(defined($cookie{'sessionid'}))
    {
-      return "" 
-      unless($auth::define::allow_remote_user_auth eq "any" or
-         $auth::define::allow_remote_user_auth eq $ENV{AUTH_TYPE});
-      return "" unless defined(my $user = $ENV{REMOTE_USER});
-      if( -f "$auth::define::private_dir/users/$user" ||
-         ! $auth::define::autoadd_remote_auth_users)
+      my($user);
+      if($auth::define::allow_remote_user_auth eq "any" or
+         $auth::define::allow_remote_user_auth eq $ENV{AUTH_TYPE})
       {
-         $current_user = $user;
-         return $user;
+          $user = $ENV{REMOTE_USER};
+          if(defined($user))
+          {
+            if($user eq "") { $user = undef; }
+            elsif( ! -f "$auth::define::private_dir/users/$user" &&
+               $auth::define::autoadd_remote_auth_users)
+            {
+               if(defined($user = auth::check_user_name($user)))
+               {
+                  if(auth::write_user_info($user, 
+                     { "PassKey"=>"*",
+                     "AuthRoot"=>"",
+            	    "Permissions"=>"", 
+	                "FromHost"=>$ENV{REMOTE_HOST}, 
+                        "FromAddr"=>$ENV{REMOTE_ADDR}})
+                  )
+                  { $current_user = $user; }
+                  else
+                  { $user = undef; }
+              }
+           }
+        }
       }
-      
-      $user=auth::check_user_name($user);
-      return "" unless($user);
-      return "" unless( auth::write_user_info($user, 
-         { "PassKey"=>"*",
-         "AuthRoot"=>"",
-	    "Permissions"=>"", 
-	    "FromHost"=>$ENV{REMOTE_HOST}, 
-            "FromAddr"=>$ENV{REMOTE_ADDR}})
-      );
-      $current_user = $user;
       return $user;
    }
    my($user, $vword) =  split(/:/,$cookie{sessionid});
    my($sess_file);
-   if($user =~ m:^([^/]*)$:) { $user = $1; } # untaint
-   else { $user = (); }
+   if($user =~ m:^([^/]+)$:) { $user = $1; } # untaint
+   else { $user = undef; }
    $sess_file = "$auth::define::private_dir/sessions/$user";
    unless( -f $sess_file )
    {
       print "No session file: $sess_file<br>\n";
       print "Check setuid permissions\n";
-      return "";
+      return ();
    }
    open(SFILE, $sess_file);
    my($line) = <SFILE>;
@@ -104,7 +115,7 @@ sub get_user
    if($ENV{'REMOTE_ADDR'} ne $addr or pcrypt1($vword) ne $vcrypt )
    {
       print "mismatch of remote address and session address\n";
-      return "";
+      return ();
    }
    $current_user = $user;
    return $user;
