@@ -70,7 +70,7 @@ unless(defined($file))
     }
 }
 
-unless( $file =~ m:^[^\.]+$: || $file =~ m:^[^\.]+(\.(url|txt|html?|wiki|htxt))?$: )
+unless( $file =~ m:^[^\.]+$: || $file =~ m:^[^\.]+(\.(url|txt|s?html?|wiki|htxt))?$: )
 {
    print "Not text file\n";
    exit(0);
@@ -130,7 +130,11 @@ else
       }
    }
 
-   print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$encoded_path\"></head><html>\n";
+   my $prefix = 
+      $filedb::define::default_browse_index ?
+      "$filedb::define::doc_wpath/" : "browse.cgi?";
+
+   print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$prefix$encoded_path\"></head><html>\n";
    print "wrote $file\n";
    if(auth::check_current_user_file_auth( 'M', $dir ))
    {

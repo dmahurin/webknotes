@@ -461,14 +461,15 @@ EOT
 sub print_file_match_html
 {
     my($filename, $title) = @_;
-    my($match_prefix_url) = &view::get_cgi_prefix();
 
+    if(filedb::is_dir($filename)){ $filename .= '/';}
     my $filename_enc =  view::url_encode_path($filename);
 
     my $prefix;
-    if( -d "$filedb::define::doc_dir/$filename" || $filename =~ m:\.(htm|html|txt)|README:)
+    if( (! $filedb::define::default_browse_index) && 
+ ( -d "$filedb::define::doc_dir/$filename" || $filename =~ m:\.(htm|html|txt|wiki|htxt)|README:))
     {
-        $prefix = $match_prefix_url;
+        $prefix = "browse.cgi?";
     }
     else
     {

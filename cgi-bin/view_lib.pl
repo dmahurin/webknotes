@@ -12,7 +12,7 @@ require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
 
-my $wkn_version = "A.5";
+my $wkn_version = "A.6";
 
 my $wiki_name_pattern = '^([A-Z][a-z]+){2,}$';
 
@@ -185,30 +185,34 @@ sub actions2
 #   $notes_path .= '/' if($notes_path ne "");
 
 #   $dir_file = url_encode_path($dir_file);
+   my $prefix = get_cgi_prefix("");
    
    if(auth::check_current_user_file_auth('m', $notes_path))
    {
-      print "[ <A HREF=\"edit.cgi?path=$notes_path_encoded\">Edit</a> text ] \n";
+      print "[ <A HREF=\"${prefix}edit.cgi?path=$notes_path_encoded\">Edit</a> text ] \n";
    }
    if( auth::check_current_user_file_auth('a', $notes_path) )
    {
-      print "[ <A HREF=\"append.cgi#text?path=$notes_path_encoded\">Append</a> text ] \n";
+      print "[ <A HREF=\"${prefix}append.cgi#text?path=$notes_path_encoded\">Append</a> text ] \n";
    }
 
   
 unless(is_index($notes_path))
 {
-   print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">Attach New Topic</A> ]\n";
+   print "[ <A HREF=\"${prefix}add_topic.cgi?notes_path=${notes_path_encoded}\">Attach New Topic</A> ]\n";
 }
 
    if( auth::check_current_user_file_auth('s', $notes_path) )
    {
-      print "[ <A HREF=\"subscribe.cgi?path=$notes_path_encoded\">Subscribe</a> ] \n";
+      print "[ <A HREF=\"${prefix}subscribe.cgi?path=$notes_path_encoded\">Subscribe</a> ] \n";
    }
+     $dir_uri = $filedb::define::doc_wpath . '/' . ${notes_path_encoded};
+     $dir_uri .= "/" if($notes_path ne "");
       print "[ Raw \n";
    print "<A HREF=\"$filedb::define::doc_wpath/${notes_file_encoded}\">File</A> | \n";
-   print "<A HREF=\"$filedb::define::doc_wpath/${notes_path_encoded}/\">Directory</A> | \n";
-      print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Access</a> ]\n";
+   print '<A HREF="' . $dir_uri
+       . "\">Directory</A> | \n";
+      print "<A HREF=\"${prefix}browse_edit.cgi?$notes_path_encoded\">Access</a> ]\n";
 
    if ( $notes_path ne "" )
    {      
@@ -230,9 +234,10 @@ sub actions3
 
 
 
+    my $prefix = get_cgi_prefix("");
 	print <<EOT;
-[ <A HREF="search.cgi?notes_subpath=${notes_path_encoded}">Search</A> ]
-[ <A HREF="user_access.cgi"> User Accounts </a> ]
+[ <A HREF="${prefix}search.cgi?notes_subpath=${notes_path_encoded}">Search</A> ]
+[ <A HREF="${prefix}user_access.cgi"> User Accounts </a> ]
 EOT
    print "[ <A HREF=\"" . &view::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ] - WKN $wkn_version\n";
 }
@@ -342,7 +347,7 @@ sub print_link_html
                         "${notes_wpath}/" ,
                         '">';
                         $icon_image =~ m:([^/\.]*)[^/]*$:;
-                        print &view::icon_tag("[>]", $icon_image);
+                        print &view::icon_tag("[+]", $icon_image);
                         print "$file</A>\n";
                 }
 		else
@@ -591,14 +596,36 @@ sub get_cgi_prefix
 {
    my ($script) = shift; # optionally start with a cgi script
    my ($prefix);
-   
-   if($script eq "layout_theme")
+
+   if($ENV{SCRIPT_NAME} =~ m:/index.cgi:)
    {
-      $prefix = "layout_theme.cgi?";
+      if(!defined($script))
+      {
+         $prefix = "$filedb::define::doc_wpath/";
+      }
+      elsif($script eq "")
+      {
+         return "$`/";
+      }
+      else
+      {
+         $prefix = "$`/${script}.cgi?";
+      }
    }
    else
    {
-      $prefix = "browse.cgi?";
+      if(!defined($script))
+      {
+         $prefix = "browse.cgi?";
+      }
+      elsif($script eq "")
+      {
+         return "";
+      }
+      else
+      {
+         $prefix = "${script}.cgi?";
+      }
    }
    if(defined($view::view_mode{"layout"}))
    {

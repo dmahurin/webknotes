@@ -69,9 +69,11 @@ sub main
       $in{'description'} =~ s:\r\n:\n:g; # rid ourselves of the two char newlines
       if( &add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
       {
-
+         my $prefix = 
+              $filedb::define::default_browse_index ?
+              "$filedb::define::doc_wpath/" : "browse.cgi?";
          #view::browse_show_page($notes_path);
-         print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$notes_path_encoded\"></head><html><body>\n";
+         print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$prefix$notes_path_encoded\"></head><html><body>\n";
          print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
          print "</body></html>\n";
       }

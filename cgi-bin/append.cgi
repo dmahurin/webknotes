@@ -71,7 +71,7 @@ unless(defined($file))
     }
 }
 
-unless($file =~ m:^[^\.]+(\.(txt|html?|wiki|htxt))?$:)
+unless($file =~ m:^[^\.]+(\.(txt|s?html?|wiki|htxt))?$:)
 {
    print "Not text file\n";
    exit(0);
@@ -160,8 +160,11 @@ my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $m
      &mailer::mail_subscribers($dir, $file);
    }
 
+   my $prefix =
+      $filedb::define::default_browse_index ?
+      "$filedb::define::doc_wpath/" : "browse.cgi?";
 
-   print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$encoded_path\"></head><html>\n";
+   print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=${prefix}$encoded_path\"></head><html>\n";
    print "wrote $dirfile\n";
    print "<html>";
 }

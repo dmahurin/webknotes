@@ -35,23 +35,10 @@ sub path_dir
 sub path_file
 {
    my($path) = @_;
-   
-   my($dir) = "$filedb::define::doc_dir/$path";
-   return $path if( -f $dir);
-   return () unless ( -d $dir);
-   
-   return "$path/index.html" if ( -f "$dir/index.html" );
-   return "$path/index.htm" if ( -f "$dir/index.htm" );
-   return "$path/FrontPage" if ( -f "$dir/FrontPage" );
-   return "$path/FrontPage.wiki" if ( -f "$dir/FrontPage.wiki" );
-   return "$path/HomePage" if ( -f "$dir/HomePage" );
-   return "$path/README.html" if ( -f "$dir/README.html" );
-   return "$path/README.htxt" if ( -f "$dir/README.htxt" );
-   return "$path/index.htxt" if ( -f "$dir/index.htxt" );
-   return "$path/README" if ( -f "$dir/README" );
-   return "$path/README.txt" if ( -f "$dir/README.txt" );
-   return ();
+   return $path if(is_file($path));
+   return join_paths($path, default_file($path));
 }
+
 sub get_mtime
 {
    my($path) = @_;
