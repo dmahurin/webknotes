@@ -554,7 +554,7 @@ $atime,$mtime,$ctime,$blksize,$blocks)
         my $group;
         if(defined($group= auth::get_path_group($wkn::define::auth_subpath, $notes_path)))
         {
-           print ": Group: $group\n";
+	  print ": Group <a href=\"$wkn::define::auth_cgi_wpath/showgroup.cgi?group=$group\">$group</a>\n";
         }
         
 	print "<br>\n";
