@@ -108,36 +108,37 @@ sub print_form
    elsif(! defined($text_type))
    {
    	$text_type = filedb::default_type($notes_path);
+	$text_type = "pre" if ($text_type eq "html");
    }
    $sel_text_type{$text_type} = "selected"
      if(defined($text_type));
 
 print <<"EOT";
 <HTML><HEAD>
-<TITLE>Notes Topic</TITLE></HEAD><BODY>
+<TITLE>New Notes Topic</TITLE></HEAD><BODY>
 </HEAD><BODY>
-<H2>Topic: NOTES:$notes_path</H2>
+<H2>Parent Topic: $notes_path</H2>
 <FORM METHOD=POST ACTION=\"add_topic.cgi\">
-<P> Sub-Topic tag <INPUT TYPE=\"text\" NAME=\"topic_tag\" value=\"$topic_tag\">
+<P> Topic tag <INPUT TYPE=\"text\" NAME=\"topic_tag\" value=\"$topic_tag\">
 Text type<SELECT  WIDTH=33 NAME=\"text_type\">
-<OPTION VALUE=\"pre\" $sel_text_type{pre}>Preformatted Text(&lt;pre&gt;)
+<OPTION VALUE=\"pre\" $sel_text_type{pre}>Preformatted HTML
 <OPTION VALUE=\"html\"  $sel_text_type{html} >HTML
-<OPTION VALUE=\"wikidir\"  $sel_text_type{wikidir} >Wiki Dir(.wiki)
+<OPTION VALUE=\"htxtdir\" $sel_text_type{htxtdir}>HText
 EOT
 
-print "<OPTION VALUE=\"wiki\"  $sel_text_type{wiki} >Wiki\n"
-	if( $text_type eq "wiki");
-
-print "<OPTION VALUE=\"htxtdir\" $sel_text_type{htxtdir}>HText Dir(.htxt)\n";
-print "<OPTION VALUE=\"htxt\" $sel_text_type{htxt}>HText(.htxt)\n"
+print "<OPTION VALUE=\"htxt\" $sel_text_type{htxt}>HText File\n"
 	if( $text_type eq "htxt");
 
+print "<OPTION VALUE=\"wikidir\"  $sel_text_type{wikidir} >Wiki\n";
+print "<OPTION VALUE=\"wiki\"  $sel_text_type{wiki} >Wiki File\n"
+	if( $text_type eq "wiki");
+
 print <<"EOT";
-<OPTION VALUE=\"text\" $sel_text_type{txt}>Text(.txt)
-</SELECT>
+<OPTION VALUE=\"text\" $sel_text_type{txt}>Text
+</SELECT> See <a href=\"#text-types\">Text type descriptions</a>
 
 <br>
-Sub-Topic description(body)<br>
+Topic description(body)<br>
 <INPUT TYPE=\"hidden\" NAME=\"notes_path\" value=\"$notes_path\">
 <textarea NAME=\"description\" rows=24 cols=75>$body</textarea><P>
 EOT
@@ -154,6 +155,24 @@ print "WARNING: You are not logged in. You will NOT be able to edit this later.\
 print <<"EOT";
 <P><INPUT TYPE=\"SUBMIT\" VALUE=\"Submit now!\">
 <HR>
+<a name=\"text-types\"> <h2>Text types</h2></a>
+<dl>
+<dt>HTML</dt>
+<dd>HTML - Only the BODY section will be used</dd>
+<dt>Preformated HTML</dt>
+<dd>The topic body will be added as a PRE html section</dd>
+<dt>HText</dt>
+<dd>Minimal paragraphing is preserved along with link references contained in [[ ]] or &lt;&lt &gt;&gt; pairs</dd>
+<dt>HText File</dt>
+<dd>Same as Htext except it is stored as a file in an existing Htext dir</dd>
+<dt>Wiki</dt>
+<dd>Minimal Wiki markup</dd>
+<dt>Wiki File</dt>
+<dd>Same as Wiki except it is stored as a file in an existing Wiki dir</dd>
+<dt>Text</dt>
+<dd>Plain text. No markup or links of any kind.</dd>
+</dl>
+
 </BODY></HTML>
 EOT
 }

@@ -12,6 +12,8 @@ require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
 
+my $wkn_version = "A.5";
+
 my $wiki_name_pattern = '^([A-Z][a-z]+){2,}$';
 
 package view;
@@ -232,7 +234,7 @@ sub actions3
 [ <A HREF="search.cgi?notes_subpath=${notes_path_encoded}">Search</A> ]
 [ <A HREF="user_access.cgi"> User Accounts </a> ]
 EOT
-   print "[ <A HREF=\"" . &view::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
+   print "[ <A HREF=\"" . &view::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ] - WKN $wkn_version\n";
 }
 
 sub print_link_html
