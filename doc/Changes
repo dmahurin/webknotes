@@ -1,76 +1,83 @@
 Change log of WeKNotes. For more information see the HISTORY file.
 
-wkn0.3019 - Initial public release
+0.3019 - Initial public release
 
-wkn0.3051 - Change authentication access to all be in one cgi script.
+0.3051 - Change authentication access to all be in one cgi script.
 
-wkn0.3055 - Documentation update
+0.3055 - Documentation update
 
-wkn0.3055 - minor changes
+0.3055 - minor changes
 
-wkn0.3075 - 
+0.3075 - 
 Simplified config files.
 rewrote wkn_index.
 created example dir structure.
 
-wkn0.3077 - 
+0.3077 - 
 Added ability to delete note.
 Added System acces user flag.
 Enhanced userinfo for users with system access.
 Fixed disappearing password.
 
 
-wkn0.3081 - bug fixes
+0.3081 - bug fixes
             fixed/updated search.cgi
 
-wkn0.3082 - Files in dir go in separate table.
+0.3082 - Files in dir go in separate table.
 
-wkn0.3095 - bug fixes. Added wkn_list.
+0.3095 - bug fixes. Added wkn_list.
 
-wkn0.3104 - Bug fixes. wkn_tables.cgi changes.
+0.3104 - Bug fixes. wkn_tables.cgi changes.
 
-wkn0.3123 - added .group, .permissions, and default permissions support
+0.3123 - added .group, .permissions, and default permissions support
 
-wkn0.3137 - small script cleanup.
+0.3137 - small script cleanup.
 
-wkn0.3141 - Updated INSTALL documentation.
+0.3141 - Updated INSTALL documentation.
 
-wkn0.3158 - fixed sessions dir
+0.3158 - fixed sessions dir
 
-wkn0.4001 - New more consistent configuration variable names. Added default icons def.
+0.4001 - New more consistent configuration variable names. Added default icons def.
 
-wkn0.4051 - changed search.cgi to ignore unauthorized matches
+0.4051 - changed search.cgi to ignore unauthorized matches
 
-wkn0.5000 - Put all wkn methods and defines in wkn package.
+0.5000 - Put all wkn methods and defines in wkn package.
 Put all auth methods and defines in auth package.
 use strict on all .cgi scripts.
 moved color definitions into one file: wkn_attr.pl.
 Simplification of define files.
 
 
-wkn0.5003 - Support for remote auth users(AUTH_TYPE, REMOTE_USER)
+0.5003 - Support for remote auth users(AUTH_TYPE, REMOTE_USER)
           - AUTH_USER fixes. sperl_user.c fixes
 
-wkn0.5004 - wkn::define::filename_filter fix
+0.5004 - wkn::define::filename_filter fix
 
-wkn0.5008 - Added permissions.cgi.
+0.5008 - Added permissions.cgi.
 Corrected file filter code.
 Added edit_group.cgi.
 
-wkn0.5058 - list/frames stuff -incomplete
+0.5058 - list/frames stuff -incomplete
 
-wkn0.5107 - Frames list updates.
+0.5107 - Frames list updates.
 Bug Fixes.
 Added cgitohtml (for home pages). Removed wkn_index.cgi (old home page method).
 
-
-wkn0.5123 - 
+0.5123 - 
 New frame/java script front (slower than expected).
 Bug fixes ...
 Cleanup ...
 
-
-
-wkn0.5130 - 
+0.5130 - 
 Added icon and icon_text definitions to define file.
 Simplified sample wkn_define_sample file
+
+0.600 -
+First sourceforge version
+CODE section filtering 
+replaced file area notion with generic notes
+external web path filter 
+bug fixes 
+
+
+0.6.08 - minor bug fix
