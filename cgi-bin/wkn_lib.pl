@@ -117,6 +117,11 @@ sub strip_view_mode_args
       {
          $wkn::view_mode{$1} = $';
       }
+#some temporary hackery to make path= arg work
+      elsif($arg =~ /^path=/)
+      {
+         push(@args, $');
+      }
       else
       {
          push(@args, $arg);
@@ -186,7 +191,7 @@ sub actions2
    print "[ Browse ";
    print "<A HREF=\"$auth::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
    print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File Only</A> \n";
-   print "| <A HREF=\"" . &wkn::get_cgi_prefix("browse_help.cgi") . "$notes_path_encoded\">themes etc.</A> ]\n";
+   print "| <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme.cgi") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
    #   print "<br>\n";
 }
 
@@ -909,7 +914,12 @@ sub get_cgi_prefix
 sub get_style_head_tags
 {
    my $theme = $wkn::view_mode{"theme"};
-   $theme =  $wkn::define::default_theme unless($theme);
+   if(! defined($theme))
+   {
+      my $user_info = auth::get_current_user_info();
+      $theme = $user_info->{"Theme"};
+      $theme =  $wkn::define::default_theme unless(defined($theme));
+   }
    my $head_tags = (-f "$wkn::define::themes_dir/$theme.css") ?
    "<LINK HREF=\"$wkn::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
       MEDIA=\"screen\" type=\"text/css\" >\n" : "";

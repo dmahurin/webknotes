@@ -52,7 +52,8 @@ if(auth::check_pass($user, auth::get_user_info($user), $password))
    {
       my $line;
       print "Content-type: text/html\n\n";
-      print "Now logged in\n";
+      print "Now logged in <br>\n";
+      print "Back to main <a href=\"browse.cgi\">page</a>.\n";
    }
    else
    {
