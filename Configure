@@ -196,7 +196,6 @@ unless( -d $filedb::define::doc_dir)
    print "Error creating directory: $filedb::define::doc_dir\n" unless(mkpath($filedb::define::doc_dir,0755));
    if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
    {
-      system("cp -r 'sample_notes'/* $filedb::define::doc_dir");
       mkdir("$filedb::define::doc_dir/webknotes", 0755);
       system("cp 'doc'/* $filedb::define::doc_dir/webknotes");
    }
