@@ -84,13 +84,14 @@ sub get_file
 
 sub make_file
 {
-   my($notes_filepath, $contents) = @_;
+   my($path, $name, $contents) = @_;
 
-   if(open(NFILE, "> $filedb::define::doc_dir/${notes_filepath}" ))
+   my($full) = get_full_path($path, $name);
+   if(open(NFILE, "> $full" ))
    {
       print NFILE $contents;
       close(NFILE);
-      chmod 0644,"$filedb::define::doc_dir/$notes_filepath";
+      chmod 0644, $full;
       return 1;
    }
 }

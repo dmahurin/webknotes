@@ -206,7 +206,7 @@ $text_type= "wiki" if($text_type eq "wikidir");
 
 if($should_make_dir)
 {
-if( ! &filedb::make_dir($notes_path))
+if( ! &filedb::make_dir($parent_path, $topic))
 {
 #if ( -e "$filedb::define::doc_dir${notes_path}/README" )
 #	print("Notes path already exist. \nTopic not created\n");
@@ -218,11 +218,11 @@ if(auth::check_current_user_file_auth( 'i', $parent_path ))
    my($permissions, $group);
    if(defined($permissions = filedb::get_hidden_data($parent_path, "permissions")))
    {
-      auth::set_path_permissions($permissions, $notes_path);
+      auth::set_hidden_data($notes_path, "permissions", $permissions);
    }
    if(defined($group = filedb::get_hidden_data($parent_path, "group")))
    {
-      auth::set_path_group($group, $notes_path);
+      auth::set_hidden_data($notes_path, "group", $group);
    }
 }
 }
@@ -231,32 +231,37 @@ else
    $notes_path = $parent_path;
 }
 
+my($file_ext);
+my($default_file);
 if( $text_type eq "text" )
 {
-   &filedb::make_file(
-      $should_make_dir ? "$notes_path/README" : "$parent_path/${topic}.txt",
-      $message);
+   $file_ext = ".txt";
+   $default_file = "README";
 }
 elsif( $text_type eq "pre" )
 {
-   &filedb::make_file(
-      $should_make_dir ? "$notes_path/README.html" :
-         "$parent_path/${topic}.html",
-    "<pre>\n" . $message . "</pre>\n");
+   $message = "<pre>\n" . $message . "</pre>\n";
+   $file_ext = ".html";
+   $default_file = "README.html";
 }
 elsif( $text_type eq "wiki" )
 {
-   &filedb::make_file(
-      $should_make_dir ? "$notes_path/FrontPage.wiki" :
-        "$parent_path/${topic}.wiki",
-      $message);
+   $file_ext = ".wiki";
+   $default_file = "FrontPage.wiki";
 }
 else
 {
-   &filedb::make_file(
-      $should_make_dir ? "$notes_path/README.html" :
-        "$parent_path/${topic}.html",
-      $message);
+   $file_ext = ".html";
+   $default_file = "README.html";
+}
+
+if($should_make_dir)
+{
+   &filedb::make_file("$parent_path/$topic", $default_file, $message);
+}
+else
+{
+   &filedb::make_file($parent_path, $topic . $file_ext, $message);
 }
 
 #&view::mail_subscribers($notes_path);
