@@ -29,8 +29,9 @@ my %in;
 &ReadParse(\%in);
 
 my $path = $in{'path'};
-if(!defined( $path )) { $path=$ENV{'QUERY_STRING'}};
-if(!defined( $path )) { $path=$ARGV[0]};
+my $query = $ENV{'QUERY_STRING'};
+if(!defined( $path )) { $path=$query; }
+if(!defined( $path )) { $path=$ARGV[0]; }
 if( !defined( $path ) )
 {
    print ("No path defined\n");
@@ -105,6 +106,8 @@ if( ! defined($text) )
 {
    print( "FILE: $file <br>\n");
 
+   $query =~ s:path=[^&]*&?::g;
+
    $text = filedb::get_file($dir, $file);
 
    $text =~ s#&#&amp;#g;
@@ -116,12 +119,15 @@ print "<form><TEXTAREA NAME=\"text\" wrap=true rows=22 cols=65 >";
    print "<\/TEXTAREA>\n";
    print <<"EOT";
 <input type=hidden name=path value="$path">
+<input type=hidden name=query value="$query">
 <br><INPUT TYPE=submit VALUE="Save">
 </form>
 EOT
 }
 else
 {
+   $query = $in{query};
+
    $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
 my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
            localtime();
@@ -160,12 +166,22 @@ my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $m
      &mailer::mail_subscribers($dir, $file);
    }
 
-   my $prefix =
-      $filedb::define::default_browse_index ?
-      "$filedb::define::doc_wpath/" : "browse.cgi?";
+   my $url;
+   if($filedb::define::default_browse_index)
+   {
+      $url = "$filedb::define::doc_wpath/$encoded_path?$query";
+   }
+   else
+   {
+      $url = "browse.cgi?$encoded_path&$query";
+   }
 
-   print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=${prefix}$encoded_path\"></head><html>\n";
+   print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$url\"></head><html>\n";
    print "wrote $dirfile\n";
+   if(auth::check_current_user_file_auth( 'M', $dir ))
+   {
+     &mailer::mail_subscribers($dir, $file);
+   }
    print "<html>";
 }
 }

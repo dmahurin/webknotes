@@ -71,8 +71,11 @@ my($notes_name) = $1;
         
         print "</div>\n";        
 	print "<hr>\n";
-        print '<div class="topic-actions">';
-	&view::actions3($notes_path);
-        print "</div>\n";        
+	unless(view::get_view_mode("superlayout") eq "framed")
+	{
+		print '<div class="topic-actions">';
+		&view::actions3($notes_path);
+		print "</div>\n";        
+	}
 return 1;
 }

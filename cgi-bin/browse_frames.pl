@@ -25,24 +25,25 @@ undef $view::view_mode{frame};
 
 if(defined($frame))
 {
+   my $head_tags = view::get_style_head_tags();
+
    if($frame eq "menu")
    {
-      $view::view_mode{"layout"} = "frames";
-      print "<html><head><BASE TARGET=\"_parent\"></head>";
+      print "<html><head><BASE TARGET=\"_parent\">$head_tags</head><body class=\"topic-listing\">";
       &view::list_files_html($notes_path);
       &view::list_dirs_html($notes_path);
-      print "</html>\n";
+      print "</body></html>\n";
    }
    elsif($frame eq "header")
    {
-      print "<html><head><BASE TARGET=\"_parent\"></head>";
+      print "<html><head><BASE TARGET=\"_parent\">$head_tags</head>";
       print $view::define::index_header
         if(defined($view::define::index_header));
       print "</html>\n";
    }
    elsif($frame eq "footer")
    {
-      print "<html><head><BASE TARGET=\"body\"></head>\n";
+      print "<html><head><BASE TARGET=\"body\">$head_tags</head><body class=\"topic-actions\">\n";
       if(defined($view::define::index_footer))
       {
          print $view::define::index_footer;
@@ -51,38 +52,59 @@ if(defined($frame))
       {
          &view::actions3($notes_path);
       }
-      print "</html>\n";
+      print "</body></html>\n";
    }
    return(0);
 }
 
-my $this_script_prefix = view::get_cgi_prefix();
-&view::set_view_mode("layout", &view::get_view_mode("sublayout"));
-&view::unset_view_mode("sublayout");
-my $script_prefix = view::get_cgi_prefix();
+#my ($this_script_prefix, $bsuffix) = view::get_cgi_prefix();
+#my $this_sep = ($bsuffix eq "") ? "?" : "&";
+
+&view::set_view_mode("frame", "header");
+my ($header_bprefix, $header_bsuffix) = view::get_cgi_prefix();
+&view::set_view_mode("frame", "menu");
+my ($menu_bprefix, $menu_bsuffix) = view::get_cgi_prefix();
+&view::set_view_mode("frame", "footer");
+my ($footer_bprefix, $footer_bsuffix) = view::get_cgi_prefix();
+&view::unset_view_mode("frame");
+
+&view::set_view_mode("superlayout", "framed");
+
+my ($sub_bprefix, $sub_bsuffix) = view::get_cgi_prefix();
 
 print "<html> <head>\n";
 print "<title>$view::define::index_title</title>\n" 
   if(defined($view::define::index_title));
-print <<EOT
+print <<"EOT";
 <BASE TARGET="body">
 <title>$view::define::index_title</title>
   </head>
-  <frameset rows = "60,*">
-    <frame src="${this_script_prefix}frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
+EOT
+if(defined($view::define::index_header))
+{
+print <<"EOT";
+<frameset rows = "60,*">
+    <frame src="${header_bprefix}$notes_path_encoded$header_bsuffix" name="header" noresize marginwidth="0"
       marginheight="0" scrolling="no">
+EOT
+}
+else
+{
+print "<frameset>\n";
+
+}
+print <<"EOT";
     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
-          <frame src="${this_script_prefix}frame=menu&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
-          <frame src="${this_script_prefix}frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
+          <frame src="${menu_bprefix}$notes_path_encoded$menu_bsuffix" name="menu" marginwidth="0" marginheight="0">
+          <frame src="${footer_bprefix}$notes_path_encoded$footer_bsuffix" name="footer" marginwidth="0"
                  marginheight="0" scrolling="no">
         </frameset>
-   <frame src="${script_prefix}$notes_path_encoded" name="body" marginwidth="0" marginheight=
+   <frame src="${sub_bprefix}$notes_path_encoded$sub_bsuffix" name="body" marginwidth="0" marginheight=
 "0">
     </frameset>
   </frameset>
 </html>
 EOT
-
 }
 1;

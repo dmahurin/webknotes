@@ -220,6 +220,11 @@ sub is_file
    return( -f get_full_path(@_));
 }
 
+sub is_link
+{
+   return( -l get_full_path(@_));
+}
+
 sub get_hidden_data
 {
    my($path, $name) = @_;
@@ -367,6 +372,12 @@ sub join_paths
       push(@out, $path) if(defined($path) and $path ne "" and $path ne "/");
    }
    return join('/', @out);
+}
+
+sub wpath_to_uri
+{
+  my($path) = @_;
+  return ($path ne "")?"/$path/":"/";
 }
 
 sub get_private_data

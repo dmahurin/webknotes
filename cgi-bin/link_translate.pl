@@ -55,7 +55,8 @@ sub smart_ref
    $ref =~ s:/+$::;
    if($ref =~ m-^$filedb::define::doc_wpath/*- )
    {
-      return &view::get_cgi_prefix() . view::url_encode_path($');
+      my($bprefix, $bsuffix) = &view::get_cgi_prefix();
+      return $bprefix . view::url_encode_path($') . $bsuffix;
    }
    elsif(defined(%view::define::wpath_prefix_translation))
    {

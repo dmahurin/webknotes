@@ -14,18 +14,42 @@ my($my_main) = view::localize_sub(\&main);
 sub main
 {
    view::content_header();
-  my $path = $ENV{REQUEST_URI};
-  if($path =~ m&^$filedb::define::doc_wpath/&)
+  my $query = $ENV{REQUEST_URI};
+  if($query =~ m&^/?$filedb::define::doc_wpath/&)
   {
-     $path = $';
+     $query = $';
   }
   else
   {
      print "No authorization\n";
      exit(0);
   }
+  $query =~ s:\?:\&:;
+  my(@paths) = view::strip_view_mode_args(view::url_unencode_paths(split(/\&/, $query)));
+  
+   if(@paths eq 1)
+   {
+     my $redirect_query = filedb::get_hidden_data($paths[0] , "redirect");
+     if(defined($redirect_query))
+     {
+     	@paths = view::strip_view_mode_args(view::url_unencode_paths(split(/&/, $redirect_query)));
+     }
+   }
 
-  $path = auth::path_check( view::url_unencode_path($path));
+   my $path;
+   for $path (@paths)
+   {
+      $path = auth::path_check($path);
+      unless(defined($path))
+      {
+         print "Bad path\n";
+         exit(1);
+      }
+   }
 
-   view::browse_show_page($path);
+   my $save = view::get_view_mode("save");
+   view::unset_view_mode("save");
+   view::persist_view_mode() if($save);
+
+   view::browse_show_page(@paths);
 }

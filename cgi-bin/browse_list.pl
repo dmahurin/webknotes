@@ -93,6 +93,7 @@ if(-d $toppath)
        next if ($filename =~ m:(\.bak|~)$:);
 
        my($name) = $filename;
+       my($bprefix, $bsuffix) = &view::get_cgi_prefix();
        $name = view::define::filename_filter($filename) if defined(&view::define::filename_filter);
        next unless ( defined($name));
 
@@ -106,8 +107,8 @@ if(-d $toppath)
        elsif (-d "$toppath/$fullpath" )
        {
           print "$indent<li><a href=\"" ,
-          &view::get_cgi_prefix(),
-             $encoded_notes_path , "\">";
+          $bprefix.
+             $encoded_notes_path . $bsuffix, "\">";
           if(defined($view::define::max_depth) and $depth >= $view::define::max_depth)
           {
              my ($count, $dir ) = ( 0 );
@@ -136,8 +137,8 @@ if(-d $toppath)
        {
           $name = $`;
           print "$indent<li><a href=\"" .
-          &view::get_cgi_prefix(),
-          $encoded_notes_path. "\">$name</a>\n";
+          $bprefix .
+          $encoded_notes_path. $bsuffix ."\">$name</a>\n";
        }
        else
        {
@@ -148,11 +149,14 @@ if(-d $toppath)
 print $css_tables->trtd_end() . "\n";
 print $css_tables->table_end() . "\n";
 
-print $css_tables->table_begin("topic-table") . "\n";
-print $css_tables->trtd_begin("topic-actions") . "\n";
-view::actions3($notes_path);
-print $css_tables->trtd_end() . "\n";
-print $css_tables->table_end() . "\n";
+unless(view::get_view_mode("superlayout") eq "framed")
+{
+	print $css_tables->table_begin("topic-table") . "\n";
+	print $css_tables->trtd_begin("topic-actions") . "\n";
+	view::actions3($notes_path);
+	print $css_tables->trtd_end() . "\n";
+	print $css_tables->table_end() . "\n";
+}
 return 1;
 }
 1;

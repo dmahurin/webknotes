@@ -24,7 +24,7 @@ sub main
    umask(022);
    my %in;
    &ReadParse(\%in);
-   $in{'notes_path'} =~ m:^(.*)$:;
+   $in{'path'} =~ m:^(.*)$:;
    use vars qw($notes_path);
    local($notes_path) = $1;
    $notes_path=~ s:/$::;
@@ -69,11 +69,19 @@ sub main
       $in{'description'} =~ s:\r\n:\n:g; # rid ourselves of the two char newlines
       if( &add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
       {
-         my $prefix = 
-              $filedb::define::default_browse_index ?
-              "$filedb::define::doc_wpath/" : "browse.cgi?";
+	 my $query = $in{query};
+	 my $url;
+   	 if($filedb::define::default_browse_index)
+         {
+             $url = "$filedb::define::doc_wpath/$notes_path_encoded?$query";
+         }
+         else
+         {
+            $url = "browse.cgi?$notes_path_encoded&$query";
+         }
+
          #view::browse_show_page($notes_path);
-         print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$prefix$notes_path_encoded\"></head><html><body>\n";
+         print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=$url\"></head><html><body>\n";
          print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
          print "</body></html>\n";
       }
@@ -114,6 +122,11 @@ sub print_form
    }
    $sel_text_type{$text_type} = "selected"
      if(defined($text_type));
+     
+     my $query = $ENV{'QUERY_STRING'};
+     $query =~ s:path=[^&]*&?::g;
+
+
 
 print <<"EOT";
 <HTML><HEAD>
@@ -141,7 +154,8 @@ print <<"EOT";
 
 <br>
 Topic description(body)<br>
-<INPUT TYPE=\"hidden\" NAME=\"notes_path\" value=\"$notes_path\">
+<INPUT TYPE=\"hidden\" NAME=\"path\" value=\"$notes_path\">
+<INPUT TYPE=\"hidden\" NAME=\"query\" value=\"$query\">
 <textarea NAME=\"description\" rows=24 cols=75>$body</textarea><P>
 EOT
 

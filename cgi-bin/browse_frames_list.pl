@@ -50,12 +50,21 @@ if(defined($frame))
    return(0);
 }  
 
-my $this_script_prefix = view::get_cgi_prefix();
-&view::set_view_mode("layout", "list2");
-my $list_script_prefix = view::get_cgi_prefix();
-&view::set_view_mode("layout", &view::get_view_mode("sublayout"));
-&view::unset_view_mode("sublayout");                          
-my $script_prefix = view::get_cgi_prefix();
+#my ($this_bprefix, $this_bsuffix) = view::get_cgi_prefix();
+
+&view::set_view_mode("frame", "header");
+my ($header_bprefix, $header_bsuffix) = view::get_cgi_prefix();
+&view::set_view_mode("frame", "footer");
+my ($footer_bprefix, $footer_bsuffix) = view::get_cgi_prefix();
+&view::unset_view_mode("frame");
+
+&view::set_view_mode("superlayout", "list2");
+&view::set_view_mode("target", "body");
+my ($menu_bprefix, $menu_bsuffix) = view::get_cgi_prefix();
+&view::unset_view_mode("target");
+
+&view::set_view_mode("superlayout", "framed");
+my ($sub_bprefix, $sub_bsuffix) = view::get_cgi_prefix();
 
 print "<html> <head>\n";
 print "<title>$view::define::index_title</title>\n" 
@@ -68,8 +77,8 @@ EOT
 if(defined($view::define::index_header))
 {
 print <<"EOT";
-  <frameset rows = "60,*">
-   <frame src="${this_script_prefix}frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
+<frameset rows = "60,*">
+    <frame src="${header_bprefix}$notes_path_encoded$header_bsuffix" name="header" noresize marginwidth="0"
       marginheight="0" scrolling="no">
 EOT
 }
@@ -80,11 +89,11 @@ print "<frameset>\n";
 print <<"EOT";
     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
-   <frame src="${list_script_prefix}target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
-   <frame src="${this_script_prefix}frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
+          <frame src="${menu_bprefix}$notes_path_encoded$menu_bsuffix" name="menu" marginwidth="0" marginheight="0">
+          <frame src="${footer_bprefix}$notes_path_encoded$footer_bsuffix" name="footer" marginwidth="0"
                  marginheight="0" scrolling="no">
         </frameset>
-   <frame src="${script_prefix}$notes_path_encoded" name="body" marginwidth="0" marginheight=
+   <frame src="${sub_bprefix}$notes_path_encoded$sub_bsuffix" name="body" marginwidth="0" marginheight=
 "0">
     </frameset>
   </frameset>

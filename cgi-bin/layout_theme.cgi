@@ -14,15 +14,15 @@ my $go = param("go");
 my $path = param("path");
 # set local view
 view::set_view_mode("layout", param("layout"));
-view::set_view_mode("sublayout", param("sublayout"));
+view::set_view_mode("superlayout", param("superlayout"));
 view::set_view_mode("theme", param("theme"));
 
 # get view mode params ( falls back to users settings )
 $theme = view::get_view_mode("theme");
 $layout = view::get_view_mode("layout");
-$sublayout = view::get_view_mode("sublayout");
+$superlayout = view::get_view_mode("superlayout");
 
-view::persist_view_mode();
+#view::persist_view_mode();
 
 view::content_header();
 if($go)
@@ -48,21 +48,16 @@ if(opendir(CDIR, $view::define::themes_dir))
    }
    closedir(CDIR);
 }
-my(@layouts);
-if(opendir(CDIR, $runpath))
-{
-   while(defined($file = readdir(CDIR)))
-   {
-       if($file =~ m:^browse_([^\.]+)\.pl$:)
-       {
-           push(@layouts, $1);
-       }
-   }
-   closedir(CDIR);
-}
+my(@layouts) = ( "table", "tables", "tables2", "tabs", "list", "plain" );
+my(@superlayouts) = ("frames_list", "frames", "frames_js", "page");
+
    
-print "<FORM METHOD=GET ACTION=\"browse.cgi\">\n";
-print "<INPUT TYPE=\"hidden\" NAME=\"path\" value=\"$path\">\n";
+         my $prefix =
+              $filedb::define::default_browse_index ?
+              filedb::join_paths($filedb::define::doc_wpath,&view::url_encode_path($path)) . '/' : "browse.cgi?";
+print "<FORM METHOD=GET ACTION=\"$prefix\">\n";
+print "<INPUT TYPE=\"hidden\" NAME=\"path\" value=\"$path\">\n"
+   unless ($filedb::define::default_browse_index); 
 print "<INPUT TYPE=\"hidden\" NAME=\"save\" value=\"yes\">\n";
 print "Theme: <select name=\"theme\">";
 for $sel ('', @themes)
@@ -74,6 +69,16 @@ for $sel ('', @themes)
 }                 
 print "</select> ( Not used for edit layout )<br>\n";
 
+print "Super Layout: <select name=\"superlayout\">";
+for $sel ('', @superlayouts)
+{
+   my ($seltext) = ($sel eq '') ? "none":$sel;
+   my ($selected) = $selected = ($sel eq $superlayout) ? "selected" : "";
+   print "<option value=\"$sel\" $selected>$seltext\n";
+   print "</option>\n";
+}                 
+print "</select> ( For frame and list layout modes )<br>\n";
+
 print "Layout: <select name=\"layout\">\n";
 my $sel;
 for $sel ('', @layouts)
@@ -84,15 +89,6 @@ for $sel ('', @layouts)
    print "</option>\n";
 }
 print "</select><br>\n";
-print "Sub Layout: <select name=\"sublayout\">";
-for $sel ('', @layouts)
-{
-   my ($seltext) = ($sel eq '') ? "default":$sel;
-   my ($selected) = $selected = ($sel eq $sublayout) ? "selected" : "";
-   print "<option value=\"$sel\" $selected>$seltext\n";
-   print "</option>\n";
-}                 
-print "</select> ( For frame and list layout modes )<br>\n";
 
 print "<INPUT TYPE=\"SUBMIT\" VALUE=\"Change\">\n";
 

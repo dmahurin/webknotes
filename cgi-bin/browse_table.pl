@@ -24,10 +24,6 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
-   if(defined(my $sublayout = view::get_view_mode("sublayout")))
-   {  view::set_view_mode("layout", $sublayout); 
-      view::unset_view_mode("sublayout");
-   }
    view::read_page_template();
    print $view::define::page_header if(defined($view::define::page_header));
     show($path);
@@ -78,11 +74,14 @@ print $css_tables->trtd_end() . "\n";
 
 print $css_tables->table_end() . "\n";
 
-print $css_tables->table_begin("topic-table") . "\n";
-print $css_tables->trtd_begin("topic-actions") . "\n";
-view::actions3($notes_path);
-print $css_tables->trtd_end() . "\n";
-print $css_tables->table_end() . "\n";
+unless(view::get_view_mode("superlayout") eq "framed")
+{
+	print $css_tables->table_begin("topic-table") . "\n";
+	print $css_tables->trtd_begin("topic-actions") . "\n";
+	view::actions3($notes_path);
+	print $css_tables->trtd_end() . "\n";
+	print $css_tables->table_end() . "\n";
+}
 
 #view::log($notes_path);
 return 1;

@@ -73,35 +73,45 @@ if(! auth::check_current_user_file_auth( 'd', $filepath ) )
 
 if( ! defined($in{confirm}))
 {
-   my $dir;
-   if( filedb::is_dir($filepath) )
+   my $ftype;
+   if( filedb::is_link($filepath))
    {
-      print <<"EOT";
-<h1>Confirm delete</h1>
-<form action="delete.cgi" method="post">
-<input type=hidden name=file value="$filepath_encoded">
-<input type=hidden name=confirm value="yes">
-Delete Dir: "$filepath"<br>
-<INPUT TYPE=submit VALUE="Delete Dir">
-</form>
-EOT
+     $ftype = "Link";
+   }
+   elsif ( filedb::is_dir($filepath) )
+   {
+     $ftype = "Dir";
    }
    else
    {
-      print <<"EOT";
+     $ftype = "File";
+   }
+      
+   print <<"EOT";
 <h1>Confirm delete</h1>
 <form action="delete.cgi" method="post">
 <input type=hidden name=file value="$filepath_encoded">
 <input type=hidden name=confirm value="yes">
-Delete File: "$filepath"<br>
-<INPUT TYPE=submit VALUE="Delete File">
+Delete $ftype: "$filepath"<br>
+<INPUT TYPE=submit VALUE="Delete $ftype">
 </form>
 EOT
-   }
 }
 else
 {
-   if( filedb::is_dir($filepath) )
+   if( filedb::is_link($filepath) or filedb::is_file($filepath))
+   {
+      print "<h1>Delete File</h1>\n";
+            if(filedb::remove_file($filepath))
+      {
+          print "Sucessfull deleting: $filepath\n";
+      }
+      else
+      {
+         print "Failed deleting: $filepath\n";
+      }
+   }
+   elsif( filedb::is_dir($filepath) )
       {
       my @dirlist = filedb::get_directory_list($filepath);
       my $file = filedb::default_file($filepath);
@@ -124,18 +134,6 @@ else
          else
          {
          print "Directory is not empty\n";
-      }
-   }
-   elsif(filedb::is_file($filepath))
-   {
-      print "<h1>Delete File</h1>\n";
-            if(filedb::remove_file($filepath))
-      {
-          print "Sucessfull deleting: $filepath\n";
-      }
-      else
-      {
-         print "Failed deleting: $filepath\n";
       }
    }
    else

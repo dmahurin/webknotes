@@ -12,7 +12,7 @@ require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
 
-my $wkn_version = "A.6";
+my $wkn_version = "A.7";
 
 my $wiki_name_pattern = '^([A-Z][a-z]+){2,}$';
 
@@ -133,7 +133,7 @@ sub strip_view_mode_args
    {
 # below strips off trailing '/', and breaks list2
 #      $arg = auth::path_check($arg);
-      if($arg =~ /^(theme|layout|sublayout|target|frame|save)=/)
+      if($arg =~ /^(theme|layout|superlayout|target|frame|save)=/)
       {
          $view::view_mode{$1} = $';
       }
@@ -185,21 +185,21 @@ sub actions2
 #   $notes_path .= '/' if($notes_path ne "");
 
 #   $dir_file = url_encode_path($dir_file);
-   my $prefix = get_cgi_prefix("");
-   
+   my ($prefix,$suffix) = get_cgi_prefix("");
+
    if(auth::check_current_user_file_auth('m', $notes_path))
    {
-      print "[ <A HREF=\"${prefix}edit.cgi?path=$notes_path_encoded\">Edit</a> text ] \n";
+      print "[ <A HREF=\"${prefix}edit.cgi?path=$notes_path_encoded$suffix\">Edit</a> text ] \n";
    }
    if( auth::check_current_user_file_auth('a', $notes_path) )
    {
-      print "[ <A HREF=\"${prefix}append.cgi#text?path=$notes_path_encoded\">Append</a> text ] \n";
+      print "[ <A HREF=\"${prefix}append.cgi#text?path=$notes_path_encoded$suffix\">Append</a> text ] \n";
    }
 
   
 unless(is_index($notes_path))
 {
-   print "[ <A HREF=\"${prefix}add_topic.cgi?notes_path=${notes_path_encoded}\">Attach New Topic</A> ]\n";
+   print "[ <A HREF=\"${prefix}add_topic.cgi?path=${notes_path_encoded}$suffix\">Attach New Topic</A> ]\n";
 }
 
    if( auth::check_current_user_file_auth('s', $notes_path) )
@@ -220,9 +220,8 @@ unless(is_index($notes_path))
       my $parent_notes = $notes_path_encoded;
       $parent_notes =~ s:(^|/)[^/]*/?$::;
 
-     my $parent_notes_ref = 
-      &view::get_cgi_prefix() .
-      $parent_notes;
+      my($bprefix, $bsuffix) = get_cgi_prefix();
+     my $parent_notes_ref = $bprefix . $parent_notes . $bsuffix;
       print "[ <A HREF=\"${parent_notes_ref}\"> Parent topic</A> ]\n";
    }
 }
@@ -234,12 +233,12 @@ sub actions3
 
 
 
-    my $prefix = get_cgi_prefix("");
-	print <<EOT;
+    my ($prefix, $suffix) = get_cgi_prefix("");
+print <<EOT;
 [ <A HREF="${prefix}search.cgi?notes_subpath=${notes_path_encoded}">Search</A> ]
 [ <A HREF="${prefix}user_access.cgi"> User Accounts </a> ]
 EOT
-   print "[ <A HREF=\"" . &view::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ] - WKN $wkn_version\n";
+   print "[ <A HREF=\"${prefix}layout_theme.cgi?path=$notes_path_encoded${suffix}\">Layout/Theme</A> ] - WKN $wkn_version\n";
 }
 
 sub print_link_html
@@ -264,9 +263,12 @@ sub print_link_html
 
         return if(defined($view::define::skip_files) and $file =~ m/$view::define::skip_files/ ); 
         $file = &view::define::filename_filter($file) if(defined(&view::define::filename_filter));
+
+    my ($bprefix, $bsuffix) = &view::get_cgi_prefix();
 	if ( filedb::is_file($notes_path) )
 	{
            my($link, $link_type, $link_text);
+
 
            my $file_base = $file;
            $file_base =~ s/\.[^\.]*$//;
@@ -290,35 +292,35 @@ sub print_link_html
               ($file_ext =~ /^\.wiki$/ || $file =~ /$wiki_name_pattern/ )&& do
               {
                  $link_type = "wiki";
-                 $link = &view::get_cgi_prefix() . $notes_wpath;
+                 $link = $bprefix . $notes_wpath . $bsuffix;
                  $link_text = $file_base;
                  last SWITCH;
               };
               $file_ext =~ /^\.(c|h|c\+\+|cxx|hxx|idl|java)$/ && do
               {
                  $link_type = "code";
-                 $link = &view::get_cgi_prefix() . $notes_wpath;
+                 $link = $bprefix . $notes_wpath . $bsuffix;
                  $link_text = $file;
                  last SWITCH;
               };
               $file_ext =~ /^\.(html|htm)/ && do
               {
                  $link_type = "html";
-                 $link = &view::get_cgi_prefix() . $notes_wpath;
+                 $link = $bprefix . $notes_wpath . $bsuffix;
                  $link_text = $file_base;
                  last SWITCH;
               };
               $file_ext =~ /^\.(htxt)/ && do
               {
                  $link_type = "htxt";
-                 $link = &view::get_cgi_prefix() . $notes_wpath;
+                 $link = $bprefix . $notes_wpath . $bsuffix;
                  $link_text = $file_base;
                  last SWITCH;
               };
               $file_ext =~ /^\.(txt)/ && do
               {
                  $link_type = "txt";
-                 $link = &view::get_cgi_prefix() . $notes_wpath;
+                 $link = $bprefix . $notes_wpath . $bsuffix;
                  $link_text = $file_base;
                  last SWITCH;
               };
@@ -343,8 +345,8 @@ sub print_link_html
 		if(defined($icon_image))
 		{
 			print '<A HREF="',
-                        &view::get_cgi_prefix() ,
-                        "${notes_wpath}/" ,
+                        $bprefix ,
+                        "${notes_wpath}/" , $bsuffix,
                         '">';
                         $icon_image =~ m:([^/\.]*)[^/]*$:;
                         print &view::icon_tag("[+]", $icon_image);
@@ -353,8 +355,8 @@ sub print_link_html
 		else
 		{
                    print "<A HREF=\"",
-                   &view::get_cgi_prefix() ,
-			"$notes_wpath/",
+                   $bprefix ,
+			"$notes_wpath/", $bsuffix,
 			'">', $file,
                         "</A>\n";
 		}
@@ -530,9 +532,10 @@ sub get_dir_file_html
 sub user_link
 {
    my($user) = @_;
+   my($prefix) = get_cgi_prefix("");
    if(defined($user))
    {
-     return "<a href=\"show_user.cgi?username=$user\">$user</a>";
+     return "<a href=\"${prefix}show_user.cgi?username=$user\">$user</a>";
    }
    else { return "" }
 }
@@ -555,6 +558,8 @@ sub print_dir_file
 sub create_modification_string
 {
    my($time, $user, $group, $by) = @_;
+   my($prefix) = get_cgi_prefix("");
+
    my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
            localtime($time);
    $year +=1900;
@@ -569,7 +574,7 @@ sub create_modification_string
    }
    if(defined($group))
    {
-      $text .= ": group <a href=\"show_group.cgi?group=$group\">$group</a>\n";
+      $text .= ": group <a href=\"${prefix}show_group.cgi?group=$group\">$group</a>\n";
    }
    return $text;
 }
@@ -592,63 +597,78 @@ sub log
    return filedb::append_hidden_data($notes_path,"log", $log);
 }
 
+# get cgi prefix - get script/web-path prefix and path suffix (view options)
+# uses:
+# script argument:
+#  "browse" or undef - use default browse script or web path as prefix
+#  "" - externally defined script. only use cgi path as prefix
+#  Script - create prefix using Script.cgi
 sub get_cgi_prefix
 {
    my ($script) = shift; # optionally start with a cgi script
-   my ($prefix);
+
+   my(@viewdefs);
+   if(defined($view::view_mode{"layout"}))
+   {
+      push(@viewdefs, "layout=" . $view::view_mode{"layout"});
+   }
+   if(defined($view::view_mode{"superlayout"}))
+   {
+      push(@viewdefs, "superlayout=" . $view::view_mode{"superlayout"});
+   }
+   if(defined($view::view_mode{"theme"}))
+   {
+      push(@viewdefs, "theme=" . $view::view_mode{"theme"});
+   }
+   if(defined($view::view_mode{"target"}))
+   {
+      push(@viewdefs, "target=" . $view::view_mode{"target"});
+   }
+   if(defined($view::view_mode{"frame"}))
+   {
+      push(@viewdefs, "frame=" . $view::view_mode{"frame"});
+   }
+   my ($viewdef) = join('&', @viewdefs);
+
+   my ($prefix, $suffix);
+   $suffix = "";
 
    if($ENV{SCRIPT_NAME} =~ m:/index.cgi:)
    {
       if(!defined($script))
       {
          $prefix = "$filedb::define::doc_wpath/";
+         $suffix = '?' . $viewdef if($viewdef ne "");
       }
       elsif($script eq "")
       {
-         return "$`/";
+         $prefix = "$`/";
+         $suffix = '&' . $viewdef if($viewdef ne "");
       }
       else
       {
          $prefix = "$`/${script}.cgi?";
+         $suffix = '&' . $viewdef if($viewdef ne "");
       }
    }
    else
    {
+      $suffix = '&' . $viewdef if($viewdef ne "");
       if(!defined($script))
       {
          $prefix = "browse.cgi?";
       }
       elsif($script eq "")
       {
-         return "";
+         $prefix = "";
       }
       else
       {
          $prefix = "${script}.cgi?";
       }
    }
-   if(defined($view::view_mode{"layout"}))
-   {
-      $prefix .= ( "layout=" . $view::view_mode{"layout"} . "&" );
-   }
-         
-   if(defined($view::view_mode{"sublayout"}))
-   {
-      $prefix .= ( "sublayout=" . $view::view_mode{"sublayout"} . "&" );
-   }
-   if(defined($view::view_mode{"theme"}))
-   {
-      $prefix .= ( "theme=" . $view::view_mode{"theme"} . "&" );
-   }
-   if(defined($view::view_mode{"target"}))
-   {
-      $prefix .= ( "target=" . $view::view_mode{"target"} . "&" );
-   }
-   if(defined($view::view_mode{"frame"}))
-   {
-      $prefix .= ( "frame=" . $view::view_mode{"frame"} . "&" );
-   }
-   return $prefix;
+
+   return ($prefix, $suffix);
 }
 
 sub get_view_mode
@@ -684,7 +704,7 @@ sub get_style_head_tags
    $theme = $view::define::default_theme unless $theme;
    my $head_tags = (-f "$view::define::themes_dir/$theme.css") ?
    "<LINK HREF=\"$view::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
-      MEDIA=\"screen\" type=\"text/css\" >\n" : "";
+      MEDIA=\"screen\" type=\"text/css\">\n" : "";
 
    $head_tags .= "\n$view::define::head_tags"
       if(defined($view::define::head_tags));
@@ -737,7 +757,9 @@ sub content_header
 
 sub browse_show_page
 {
-   my $layout = get_view_mode("layout");
+   my $layout = get_view_mode("superlayout");
+   $layout = get_view_mode("layout")
+      unless(defined($layout) and $layout ne "" and $layout ne "framed");
    $layout = $view::define::default_layout unless($layout);
    require "browse_${layout}.pl";
    &{"browse_${layout}::show_page"}(@_);
@@ -752,20 +774,19 @@ sub persist_view_mode
    {
       my $theme = $view::view_mode{"theme"};
       my $layout = $view::view_mode{"layout"};
-      my ($sublayout) = $view::view_mode{"sublayout"};
+      my ($superlayout) = $view::view_mode{"superlayout"};
 undef($theme) if($theme eq "");
 undef($layout) if($layout eq "");
-undef($sublayout) if($sublayout eq "");
+undef($superlayout) if($superlayout eq "");
 
       my($user_info) = auth::get_current_user_info();
-#defined($theme) && defined($layout) && defined($sublayout) &&
       if(
          ($user_info->{"Theme"} ne $theme ||
                     $user_info->{"Layout"} ne $layout ||
-                    $user_info->{"Sublayout"} ne $sublayout)
+                    $user_info->{"Superlayout"} ne $superlayout)
          )
       {
-         $user_info->{"Sublayout"} = $sublayout;
+         $user_info->{"Superlayout"} = $superlayout;
          $user_info->{"Layout"} = $layout;
          $user_info->{"Theme"} = $theme;
          unless(&auth::write_user_info(auth::check_user_name($username), $user_info))
@@ -775,7 +796,7 @@ undef($sublayout) if($sublayout eq "");
       }
       undef $view::view_mode{"theme"};
       undef $view::view_mode{"layout"};
-      undef $view::view_mode{"sublayout"};
+      undef $view::view_mode{"superlayout"};
    }
 }
 

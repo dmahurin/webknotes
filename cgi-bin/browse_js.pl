@@ -7,20 +7,21 @@ sub show_page
 {
    my($path) = @_;
 
-my $target;
+my $target_line;
 if($view::view_mode{"target"})
 {
-   $target = "target=\"$view::view_mode{\"target\"}\"";
+   $target_line = "target=\"" . $view::view_mode{"target"} . "\"";
 }
-&view::unset_view_mode("target"); # don't want to pass target to main script
+
+my $head_tags = view::get_style_head_tags();
 
 print <<"EOT";
 <html>
-  <head>
+  <head>$head_tags
     <title>js menu</title>
-    <base $target>
+    <base $target_line>
   </head>
-  <body>
+  <body class=\"topic-listing\">
 EOT
   show($path);
 print <<"EOT";
@@ -40,8 +41,13 @@ sub show
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
-&view::set_view_mode("layout", &view::get_view_mode("sublayout"));
-&view::unset_view_mode("sublayout");
+
+my ($this_bprefix, $this_bsuffix) = view::get_cgi_prefix();
+&view::unset_view_mode("target"); # don't want to pass target to main script
+
+&view::set_view_mode("superlayout", "framed");
+
+my ($script_prefix, $bsuffix) = view::get_cgi_prefix();
 
 my $OPENED_SYMBOL = &view::icon_tag('[-]', 
                    $view::define::opened_icon);
@@ -389,7 +395,7 @@ if(-d $toppath)
       # Dir, traverse down it
       if (-d "$toppath/$fullpath")
       {
-         $link = &view::get_cgi_prefix() . $encoded_notes_path;
+         $link = $script_prefix . $encoded_notes_path . $bsuffix;
          if(defined($view::define::max_depth) and $depth >= $view::define::max_depth)
          {
             if( opendir(DIRMAX, "$toppath/$fullpath") )
@@ -415,7 +421,7 @@ if(-d $toppath)
        elsif($name =~ m:\.(html|txt)$:)
        {
           $name = $`;
-          $link = "browse_plain.cgi?$encoded_notes_path";
+          $link = $script_prefix . $encoded_notes_path . $bsuffix;
             $count++;
        }
        else
@@ -434,7 +440,8 @@ my $back_link;
 if($notes_name)
 {
    $notes_path =~ m:([^/]*)$:;
-   $back_link = "<a href=\"browse_js.cgi?" . &view::url_encode_path($`) ."\">[&lt;-]</a>";
+   $back_link = "<a target=\"_self\" href=\"$this_bprefix" . &view::url_encode_path($`) . 
+   $this_bsuffix . "\">[&lt;-]</a>";
 }
 else
 {
@@ -444,12 +451,11 @@ else
 
 my($notes_query_string) = view::get_query_string();
 
-my $script_prefix = view::get_cgi_prefix();
 
 print <<"EOT";
 // End script hiding-->
    </script>
-${back_link}<a href="$script_prefix$notes_query_string">$notes_name</a><br>
+${back_link}<a href="$script_prefix$notes_path$bsuffix">$notes_name</a><br>
    <script language="JavaScript">
 <!-- Hide from browsers without js enabled;
 menu.display();

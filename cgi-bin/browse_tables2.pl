@@ -23,10 +23,6 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
-   if(defined(my $sublayout = view::get_view_mode("sublayout")))
-   {  view::set_view_mode("layout", $sublayout);
-      view::unset_view_mode("sublayout");
-   }
    view::read_page_template();
    print $view::define::page_header if(defined($view::define::page_header));
 show($path);
@@ -66,11 +62,14 @@ for my $file (filedb::get_directory_list($notes_path))
 }
 closedir(DIR);
 
-print $css_tables->table_begin("topic-table") . "\n";
-print "<tr>" . $css_tables->trtd_begin("topic-actions") . "\n";
-view::actions3($notes_path);
-print $css_tables->trtd_end() . "</tr>\n";
-print $css_tables->table_end() . "\n";
+unless(view::get_view_mode("superlayout") eq "framed")
+{
+	print $css_tables->table_begin("topic-table") . "\n";
+	print "<tr>" . $css_tables->trtd_begin("topic-actions") . "\n";
+	view::actions3($notes_path);
+	print $css_tables->trtd_end() . "</tr>\n";
+	print $css_tables->table_end() . "\n";
+}
 return 1;
 }
 
@@ -138,14 +137,11 @@ sub print_icon_link
         my $name = $1;
         my($wpath) = &view::url_encode_path($path);
         
-        print "<A HREF=\"" ,
-           &view::get_cgi_prefix() ,
-        "$wpath\">";
+	my($bprefix, $bsuffix) = &view::get_cgi_prefix();
+        print "<A HREF=\"" . $bprefix . $wpath . $bsuffix . "\">";
         view::print_icon_img($path);
 	print "</a>";
-        print "<A HREF=\"" ,
-           &view::get_cgi_prefix() ,
-        "$wpath\">";
+        print "<A HREF=\"" . $bprefix . $wpath . $bsuffix . "\">";
         print "<b>$name</b></a>";
 }
 1;

@@ -75,11 +75,10 @@ if($view::view_mode{"target"})
 }
 
 my($notes_path_encoded)=view::url_encode_path($notes_path);
-my $this_script_prefix = view::get_cgi_prefix("list2");
+my ($this_script_prefix, $this_bsuffix) = view::get_cgi_prefix();
 &view::unset_view_mode("target"); # don't want to pass target to main script
-&view::set_view_mode("layout", &view::get_view_mode("sublayout"));
-&view::unset_view_mode("sublayout");
-my $script_prefix = view::get_cgi_prefix();
+&view::set_view_mode("superlayout", "framed");
+my ($script_prefix, $sub_bsuffix) = view::get_cgi_prefix();
 
 my $open_tree = unflatten_tree(view::url_unencode_paths(@paths));
 
@@ -164,9 +163,10 @@ if(-d $toppath)
           {
              my $save_ref = $dir_ref->{$filename};
              undef($dir_ref->{$filename});
-             print "<a href=\"$this_script_prefix$notes_path_encoded&". 
+             print "<a href=\"$this_script_prefix$notes_path_encoded". 
+                $this_bsuffix  . '&' .
                 join ('&' , view::url_encode_paths(flatten_tree($open_tree))) .
-                "\">". &view::icon_tag('[-]', 
+                "\">". &view::icon_tag('[-]', 
                    $view::define::opened_icon) .
                 "</a>$LITEM_START1\n";
              $dir_ref->{$filename} = $save_ref;
@@ -186,7 +186,9 @@ if(-d $toppath)
           {
              %{$dir_ref->{$filename}} = ();
              print "<table cellspacing=0 cellpadding=0 ><tr><td>";
-             print "<a href=\"$this_script_prefix$notes_path_encoded&" . 
+             print "<a href=\"$this_script_prefix$notes_path_encoded" .
+	       	 $this_bsuffix . '&' .
+
                 join ('&' , view::url_encode_paths(flatten_tree($open_tree))) .
                 "\">" .
                 &view::icon_tag('[+]', 
@@ -199,11 +201,11 @@ if(-d $toppath)
           my($dirfile) = &filedb::path_file($notes_base . $fullpath);
           if(1 || defined( $dirfile ))
           {
-             print "<a href=\"${script_prefix}$encoded_subnotes_path\" $target>$name</a>";
+             print "<a href=\"${script_prefix}$encoded_subnotes_path$sub_bsuffix\" $target>$name</a>";
           }
           else
           {
-             print "$name (<a href=\"" . $script_prefix . $encoded_subnotes_path . "\" $target>*</a>)";
+             print "$name (<a href=\"" . $script_prefix . $encoded_subnotes_path . $sub_bsuffix . "\" $target>*</a>)";
           }
 
           if(defined($dir_ref->{$filename}))
@@ -220,12 +222,12 @@ if(-d $toppath)
           }
           
        }
-       elsif($name =~ m:\.(html|txt)$:)
+       elsif($name =~ m:\.(html|txt|wiki|htxt)$:)
        {
           $name = $`;
           print &view::icon_tag('[o]', 
                    $view::define::file_icon) .
-              "$LITEM_START1<a $target href=\"${script_prefix}$encoded_subnotes_path\">$name</a>";
+              "$LITEM_START1<a $target href=\"${script_prefix}$encoded_subnotes_path${sub_bsuffix}\">$name</a>";
           print "$LITEM_END\n";
        }
        else

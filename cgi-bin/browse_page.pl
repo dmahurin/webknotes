@@ -24,10 +24,7 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
-   if(defined(my $sublayout = view::get_view_mode("sublayout")))
-   {  view::set_view_mode("layout", $sublayout);
-      view::unset_view_mode("sublayout");
-   }
+
    view::read_page_template();
    print $view::define::page_header if(defined($view::define::page_header));
 show(@paths);
@@ -50,8 +47,7 @@ sub show
          return(0);
       }
    }
-   &view::set_view_mode("layout", &view::get_view_mode("sublayout"));
-   &view::unset_view_mode("sublayout");
+   &view::set_view_mode("superlayout", "");
 
    @notes_paths=("/") unless(@notes_paths);
 
@@ -104,11 +100,10 @@ foreach $arg (@notes_paths)
    my $icon = view::get_icon($topic);
       if( defined($icon) )
       {
+         my($bprefix, $bsuffix) = &view::get_cgi_prefix();
          print "<td>";
           my $etopic = view::url_encode_path($topic);
-          print "<a href=\"" ,
-             &view::get_cgi_prefix() , 
-             $etopic . "\">\n";
+          print "<a href=\"" . $bprefix . $etopic . $bsuffix . "\">\n";
           print "<img src=\"$icon\" alt=\"$icon\"></a>\n";
           print "</td>";
       }
