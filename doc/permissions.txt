@@ -26,6 +26,8 @@ PERMISSION: - What permissions are set or unset
    'u' - upload
    's' - system privalege
    'i' - inherit permissions
+   'S' - subscribe permission
+   'M' - mail permission (generatation subscription responses)
 
 Examples:
 

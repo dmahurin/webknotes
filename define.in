@@ -6,7 +6,7 @@ BOOL use_cvs "Use cvs client for CVS directories" "0"
 
 PACKAGE auth
 STRING private_dir "Private directory" "${HOME}/web_private"
-STRING default_permissions "Default permissions (see permissions.txt)" "a+rn,u+aM,o+mdc"
+STRING default_permissions "Default permissions (see permissions.txt)" "a+rn,u+aM,o+mdc,v+S"
 STRING allow_remote_user_auth "Trust REMOTE_USER auth"
 BOOL autoadd_remote_auth_users "Auto add REMOTE_USER users"
 
@@ -40,5 +40,5 @@ STRING index_footer
 STRING index_title
 
 PACKAGE mailer
-STRING admin_email "Admin Email (subscribtion from address )" ""
+STRING admin_email "Admin Email (subscription from address )" ""
 STRING sendmailer "Sendmail command" "/usr/sbin/sendmail -ba -t"

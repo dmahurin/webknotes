@@ -25,7 +25,7 @@ unless(defined($path) && defined($dir = &filedb::path_dir($path)))
 }
 
 my $user = auth::get_user();
-unless(defined($user) and auth::check_current_user_file_auth( 's', $dir ) )
+unless(defined($user) and auth::check_current_user_file_auth( 'S', $dir ) )
 {
    print "You are not authorized(s) to subscribe to: $dir\n";
    exit 0;
