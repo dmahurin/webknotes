@@ -78,7 +78,7 @@ if( ! defined ( $text ) ) # user has to have read access
 }
 elsif( -f $full_file ) # user has have modify access
 {
-   $acc_flag = 'm'; #modify
+   $acc_flag = 'a'; #modify
 }
 else # user has to have create access
 {
@@ -92,22 +92,25 @@ if( ! auth::check_file_auth( $user, $user_info, $acc_flag, $file ) )
 
 if( ! defined($text) )
 {
-   print( "FILE: $file <br>\n");
+   print( "FILE: $file\n");
    print <<"EOT";
-<form action="$this_cgi" method="post">
-<pre>
-<TEXTAREA NAME="text" wrap=true rows=24 cols=65 >
 EOT
+
+print "<a name=\"text\"><hr></a><pre>";
    if(open(TFILE, $full_file ))
    {
       my $line;
       while(defined($line = <TFILE>))
       {
-         $line =~ s:<\/TEXTAREA>:<%2FTEXTAREA>:;
+         $line =~ s#&#&amp;#g;
+         $line =~ s#<#&lt;#g;
+         $line =~ s#>#&gt;#g;
          print $line;
       }
       close(TFILE);
    }
+print "<hr>\n";
+print "<form><TEXTAREA NAME=\"text\" wrap=true rows=22 cols=65 >";
    print "<\/TEXTAREA>\n";
    print <<"EOT";
 <input type=hidden name=file value="$file">
@@ -117,12 +120,24 @@ EOT
 }
 else
 {
-   if(!open( FOUT, ">$full_file" ) )
+   if(!open( FOUT, ">>$full_file" ) )
    {
-      print "failed to write $file\n";
+      print "failed to append $file\n";
       exit(1);
    }
     $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
+   print FOUT "\n";
+my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+           localtime();
+        $year +=1900;
+   my($userstr) = "by $user" if(defined($user));
+   $user = "unknown" unless(defined($user));
+my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $min, $sec);
+   print FOUT "\n<hr title=\"Modified $date $userstr\">\n" if ($file =~ m:\.html?$:);
+   print FOUT "\n----!Modified $date by $user\n" if ($file =~ m:\.wiki?$: or $file =~ m:^([A-Z][a-z]+){2,}$:);
+   print FOUT "\n";
+   
+   
    print FOUT $text;
    close(FOUT);
    print "wrote $file\n";

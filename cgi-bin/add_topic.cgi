@@ -45,7 +45,7 @@ if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} 
    {
       $description = $in{description};
    }
-   print_form($in{'topic_tag'}, $description);
+   print_form($in{'topic_tag'}, $in{'text_type'}, $description);
    exit 0;
 }
 
@@ -71,7 +71,7 @@ elsif( $topic_tag eq "")
 else
 {
    $in{'description'} =~ s:\r\n:\n:g; # rid ourselves of the two char newlines
-   if( &wkn::add_topic($notes_path, $topic_tag, $in{'topic_type'}, $in{'text_type'}, $source_details, $in{description}))
+   if( &wkn::add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
    {
 
 #print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
@@ -89,7 +89,9 @@ $notes_path . '">' . "BACK TO NOTES:$notes_path</A>
 
 sub print_form
 {
-  my($topic_tag, $body) = @_;
+  my($topic_tag, $text_type, $body) = @_;
+  my(%sel_text_type);
+  $sel_text_type{$text_type} = "selected";
 if( ! -e "$auth::define::doc_dir/$notes_path" )
 {
    if( $notes_path =~ m:/([^/]+)$: )
@@ -104,8 +106,6 @@ if( ! -e "$auth::define::doc_dir/$notes_path" )
    }
 }
 
-
-
 print <<"EOT";
 <HTML><HEAD>
 <TITLE>Notes Topic</TITLE></HEAD><BODY>
@@ -113,22 +113,28 @@ print <<"EOT";
 <H2>Topic: NOTES:$notes_path</H2>
 <FORM METHOD=POST ACTION=\"add_topic.cgi\">
 <P> Sub-Topic tag <INPUT TYPE=\"text\" NAME=\"topic_tag\" value=\"$topic_tag\">
-<B>Note type:</B> <SELECT  WIDTH=33 NAME=\"topic_type\">
-<OPTION VALUE=\"note\" SELECTED>General Note
-<OPTION VALUE=\"question\">Question
-<OPTION VALUE=\"answer\">Answer
-<OPTION VALUE=\"topic\">Topic
-</SELECT>
 Text type<SELECT  WIDTH=33 NAME=\"text_type\">
-<OPTION VALUE=\"pre\" SELECTED>Preformatted Text(&lt;pre&gt;)
-<OPTION VALUE=\"html\">HTML
-<OPTION VALUE=\"text\">Text(.txt)
+<OPTION VALUE=\"pre\" $sel_text_type{pre}>Preformatted Text(&lt;pre&gt;)
+<OPTION VALUE=\"html\"  $sel_text_type{html} >HTML
+<OPTION VALUE=\"wiki\"  $sel_text_type{wiki} >Wiki
+<OPTION VALUE=\"wikidir\"  $sel_text_type{wikidir} >SubWiki(dir)
+<OPTION VALUE=\"text\" $sel_text_type{txt}>Text(.txt)
 </SELECT>
+
 <br>
-Sub-Topic description(body) - (mailto:, http:, and &ltA HREF recognized )<br>
+Sub-Topic description(body)<br>
 <INPUT TYPE=\"hidden\" NAME=\"notes_path\" value=\"$notes_path\">
 <textarea NAME=\"description\" rows=24 cols=75>$body</textarea><P>
 EOT
+
+#Note type: <SELECT  WIDTH=33 NAME=\"topic_type\">
+#<OPTION VALUE=\"note\" SELECTED>General Note
+#<OPTION VALUE=\"question\">Question
+#<OPTION VALUE=\"answer\">Answer
+#<OPTION VALUE=\"topic\">Topic
+#</SELECT>
+#- (mailto:, http:, and &ltA HREF recognized )<br>
+
 print "WARNING: You are not logged in. You will NOT be able to edit this later.\n" unless(defined($user));
 
 print <<"EOT";
@@ -173,7 +179,7 @@ sub mkfile
 
 sub add_topic
 {
-	my ( $parent_path, $topic, $topic_type, $text_type, $source_details, $message ) = @_;
+	my ( $parent_path, $topic, $text_type, $message, $source_details, $topic_type ) = @_;
 
 	if(! $message )	
 	{
@@ -217,6 +223,12 @@ $notes_path =~ s#^/*##g;
 #   return 0;
 #}
 
+my $should_make_dir = 1;
+$should_make_dir = 0 if ($text_type eq "wiki");
+$text_type= "wiki" if($text_type eq "wikidir");
+
+if($should_make_dir)
+{
 if( ! &wkn::make_dir($notes_path))
 {
 #if ( -e "$auth::define::doc_dir${notes_path}/README" )
@@ -236,25 +248,45 @@ if(auth::check_current_user_file_auth( 'i', $parent_path ))
       auth::set_path_group($group, $notes_path);
    }
 }
-
-if( $text_type eq "text" )
-{
-   &wkn::mkfile("$notes_path/README", $message);
-}
-elsif( $text_type eq "pre" )
-{
-   &wkn::mkfile("$notes_path/README.html", "<pre>\n" . $message . "</pre>\n");
 }
 else
 {
-   &wkn::mkfile("$notes_path/README.html", $message);
+   $notes_path = $parent_path;
+}
+
+if( $text_type eq "text" )
+{
+   &wkn::mkfile(
+      $should_make_dir ? "$notes_path/README" : "$parent_path/${topic}.txt",
+      $message);
+}
+elsif( $text_type eq "pre" )
+{
+   &wkn::mkfile(
+      $should_make_dir ? "$notes_path/README.html" :
+         "$parent_path/${topic}.html",
+    "<pre>\n" . $message . "</pre>\n");
+}
+elsif( $text_type eq "wiki" )
+{
+   &wkn::mkfile(
+      $should_make_dir ? "$notes_path/FrontPage.wiki" :
+        "$parent_path/${topic}.wiki",
+      $message);
+}
+else
+{
+   &wkn::mkfile("$notes_path/README.html",
+      $should_make_dir ? "$notes_path/README.html" :
+        "$parent_path/${topic}.html",
+      $message);
 }
 
 #&wkn::mail_subscribers($notes_path);
 my $log = localtime;
 $log .= "\n$source_details\n";
 &wkn::mkfile("$notes_path/.create-log", $log );
-&wkn::mkfile("$notes_path/.type", $topic_type);
+#&wkn::mkfile("$notes_path/.type", $topic_type);
 
 if( defined($user))
 {

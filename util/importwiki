@@ -1,0 +1,156 @@
+#!/usr/bin/perl
+
+require 5.004;
+use IO::Socket;
+
+my($url, @topfiles) = @ARGV;
+
+unless($url)
+{
+print "usage: importwiki URL TOPFILE(s)\n";
+# Example: http://c2.com/cgi-bin/wiki?edit=
+# Example: http://clublet.com/c/c/why?edit= #with cookie hack
+# Example: http://www.clug.org/cgi/wiki.cgi?edit=
+exit(1);
+}
+
+@topfiles = ("FrontPage", "HomePage") unless(@topfiles);
+
+my($proto, $host, $port, $path) = spliturl(@ARGV);
+unless(defined($host) and $proto eq "http")
+{
+   print "unknown url\n";
+exit(1);
+}
+extract_wiki($host, $port, $path, @topfiles);
+
+sub extract_wiki
+{
+  my($host, $port, $prefix, @topfiles) = @_;
+
+  my(%processed);
+  for (@topfiles) { $processed{$_} = 1;}
+  while(@topfiles)
+  {
+     my($wiki) = pop(@topfiles);
+     print "$wiki\n";
+
+     if(-f $wiki)
+     {
+        print "File exists: $wiki\n";
+        local $/ = undef;
+        open(FILE, $wiki);
+        $text = <FILE>;
+        close(FILE); 
+        if($text =~ m:^\s*(Describe $wiki here\.\s*)?$:s)
+        {
+           print "del empty\n";
+           unlink($wiki);
+           next;
+        }
+     }
+     else
+     { 
+        $text = get_http($host, $port, "${prefix}$wiki");
+        unless($text =~ m:<textarea[^>]*>(.*)</textarea>:is)
+        {
+           if($text =~ m:Can't sustain current request rate:)
+           {
+              print "Server says we are too fast. Sleeping a minute.\n";
+              sleep(60);
+              push(@topfiles, $wiki);
+              next;
+           }
+           print "Unknown format: $wiki\n";
+           write_file("${wiki}.reject", $text);
+           next;
+        }
+        $text = $1;
+        $text =~ s:&quote;:":gi; 
+        $text =~ s:&amp;:&:gi; 
+        $text =~ s:&lt;:<:gi; 
+        $text =~ s:&gt;:>:gi; 
+        if($text =~ m:^\s*(Describe $wiki here\.\s*)?$:s)
+        {
+           print "$wiki is Blank\n";
+        }
+        else
+        {
+           write_file("${wiki}.tmp", $text);
+           rename("${wiki}.tmp", $wiki);
+        }
+        sleep(1); #so they don't complain
+     }
+
+     while($text =~ m:\b(([A-Z][a-z]+){2,})\b:)
+     {
+        unless(defined($processed{$1}))
+        {
+           push(@topfiles, $1) ;
+           $processed{$1} = 1;
+        }
+        $text = $';
+     }
+   }
+}
+
+sub write_file
+{
+   my($name, $text) = @_;
+   open(FILE, ">$name");
+   print FILE $text;
+   close(FILE);
+}
+
+sub tcpip_open
+{
+  my($host,$port) = @_;
+  return IO::Socket::INET->new
+  (
+     Proto     => "tcp",
+     PeerAddr  => $host,
+     PeerPort  => $port,
+  );
+}
+
+sub spliturl
+{
+   my($url) = @_;
+  
+   if( $url =~ m#^((http)://)?([^/:]+)(:(\d+))?(/.*)?#)
+   {
+      my($proto) = $2 or "http";
+      my $host = $3;
+      my $port = $5 || 80;
+      my $path = $6 || "/";
+      return ($proto, $host, $port, $path);
+   }
+   else
+   {
+      print "unknown: $url\n";
+   }
+}
+
+sub get_http
+{
+   my($host, $port, $document ) = @_;
+   my($remote);
+   my($text);
+
+   $remote = tcpip_open($host, $port);
+   unless ($remote) { die "cannot connect to http daemon on $host" }
+   $remote->autoflush(1);
+#   print $remote "GET $document HTTP/1.1\n";
+   print $remote "GET $document HTTP/1.0\n";
+#   print $remote "GET http://$host$document HTTP/1.0\n";
+   print $remote "User-Agent: Mozilla/Fake(Perl)\n";
+   print $remote "Host: $host\n";
+  print $remote "Cookie: JIGSAW-SESSION-ID=J-1949929724-2; Clublet1=RG9uTWFodXJpbg**\n";
+   print $remote "\n";
+
+   local $/ = undef;
+   $text = <$remote>;
+   
+   close $remote;
+   return $text;
+}

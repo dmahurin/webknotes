@@ -244,8 +244,7 @@ $closed_icon = "fplus.gif";
 $closed_icon_text = "[+]";
 $dir_icon = "folder.gif";
 $dir_icon_text = "[+]";
-$file_icon = "document.gif";
-$file_icon_text = "[.]";
+$file_icons = { "file" => "document.gif" };
 ';
       close FILE;
    }

@@ -10,6 +10,8 @@ require 'auth_lib.pl';
 
 my $img_border = " border=0 hspace=3";
 
+my $wiki_name_pattern = "([A-Z][a-z]+){2,}";
+
 package wkn;
 
 my %view_mode; # used to store layout, theme, and target of wkn sessions
@@ -166,33 +168,20 @@ sub actions2
 
    $dir_file = url_encode_path($dir_file);
 
-   if( $is_dir )
-   {
-      print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">Add</A> ]\n";
-      #if(auth::check_current_user_file_auth( 'd', $notes_path))
-      #{
-      #print "[ <A HREF=\"delete.cgi?$notes_path\">Delete</A> ]\n";
-      #}
-      #if(auth::check_current_user_file_auth('u', $notes_path))
-      #{
-      #print "[ <A HREF=\"upload.cgi?notes_path=${notes_path}\">Upload</A> ]\n";
-      #}
-      #      if(auth::check_current_user_file_auth( 'p', $notes_path))
-      #{
-      #print "[ <A HREF=\"permissions.cgi?path=${notes_path}\">Access</A> ]\n";
-      #}
-   }
-   
-      print "[ Edit \n";
    if(auth::check_current_user_file_auth('m', $notes_path))
    {
-      print "<A HREF=\"edit.cgi?file=$dir_file\">File</a> | \n";
+      print "[ <A HREF=\"edit.cgi?file=$dir_file\">Edit</a> text ] \n";
    }
-      print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Directory</a> ]\n";
-   print "[ Browse ";
+   elsif( auth::check_current_user_file_auth('a', $notes_path) )
+   {
+      print "[ <A HREF=\"append.cgi#text?file=$dir_file\">Append</a> text ] \n";
+   }
+   print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">New Topic</A> ]\n";
+      print "[ Raw \n";
+   print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File</A> | \n";
    print "<A HREF=\"$auth::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
-   print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File Only</A> \n";
-   print "| <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
+      print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Access</a> ]\n";
+   print "[ <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
    #   print "<br>\n";
 }
 
@@ -248,63 +237,66 @@ sub print_link_html
         $file = &wkn::define::filename_filter($file) if(defined(&wkn::define::filename_filter));
 	if ( -f $real_path )
 	{
-		$file_base = $file;
-		$file_base =~ s/\.[^\.]*$//;
-		$file_ext = $&;
-		$file_ext =~ s/^\.*$//;
-		SWITCH:
-		{
-			last SWITCH if ($file =~ m/^\./ );
-                        last if ($filename eq 'README' or
-                           $filename =~ m:^(README|index)\.(txt|html|htm)$: );
-#			$file_ext =~ /^\.html/ && do
-#			{
-#				print "<A HREF=\"${web_path}",
-#				"\">${file_base}",
-#				"</A>(h)\n";
-#				last SWITCH;
-#			};
-			$file_ext =~ /^\.url/ && do
-			{
-		        	print '<A HREF="';
-				&wkn::print_file($notes_path);
-				print '">';
-                                print &wkn::text_icon($wkn::define::url_icon_text, $wkn::define::url_icon);
-				print "$file_base",
-				'</A>';
-				last SWITCH;
-			};
-                        $file_ext =~ /^\.(c|h|c\+\+|cxx|hxx|idl|java)$/ && do
-                        {
-                           print "<A HREF=\"" .
-                              &wkn::get_cgi_prefix() .
-                              $notes_wpath . '">';
-                           print &wkn::text_icon($wkn::define::file_icon_text, $wkn::define::file_icon);
-                           
-                           print $file, "</A>\n";
+           my($link, $link_type, $link_text);
 
-                           last SWITCH;
-                        };
-			$file_ext =~ /^\.(txt|html|htm|wiki)/ && do
-                        {
-                           print "<A HREF=\"" .
-                              &wkn::get_cgi_prefix() .
-                              $notes_wpath . '">';
-                           print &wkn::text_icon($wkn::define::file_icon_text, $wkn::define::file_icon);
-                           
-                           print $file_base, "</A>\n";
-                              #				print "<A HREF=\"",
-                              #				"${web_path}",
-                              #				"\">${file}</A>\n";
-                              last SWITCH;
-			};
+           $file_base = $file;
+           $file_base =~ s/\.[^\.]*$//;
+           $file_ext = $&;
+           $file_ext =~ s/^\.*$//;
+           SWITCH:
+           {
+              last SWITCH if ($file =~ m/^\./ );
+              # skip the index files
+              last
+                 if ($filename =~ m:^(index.html|index.htm|FrontPage.wiki|FrontPage|README|README.txt)$: );
 
-			#default case
-			print "<A HREF=\"${web_path}\">";
-                        print &wkn::text_icon($wkn::define::unknown_file_icon_text, $wkn::define::unknown_file_icon);
-                        print "$file</a>\n";
-		}
-	}	
+              $file_ext =~ /^\.url/ && do
+              {
+                 $link_type = "url";
+                 $link = get_file($notes_path);
+                 $link_text = $file_base;
+                 last SWITCH;
+              };
+#                 $filename =~ m:$wiki_name_pattern: ) && do
+              $file_ext =~ /^\.wiki/ && do
+              {
+                 $link_type = "wiki";
+                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link_text = $file_base;
+                 last SWITCH;
+              };
+              $file_ext =~ /^\.(c|h|c\+\+|cxx|hxx|idl|java)$/ && do
+              {
+                 $link_type = "code";
+                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link_text = $file;
+                 last SWITCH;
+              };
+              $file_ext =~ /^\.(txt)/ && do
+              {
+                 $link_type = "txt";
+                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link_text = $file_base;
+                 last SWITCH;
+              };
+              $file_ext =~ /^\.(html|htm)/ && do
+              {
+                 $link_type = "html";
+                 $link = &wkn::get_cgi_prefix() . $notes_wpath;
+                 $link_text = $file_base;
+                 last SWITCH;
+              };
+
+           }
+           if(!defined($link))
+           {
+              $link_type = "unknown";
+              $link = ${web_path};
+              $link_text = $file;
+           }
+           my $link_icon = &wkn::file_type_icon_tag($link_type);
+           print "<A HREF=\"$link\">$link_icon${link_text}</a>";
+        }
 	elsif ( -d $real_path )
 	{
 		return 0 if($file =~ /^\..*/ );
@@ -326,8 +318,7 @@ sub print_link_html
                         "${notes_wpath}" ,
                         '">';
                         $icon_image =~ m:([^/\.]*)[^/]*$:;
-                        print &wkn::text_icon($wkn::define::dir_icon_text, 
-                           $icon_image);
+                        print &wkn::icon_tag("[>]", $icon_image);
                         print "$file</A>\n";
                 }
 		else
@@ -414,7 +405,7 @@ sub print_icon_img
                 {
 			$icon_image =~ m:([^/\.]*)[^/]*$:;
                         
-                        print &wkn::text_icon($1, $icon_image);
+                        print &wkn::icon_tag("[+]", $icon_image);
                         
                         return 1;
                 }
@@ -426,17 +417,23 @@ sub print_icon_img
 sub list_files_html
 {
    my($notes_path) = @_;
+   my($dir) = $auth::define::doc_dir;
+   $dir .= "/$notes_path" unless( $notes_path eq "");
+
+   return () unless
+      opendir(DIR, $dir);
    my($rtn) = 0;
 
    # If you have index.html, not README.html, assume you want list files
-   return 0 if( -f "$auth::define::doc_dir/$notes_path/index.html");
-   return 0 if( -f "$auth::define::doc_dir/$notes_path/index.htm");
+   return 0 if( -f "$dir/FrontPage.wiki");
+   return 0 if( -f "$dir/FrontPage");
+   return 0 if( -f "$dir/index.html");
+   return 0 if( -f "$dir/index.htm");
 
-   return 0 unless
-   opendir(DIR, "$auth::define::doc_dir/$notes_path") || return;
+   opendir(DIR, "$dir") || return 0;
    while(defined($file = readdir(DIR)))
    {
-	next if( -d "$auth::define::doc_dir/$notes_path/$file" );
+	next if( -d "$dir/$file" );
         next if( $file =~ m:^\.: );
         next if( $file =~ m:^README(\.html)?:);
         next if( $file eq "index.html");
@@ -464,13 +461,50 @@ sub list_files_html
 sub list_dirs_html
 {
    my($notes_path) = @_;
+   my($dir) = $auth::define::doc_dir;
+   $dir .= "/$notes_path" unless( $notes_path eq "");
+
+#   return 0 if( -f "$dir/FrontPage.wiki");
+#   return 0 if( -f "$dir/FrontPage");
    return () unless
-      opendir(DIR, "$auth::define::doc_dir/$notes_path");
+      opendir(DIR, $dir);
    my $found = 0;
    while(defined($file = readdir(DIR)))
    {
+        next if( $file =~ m:^\.: );
+	next if( -f "$dir/$file" );
+
+
+        if( $file =~ m:^([^/]*)$: ) # untaint dir entry
+        { $file = $1; }
+        else
+        { die "hey, /'s ? not good.\n"; }
+        
+        print "<br>" if ($found);
+        next unless(print_link_html( "$notes_path/$file"));
+        $found = 1;
+        
+   }
+   closedir(DIR);
+   return $found;
+}
+
+sub list_html
+{
+   my( $notes_path ) = @_;
+   my($dir) = $auth::define::doc_dir;
+   $dir .= "/$notes_path" unless( $notes_path eq "");
+   
+   my($found) = 0;
+
+   opendir (DIR, ${dir});
+   while( defined($file = readdir DIR))
+   {
 	next if( -f $file );
         next if( $file =~ m:^\.: );
+        next if( $file =~ m:^README(\.html)?:);
+        next if( $file eq "index.html");
+        next if( $file eq "index.htm");
 
         if( $file =~ m:^([^/]*)$: ) # untaint dir entry
         { $file = $1; }
@@ -486,200 +520,118 @@ sub list_dirs_html
    return $found;
 }
 
-sub list_html
+# return notes dir that file is in
+sub file_dir
 {
-	my( $notes_path ) = @_;
-   my($found) = 0;
+   my($notes_path) = @_;
+   return $notes_path if( -d "$auth::define::doc_dir/$notes_path");
 
-	if ( ! -d "$auth::define::doc_dir/$notes_path" )
-	{
-		return 0;
-	}
-
-	if( $notes_path eq "" )
-	{
-		$notes_dir="";
-		$real_path=$auth::define::doc_dir;
-		$web_path=$auth::define::doc_wpath;
-		$notes_wdir = "";
-	}
-	else
-	{
-		$notes_dir="${notes_path}/";
-		$real_path="$auth::define::doc_dir/${notes_path}";
-		$notes_wpath = url_encode_path($notes_path);
-		$notes_wdir="${notes_wpath}/";
-		$web_path="$auth::define::doc_wpath/${notes_wpath}";
-	}
-
-	opendir (NOTESDIR, ${real_path});
-	while( defined($file = readdir NOTESDIR))
-	{
-		$label = $file;
-		$wfile = url_encode_path($file);
-                $label = wkn::define::filename_filter($label)
-                   if(defined($wkn::define::filename_filter));
-		if ( -f "${real_path}/$file" )
-		{
-			$file_base = $file;
-			$file_base =~ s/\.[^\.]*$//;
-			$file_ext = $&;
-			$file_ext =~ s/^\.*$//;
-
-			SWITCH:
-			{
-				last SWITCH if ($file =~ /^\..*/ );
-				last SWITCH if ($file =~ /\~$/ );
-				last SWITCH if ($file =~ /^README(\.html)?$/ );
-				last SWITCH if ($file eq "index.html" );
-				last SWITCH if ($file eq "index.htm" );
-                                $found = 1;
-				$file_ext =~ /^\.html/ && do
-				{
-					print "<A HREF=\"${web_path}/",
-					"${wfile}\">${file_base}",
-					"</A>(html)<br>\n";
-					last SWITCH;
-				};
-				$file_ext =~ /^\.url/ && do
-				{
-			        	print '<A HREF="';
-					&wkn::print_file("${real_path}/${file}");
-					print '">',
-					"$file_base",
-					'</A>(l)';
-					print "<br>\n";
-					last SWITCH;
-				};
-				$file_ext =~ /^\.txt/ && do
-				{
-					print "<A HREF=\"",
-					"${web_path}/${wfile}",
-					"\">${file}</A><br>\n";
-					last SWITCH;
-				};
-				$file_ext && do
-				{
-					print "<A HREF=\"${web_path}/${wfile}\">
-					${file}</A>(?)<br>\n";
-					last SWITCH;
-				};
-				#default case
-                                print "<A HREF=\"${web_path}/",
-                                        "${wfile}\">${file}",
-                                        "</A><br>\n";
-			}
-		}	
-		elsif ( -r "${real_path}/${file}" )
-		{
-			if($file =~ /^\..*/ )
-			{
-				next;
-			}
-		        $found = 1;
-                        my($icon_image) = $wkn::define::dir_icon;
-
-	                if ( -r "${real_path}/${file}/.icon" and
-                         open(ICONFILE, "${real_path}/${file}/.icon") )
-                        {
-                           $icon_image = <ICONFILE>;
-			chomp($icon_image);
-			close(ICONFILE);
-                        }
-                if(defined($icon_image))
-                {
-		print '<A HREF="',
-                        &wkn::get_cgi_prefix() ,
-                        "${notes_wdir}${wfile}",
-                        '">';
-                        print &wkn::text_icon("[x]", $icon_image);
-                        print $file,"</A><br>\n";
-                }
-			else
-			{
-				print '<A HREF="',
-                                &wkn::get_cgi_prefix() ,
-				"${notes_wdir}$wfile",
-				'">',
-				$label, "</A><br>\n";
-			}
-		}	
-	}
-	close(NOTESDIR);
-	return $found;
+   if($notes_path =~ m:/[^/]+$:)
+   {
+      return $`;
+   }
+   return "";
 }
 
+
+# return default file in notes directory
 sub dir_file
 {
 	my($notes_path) = @_;
 
 	return $notes_path if( -f "$auth::define::doc_dir/$notes_path");
 
-	chdir("$auth::define::doc_dir/$notes_path");
-	return "$notes_path/index.html" if ( -f "index.html" );
-	return "$notes_path/index.htm" if ( -f "index.htm" );
-	return "$notes_path/README.html" if ( -f "README.html" );
-	return "$notes_path/README" if ( -f "README" );
+	my($dir) = "$auth::define::doc_dir/$notes_path";
+	return "$notes_path/index.html" if ( -f "$dir/index.html" );
+	return "$notes_path/index.htm" if ( -f "$dir/index.htm" );
+	return "$notes_path/FrontPage" if ( -f "$dir/FrontPage" );
+	return "$notes_path/FrontPage.wiki" if ( -f "$dir/FrontPage.wiki" );
+	return "$notes_path/README.html" if ( -f "$dir/README.html" );
+	return "$notes_path/README" if ( -f "$dir/README" );
         return ();
 }
 
 sub print_dir_file
 {
-	my($notes_path) = @_;
+   my($notes_path) = @_;
 
-	if( -f "$auth::define::doc_dir/$notes_path" )
-	{
-		if( $notes_path =~ m:\.html?$: )
-		{
-			wkn::print_hfile($notes_path);
-		}
-                elsif( $notes_path =~ m:\.wiki$:)
-                {
-                   require "translate_wiki.pl" or print "translator not found\n";
-                   &wiki_translate::translate_print(get_file($notes_path));
+   my($full_path) = $auth::define::doc_dir;
+   $full_path .= "/$notes_path" unless ($notes_path eq "");
 
-                }
-		elsif(defined(&wkn::define::code_filter) && 
-                $notes_path =~ /\.(c|h|c\+\+|cxx|hxx|idl|java)$/ )
-                {
-                   print '<pre>',
-                   &wkn::define::code_filter($1, get_file($notes_path)),
-                   '</pre>';
+   if( -d $full_path )
+   {
+      my($dir_file);
+      for $dir_file ( "index.html", "index.htm", "FrontPage", "FrontPage.wiki",
+         "README", "README.txt", "README.html")
+      {
+         if(-f "$full_path/$dir_file")
+         {
+            $notes_path .= "/$dir_file";
+            $full_path .= "/$dir_file";
+         }
+      }
+   }
+   
+   if( -f $full_path )
+   {
+      my($file_type);
+      $notes_path =~ m:([^\/]+)$: or return ();
+      my($file_name) = $1;
+      if($notes_path =~ m:\.([^\.]+)$:)
+      {
+         $file_type = $1;
+         if($file_type =~ /^(c|h|c\+\+|cxx|hxx|idl|java)$/)
+         {
+            $file_type = "code";
+         }
+      }
+      if( !defined($file_type))
+      {
+         if($file_name eq "README" )
+         {
+            $file_type = "txt";
+         }
+         elsif( $file_name =~ m:([A-Z][a-z]+){2,}:)
+         {
+            $file_type = "wiki" ;
+         }
+         else
+         {
+            $file_type = $wkn::define::default_file_type;
+         }
+      }
+      if(defined($file_type) && ( -f "filter_${file_type}.pl") )
+      {
+         require "filter_${file_type}.pl";
+         &filter::print_file($notes_path);
+      }
+      else
+      {
+         &wkn::print_file($notes_path);
+      }
+      
+      return $notes_path;
+   }
+   else
+   {
+      return ();
+   }
+}
 
- 	        }
-		else
-		{
-			wkn::print_tfile($notes_path);
-		}
-		return $notes_path;
-	}
-
-        chdir("$auth::define::doc_dir/$notes_path") or return ();
-	if( -f "index.html" )
-	{
-		$file = "index.html";
-                wkn::print_hfile("$notes_path/$file");
-        }
-	elsif( -f "index.htm" )
-	{
-		$file = "index.htm";
-                wkn::print_hfile("$notes_path/$file");
-        }
-	elsif( -f "README.html" )
-        {
-		$file = "README.html";
-        	wkn::print_hfile("$notes_path/$file");
-        }
-        elsif( -f "README" )
-        {
-		$file = "README";
-	  	wkn::print_tfile("$notes_path/$file");
-        }
-	else
-        {
-	 return ();
-	}
-        return $file;
+sub create_modification_string
+{
+   my($date, $user, $group) = @_;
+   my($text) = "Modified $date ";
+   
+   if( defined($user))
+   {
+      $text .= "by <a href=\"show_user.cgi?username=$user\">$user</a>\n";
+   }
+   if(defined($group))
+   {
+      $text .= ": group <a href=\"show_group.cgi?group=$group\">$group</a>\n";
+   }
+   return $text;
 }
 
 sub print_modification
@@ -701,20 +653,7 @@ $atime,$mtime,$ctime,$blksize,$blocks)
         my(@months) = ( "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" );
         my $mtime_str = "$year $months[$mon] $mday $hour:$min:$sec";
         
-         print "Modified: $mtime_str \n";
-
-        $owner = auth::get_path_owner($notes_path);
-        if( defined($owner))
-        {
-	  print ": Owner <a href=\"show_user.cgi?username=$owner\">$owner</a>\n";
-        }
-        my $group;
-        if(defined($group= auth::get_path_group($notes_path)))
-        {
-	  print ": Group <a href=\"show_group.cgi?group=$group\">$group</a>\n";
-        }
-        
-        #	print "<br>\n";
+   print create_modification_string($mtime_str, auth::get_path_owner($notes_path), auth::get_path_group($notes_path));
 }
 
 sub get_file
@@ -726,35 +665,6 @@ sub get_file
         my($text) = <MYFILE>;
         close(MYFILE);
         return($text);
-}
-
-sub print_tfile
-{
-	my($notes_file) = @_;
-
-	open(MYFILE, "$auth::define::doc_dir/$notes_file") || return 0;
-  	while(defined($line = <MYFILE>))
-	{
-		if( $line =~ /^http:/ ||
-			$line =~ /^ftp:/ ||
-                        $line =~ s/^mailto:// )
-		{
-			$line = "<A HREF=\"$line\">$line</A>\n";
-		}
-                
-                $line = translate_html($line, $notes_file);
-
-		if($line =~ m:^( +):)
-                {
-                   my $a = $1;
-                   my $b = $';   
-                   $a =~ s:\s:&nbsp;:g;
-                   $line = $a . $b;
-                }
-       		print("$line<br>");
-	}
-        close(MYFILE);
-        return 1;
 }
 
 sub print_file
@@ -769,108 +679,6 @@ sub print_file
 	}
 	close(MYFILE);
         return 1;
-}
-
-# translate a href's to work as if just the html file was loaded
-sub smart_ref
-{
-   my( $path_enc, $ref_enc ) = @_;
-   if($ref_enc =~ m:^#: )
-   {
-      return $ref_enc;
-   }
-   
-   return $ref_enc if ( $ref_enc =~ m/^\w+:/ );
-   return $ref_enc if ( $ref_enc =~ m:^/: );
-   my $ref = url_unencode_path($ref_enc);
-
-   # ??
-   if($ref =~ m:#: )
-   {
-      $ref = "$auth::define::doc_wpath/$path_enc$ref";
-   }
-   elsif( $ref =~ m:\.cgi(\?|$): ) # cgi script
-   #elsif( $ref =~ m:^[^/]+\.cgi: ) # local cgi script
-   {
-       if( -f "$auth::define::doc_dir/$path_enc/$ref")
-       {
-          $path_enc =~ s:^/::;
-          $path_enc =~ s:(/|^)[^/]*$:$1:; # strip off file
-          return $auth::define::doc_wpath . '/' . $path_enc . $ref_enc;
-       }
-   }
-   elsif($path_enc =~ m:/[^/]*$:) # strip off README.html or xxx.html
-   {
-      $ref = "$auth::define::doc_wpath/$`/$ref";
-   }
-   else
-   {
-      $ref = "$auth::define::doc_wpath/$ref";
-   }
-   
-   #collapse dir/.. to nothing
-   while($ref =~ s~(^|/+)(?!\.\./)[^/]+/+\.\.($|/)~$1~g){}
-
-   if($wkn::define::no_browse_links or $ref =~ m:\.([^\.]*)$: and ! ($1 =~ m:^(txt|html|htm)$:))  
-   {
-      return url_encode_path($ref);
-   }
-   
-   $ref =~ s:/+$::;
-   if($ref =~ m-^$auth::define::doc_wpath/*- )
-   {
-      return &wkn::get_cgi_prefix() . url_encode_path($');
-   }
-   elsif(defined(%wkn::define::wpath_prefix_translation))
-   {
-      for my $key ( keys %wkn::define::wpath_prefix_translation )
-      {
-         if($ref =~ m/^$key/ )
-         {
-            return $wkn::define::wpath_prefix_translation{$key} .
-            url_encode_path($');
-         }
-      }
-   }
-   
-   return  url_encode_path($ref);
-}
-
-sub print_hfile
-{
-   my($notes_file) = @_;
-   my($line);
-
-   open(MYFILE, "$auth::define::doc_dir/$notes_file") || return 0;
-   
-   my $savesep = $/;
-   undef $/;
-   my($text) = <MYFILE>;
-   close(MYFILE);
-   $/ = $savesep;
-   $text =~ s:^(.*<HTML>)?(.*<HEAD>)?(.*</HEAD>)?(.*<BODY[^>]*>)?::si;
-   $text =~ s:(</BODY>.*)?(</HTML>.*)?$::si;
-   
-   if(defined(&wkn::define::code_filter))
-   {
-      $text =~ s=<code\s*([^\s>]*)>(((?!</code>).)*)=&wkn::define::code_filter($1,$2);=gsie;
-   }
-   
-   print translate_html($text, $notes_file);
-}
-
-sub translate_html
-{
-   my($text, $notes_file) = @_;
-   # translate a hrefs 
-   $text =~ s/<a href\s*=\s*\"?([^\">]+)\"?([^>]*)>/sprintf("<a href=\"%s\"$2>",&smart_ref($notes_file,$1))/gie;
-   
-   # translate relative image paths to full http paths
-   my $this_path = ($notes_file =~ m:/[^/]*$:) ? "$`/" : "";
-   my $this_hpath = url_encode_path("$auth::define::doc_wpath/$this_path");
-   $text =~ s!(<img\s[^>]*src=\")([^:\/>\"]+)!$1$this_hpath$2!gi;
-   
-   return $text;
 }
 
 sub log
@@ -973,9 +781,34 @@ sub get_style_head_tags
    return $head_tags;
 }
 
-sub text_icon
+sub icon_tag
 {
    my($text, $icon ) = @_;
+   if(defined($icon))
+   {
+      return "<img src=\"$wkn::define::icons_wpath/$icon\" $img_border " .
+         "alt=\"$text\"" . ">";
+   }
+   else
+   {
+      return $text;
+   }
+}
+
+sub file_type_icon_tag
+{
+   my($file_type) = @_;
+   my($icon);
+   my($text) = "[${file_type}]";
+   
+   if(defined($wkn::define::file_icons->{$file_type}))
+   {
+      $icon = $wkn::define::file_icons->{$file_type};
+   }
+   else
+   {
+      $icon = $wkn::define::file_icons->{"file"};
+   }
    if(defined($icon))
    {
       return "<img src=\"$wkn::define::icons_wpath/$icon\" $img_border " .
@@ -1003,37 +836,33 @@ sub browse_show_page
 # persistent layout and theme settings for user
 sub persist_view_mode
 {
-my $username = auth::get_user();
+   my $username = auth::get_user();
 
-if( defined($username) )
-{
-   my $theme = $wkn::view_mode{"theme"};
-   my $layout = $wkn::view_mode{"layout"};
-   my $sublayout = $wkn::view_mode{"sublayout"};
-
-   my($user_info) = auth::get_current_user_info();
-   if(defined($theme) && defined($layout) && defined($sublayout) &&
-      ($user_info->{"Theme"} ne $theme ||
-      $user_info->{"Layout"} ne $layout ||
-      $user_info->{"Sublayout"} ne $sublayout)
-   )
+   if( defined($username) )
    {
-      $user_info->{"Sublayout"} = $sublayout;
-      $user_info->{"Layout"} = $layout;
-      $user_info->{"Theme"} = $theme;
-      if(&auth::write_user_info(auth::check_user_name($username), $user_info))
+      my $theme = $wkn::view_mode{"theme"};
+      my $layout = $wkn::view_mode{"layout"};
+      my ($sublayout) = $wkn::view_mode{"sublayout"};
+
+      my($user_info) = auth::get_current_user_info();
+      if(defined($theme) && defined($layout) && defined($sublayout) &&
+         ($user_info->{"Theme"} ne $theme ||
+                    $user_info->{"Layout"} ne $layout ||
+                    $user_info->{"Sublayout"} ne $sublayout)
+         )
       {
-         $saved = 1;
+         $user_info->{"Sublayout"} = $sublayout;
+         $user_info->{"Layout"} = $layout;
+         $user_info->{"Theme"} = $theme;
+         unless(&auth::write_user_info(auth::check_user_name($username), $user_info))
+         {
+            print "Could not modify user information?\n";
+         }
       }
-      else
-      {
-         print "Could not modify user information?\n";
-      }
+      undef $wkn::view_mode{"theme"};
+      undef $wkn::view_mode{"layout"};
+      undef $wkn::view_mode{"sublayout"};
    }
-   undef $wkn::view_mode{"theme"};
-   undef $wkn::view_mode{"layout"};
-   undef $wkn::view_mode{"sublayout"};
-}
 }
 
 1;
