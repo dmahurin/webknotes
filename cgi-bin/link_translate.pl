@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
@@ -9,7 +9,8 @@ package link_translate;
 # translate a href's to work as if just the html file was loaded
 sub smart_ref
 {
-   my( $path_enc, $ref_enc ) = @_;
+   my( $path, $ref_enc ) = @_;
+
    if($ref_enc =~ m:^#: )
    {
       return $ref_enc;
@@ -19,28 +20,28 @@ sub smart_ref
    return $ref_enc if ( $ref_enc =~ m:^/: );
    my $ref = view::url_unencode_path($ref_enc);
 
-   # ??
-   if($ref =~ m:#: )
+   if( $ref =~ m:\.cgi(\?|$): ) # cgi script
    {
-      $ref = "$filedb::define::doc_wpath/$path_enc$ref";
-   }
-   elsif( $ref =~ m:\.cgi(\?|$): ) # cgi script
-   #elsif( $ref =~ m:^[^/]+\.cgi: ) # local cgi script
-   {
-       if( -f "$filedb::define::doc_dir/$path_enc/$ref")
+       my $cgifile = $'.".cgi";
+       $path =~ s:^/::;
+       $path =~ s:(/|^)[^/]*$::; # strip off file
+       if( filedb::is_file($path,$cgifile))
        {
-          $path_enc =~ s:^/::;
-          $path_enc =~ s:(/|^)[^/]*$:$1:; # strip off file
-          return $filedb::define::doc_wpath . '/' . $path_enc . $ref_enc;
+           return filedb::join_paths($filedb::define::doc_wpath, view::url_encode_path($path), $ref_enc);
+       }
+       else # if not found, assume it is relative to wkn cgi
+       {
+          return($ref_enc);
        }
    }
-   elsif($path_enc =~ m:/[^/]*\.(htm?|wiki)$:) # strip off README.html or xxx.html
+   elsif(filedb::is_file($path)) # strip off filename
    {
-      $ref = "$filedb::define::doc_wpath/$`/$ref";
+      $path =~ m:(/|^)[^/]+$:;
+      $ref = filedb::join_paths($filedb::define::doc_wpath,$`,$ref);
    }
    else
    {
-      $ref = "$filedb::define::doc_wpath/$path_enc/$ref";
+      $ref = filedb::join_paths($filedb::define::doc_wpath,$path, $ref);
    }
    
    #collapse dir/.. to nothing
