@@ -139,15 +139,15 @@ else
       closedir(DIR);
       if((! $found_files ) and @delete_files)
       {
-          foreach $file (@delete_files)
-          {
-              unless (unlink("$full_file/$file") )
-              {
-                 print "Could not delete file: $file\n";
-                 $found_files=1;
-                 last;
-              }
-          }
+         foreach $file (@delete_files)
+         {
+            unless (unlink("$full_file/$file") )
+            {
+               print "Could not delete file: $file\n";
+               $found_files=1;
+               last;
+            }
+         }
       }
       unless($found_files)
       {
@@ -166,7 +166,7 @@ else
       print "<h1>Delete File</h1>\n";
       if(unlink($full_file))
       {
-          print "Sucessfull deleting: $file\n";
+         print "Sucessfull deleting: $file\n";
       }
       else
       {

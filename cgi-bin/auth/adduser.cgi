@@ -65,9 +65,9 @@ if( $in{password} ne $in{password_verify} )
 }
 
 if(! auth::modify_user_info($in{'username'}, $in{'password'}, 
-   $auth::define::newuser_path, 
-   $auth::define::newuser_flags,
-$in{'fullname'}, $in{'email'}, $in{'webpage'}, $ENV{REMOTE_HOST}, $ENV{REMOTE_ADDR}))
+      $auth::define::newuser_path, 
+      $auth::define::newuser_flags,
+      $in{'fullname'}, $in{'email'}, $in{'webpage'}, $ENV{REMOTE_HOST}, $ENV{REMOTE_ADDR}))
 {
    print "Sorry: Could not add user.\n";
    exit(0);

@@ -77,72 +77,72 @@ if(-d $toppath)
 
    while( @dirs )
    {
-       #done with a directory
-       my $filename = readdir("DIR$#dirs");
-       unless(defined($filename))
-       {
-          closedir("DIR$#dirs");
-          pop(@dirs);
-          $indent = substr($indent, 1);
-          $depth--;
-          print "$indent</ul>\n";
-          next;
-       }
+      #done with a directory
+      my $filename = readdir("DIR$#dirs");
+      unless(defined($filename))
+      {
+         closedir("DIR$#dirs");
+         pop(@dirs);
+         $indent = substr($indent, 1);
+         $depth--;
+         print "$indent</ul>\n";
+         next;
+      }
 
-       next if ( $filename =~ m:^(\.|README|index.html): );
-       next if ($filename =~ m:(\.bak|~)$:);
+      next if ( $filename =~ m:^(\.|README|index.html): );
+      next if ($filename =~ m:(\.bak|~)$:);
 
-       my($name) = $filename;
-       $name = wkn::define::filename_filter($filename) if defined(&wkn::define::filename_filter);
-       next unless ( defined($name));
+      my($name) = $filename;
+      $name = wkn::define::filename_filter($filename) if defined(&wkn::define::filename_filter);
+      next unless ( defined($name));
 
-       my $fullpath = $dirs[$#dirs] ne "" ? "$dirs[$#dirs]/$filename" : $filename;
-       my $encoded_notes_path = wkn::url_encode_path("$notes_base$fullpath");
+      my $fullpath = $dirs[$#dirs] ne "" ? "$dirs[$#dirs]/$filename" : $filename;
+         my $encoded_notes_path = wkn::url_encode_path("$notes_base$fullpath");
 
-       # Dir, traverse down it
-       if ( defined($wkn::define::skip_files) and $filename =~ m/$wkn::define::skip_files/)
-       {
-       }
-       elsif (-d "$toppath/$fullpath" )
-       {
-          print "$indent<li><a href=\"" ,
-          &wkn::mode_to_scriptprefix($wkn::define::mode),
-             $encoded_notes_path , "\">";
-          if(defined($wkn::define::max_depth) and $depth >= $wkn::define::max_depth)
-          {
-             my ($count, $dir ) = ( 0 );
-             if( opendir(DIRMAX, "$toppath/$fullpath") )
-             {
-                while($dir = readdir(DIRMAX))
-                { $count++ if($dir =~ m:^[^\.]:); }
-                close(DIRMAX);
-                $name .= " ($count)";
-             }
-             print "$name</a>\n";
-          }
-          else
-          {
-             print "$name</a>\n";
-             $depth++;
-             push(@dirs, $fullpath);
-             opendir("DIR$#dirs", "$toppath/$fullpath") or
-                print "Cannot open dir: $fullpath\n";
-             print "$indent<ul>\n";
-             $indent .= " ";
-          }
+      # Dir, traverse down it
+      if ( defined($wkn::define::skip_files) and $filename =~ m/$wkn::define::skip_files/)
+      {
+      }
+      elsif (-d "$toppath/$fullpath" )
+      {
+         print "$indent<li><a href=\"" ,
+            &wkn::mode_to_scriptprefix($wkn::define::mode),
+            $encoded_notes_path , "\">";
+         if(defined($wkn::define::max_depth) and $depth >= $wkn::define::max_depth)
+         {
+            my ($count, $dir ) = ( 0 );
+            if( opendir(DIRMAX, "$toppath/$fullpath") )
+            {
+               while($dir = readdir(DIRMAX))
+               { $count++ if($dir =~ m:^[^\.]:); }
+               close(DIRMAX);
+               $name .= " ($count)";
+            }
+            print "$name</a>\n";
+         }
+         else
+         {
+            print "$name</a>\n";
+            $depth++;
+            push(@dirs, $fullpath);
+            opendir("DIR$#dirs", "$toppath/$fullpath") or
+               print "Cannot open dir: $fullpath\n";
+            print "$indent<ul>\n";
+            $indent .= " ";
+         }
 
-       }
-       elsif($name =~ m:\.(html|txt)$:)
-       {
-          $name = $`;
-          print "$indent<li><a href=\"" .
-          &wkn::mode_to_scriptprefix($wkn::define::mode),
-          $encoded_notes_path. "\">$name</a>\n";
-       }
-       else
-       {
-          print "$indent<li><a href=\"$wkn::define::notes_wpath/$encoded_notes_path\">$name</a>\n";
-       }
+      }
+      elsif($name =~ m:\.(html|txt)$:)
+      {
+         $name = $`;
+         print "$indent<li><a href=\"" .
+            &wkn::mode_to_scriptprefix($wkn::define::mode),
+            $encoded_notes_path. "\">$name</a>\n";
+      }
+      else
+      {
+         print "$indent<li><a href=\"$wkn::define::notes_wpath/$encoded_notes_path\">$name</a>\n";
+      }
    }
 }
 print "</table>\n";

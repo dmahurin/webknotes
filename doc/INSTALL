@@ -33,7 +33,7 @@ wkn/
 
 To get the basic WebKNotes system working you need to:
 (For the impatient, the next section has step by step commands)
-   - unpackage(gunzip < wkn.tgz | tar xvf -) wkn.
+   - unpackage(gunzip < webknotes.tgz | tar xvf -) wkn.
    - link or move wkn and auth cgi-bin dirs to somewhere visible on web.
    - Create a directory structure with public and private directories.
      (similar to those in the example directory).
@@ -43,7 +43,7 @@ To get the basic WebKNotes system working you need to:
    - modify cgi-bin/wkn/wkn_define.pl for your system.
    - cd cgi-bin/auth && cp auth_define_sample.pl auth_define.pl
    - modify cgi-bin/auth/auth_define.pl for your system.
-   - do whatever is require to have the cgi-scripts run as the owner of
+   - do whatever is required to have the cgi-scripts run as the owner of
           the 'notes' directory.
         setuid perl scripts. ( chmod u+s cgi-bin/wkn/*cgi cgi-bin/auth/*cgi
         using cgi-wrap.
@@ -68,21 +68,4 @@ scratch on MY system:
    cd ../../..
 
    lynx http://localhost/~dmahurin/cgi-bin/wkn/wkn_table.cgi
-   lynx http://localhost/~dmahurin/cgi-bin/wkn/wkn_index.cgi
-   ln -s ~/wkn/public/index.html public_html/newindex.html
-   lynx http://localhost/~dmahurin/newindex.html
-
-**********************************************************************
-****mail access is currently disabled.  INGORE below for now ****
-***********************************************
-To get the subscibe/unsubscribe part of WebKNotes working you need to:
-
-Determine an email address to use for the WeKNotes request.
-(This can already be used for something else)
-
-Install 'procmail' for this user, or for whole system.
-
-Customize rc.wkn to your system.
-Incorporate procmailrc into .procamailrc.
-Put rc.wkn into .procmail/
 

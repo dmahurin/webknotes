@@ -15,8 +15,8 @@ print "<html><head>
 my($notes_path) = $ENV{QUERY_STRING};
 if ( $notes_path =~ m/\.\./ )
 {
-       print "illegal chars\n";
-       exit 0;
+   print "illegal chars\n";
+   exit 0;
 }
 # else notes_path is ok. untaint it
 $notes_path =~ m:^:;

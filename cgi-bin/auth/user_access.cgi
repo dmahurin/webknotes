@@ -44,7 +44,7 @@ Password <input type=password name=\"password\" size=20><br>
 </form>
       <hr>\n";
 }   
-   print"<p><form method=\"POST\" action=\"${script_path}userinfo.cgi\">
+print"<p><form method=\"POST\" action=\"${script_path}userinfo.cgi\">
 Change user info for
 <input type=text name=\"username\" value=\"$user\" size=20>
 <input type=submit value=\"Change User Info\">

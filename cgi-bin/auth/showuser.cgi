@@ -21,14 +21,14 @@ my %in;
 my $username = $in{'username'};
 if( $username =~ m:\W: )
 {
-  print "Illegal char\n";
-  exit;
+   print "Illegal char\n";
+   exit;
 }
 
 if( ! defined($username) )
 {
-  print "Username not defined\n";
-  exit;
+   print "Username not defined\n";
+   exit;
 }
 
 my($password, $path, $access, $fullname, $email, $webpage, @otherinfo) =

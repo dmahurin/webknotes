@@ -25,7 +25,7 @@ my($this_cgi) = $ENV{'SCRIPT_NAME'};
 
 if ( ! defined($user) )
 {
-print "Content-type: text/html\n\n";
+   print "Content-type: text/html\n\n";
    print <<"END";
 <html>
 <head>

@@ -20,8 +20,8 @@ my(%in);
 my $username = auth::get_user();
 if( ! defined($username) )
 {
-  print "Not logged in\n";
-  exit(0);
+   print "Not logged in\n";
+   exit(0);
 }
 my($password);
 my($old_password, $path, $access, $fullname, $email, $webpage, @otherinfo) =
@@ -98,12 +98,12 @@ if( defined($in{'password'}) and $in{password} ne "" )
 {
    if($in{'password'} eq $in{'password_verify'})
    {
-     $password = $in{'password'};
+      $password = $in{'password'};
    }
    else
    {
-     print "password verify did not match\n";
-     exit(0);
+      print "password verify did not match\n";
+      exit(0);
    }
 }
 

@@ -37,7 +37,7 @@ if(defined($frame))
    {
       print "<html><head><BASE TARGET=\"_parent\"></head>";
       print &wkn::translate_html($wkn::define::index_header)
-        if(defined($wkn::define::index_header));
+         if(defined($wkn::define::index_header));
       print "</html>\n";
    }
    elsif($frame eq "footer")

@@ -13,27 +13,27 @@ undef($email);
 undef($notes_path);
 while($line = <STDIN>)
 {
-	chomp($line);
-	if (! $line ) # end of header
-	{
-		last;
-	}
+   chomp($line);
+   if (! $line ) # end of header
+   {
+      last;
+   }
 
-	if ( $line =~ m/^From:.*/ )
-	{
-		$email = $line;
-		$email =~ s/^From: *//;
-	}
+   if ( $line =~ m/^From:.*/ )
+   {
+      $email = $line;
+      $email =~ s/^From: *//;
+   }
 
-	if ( $line =~ m/^Subject:.*/ )
-	{
-		$notes_path = $line;
-		$notes_path =~ s/^Subject:.*subs //;
-	}
+   if ( $line =~ m/^Subject:.*/ )
+   {
+      $notes_path = $line;
+      $notes_path =~ s/^Subject:.*subs //;
+   }
 
-	if( $email && $notes_path )
-	{
-		&kn_unsubs($notes_path, $email);
-		last;
-	}
+   if( $email && $notes_path )
+   {
+      &kn_unsubs($notes_path, $email);
+      last;
+   }
 }

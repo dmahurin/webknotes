@@ -60,26 +60,26 @@ _EOT
 #elsif ( -d "${real_path}" )
 {
 		
-	my $dir_file = &wkn::print_dir_file( $notes_path );
-	print "<hr>\n";
-	print "<b>$notes_name</b><br>\n";
-	wkn::print_modification($notes_path);
-	print "<hr>\n";
-	&wkn::log($notes_path);
-        if(&wkn::list_files_html($notes_path))
-        {
-           print "<hr>\n";
-        }
-        if($dir_file ne "index.html")
-        {
-           if(&wkn::list_dirs_html($notes_path))
-           {
-              print "<hr>";
-           }
-        }
-	&wkn::actions2($notes_path);
-	print "<hr>\n";
-	&wkn::actions3($notes_path);
+   my $dir_file = &wkn::print_dir_file( $notes_path );
+   print "<hr>\n";
+   print "<b>$notes_name</b><br>\n";
+   wkn::print_modification($notes_path);
+   print "<hr>\n";
+   &wkn::log($notes_path);
+   if(&wkn::list_files_html($notes_path))
+   {
+      print "<hr>\n";
+   }
+   if($dir_file ne "index.html")
+   {
+      if(&wkn::list_dirs_html($notes_path))
+      {
+         print "<hr>";
+      }
+   }
+   &wkn::actions2($notes_path);
+   print "<hr>\n";
+   &wkn::actions3($notes_path);
 }
 #else # not dir or file
 #{

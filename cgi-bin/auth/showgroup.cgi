@@ -21,14 +21,14 @@ my %in;
 my $username = $in{'group'};
 if( $username =~ m:[^\w-]: )
 {
-  print "Illegal char\n";
-  exit;
+   print "Illegal char\n";
+   exit;
 }
 
 if( ! defined($username) )
 {
-  print "Group not defined\n";
-  exit;
+   print "Group not defined\n";
+   exit;
 }
 
 my($members, $access, $name, @other) = &auth::get_group_info($username);
@@ -47,12 +47,12 @@ print "<table border=\"1\"><tr><th>Full Name</th><th>User Name</th><th>email</th
 for $username (split(',', $members))
 {
    my($password, $path, $access, $fullname, $email, $webpage, @otherinfo) =
-&auth::get_user_info($username);
+      &auth::get_user_info($username);
    
    my($username_more) = (defined($auth::define::userinfocgi) ? ("<a href=\"$auth::define::userinfocgi$username\">$username</a>") : $username);
    if(defined($fullname))
    {
-   print "
+      print "
          <tr><td>$fullname</td>
          <td>$username_more </td>
 <td><a href=\"mailto:$email\">$email</a></td>

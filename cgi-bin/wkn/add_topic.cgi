@@ -47,7 +47,7 @@ my($source_details) = " $ENV{'REMOTE_ADDR'}, $ENV{'REMOTE_HOST'}\n";
 
 if( ! $in{description} || ! $topic_tag )
 {
-	print("<br>Required field missing <br>\n");
+   print("<br>Required field missing <br>\n");
 }
 else
 {
@@ -55,11 +55,11 @@ else
    if( &wkn::add_topic($notes_path, $topic_tag, $in{'topic_type'}, $in{'text_type'}, $source_details, $in{description}))
    {
 
-print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
+      print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
    }
    else
    {
-	print("<br>Topic creation was unsuccessful<br>\n");
+      print("<br>Topic creation was unsuccessful<br>\n");
    }
 }
 print "<br><A HREF=\"$wkn::define::cgi_wpath/"
@@ -69,19 +69,19 @@ $notes_path . '">' . "BACK TO NOTES:$notes_path</A>
 
 sub print_form
 {
-if( ! -e "$wkn::define::notes_dir/$notes_path" )
-{
-   if( $notes_path =~ m:/([^/]+)$: )
+   if( ! -e "$wkn::define::notes_dir/$notes_path" )
    {
-      $notes_path = $`;
-      $topic_tag = $1;
+      if( $notes_path =~ m:/([^/]+)$: )
+      {
+         $notes_path = $`;
+         $topic_tag = $1;
+      }
+      else
+      {
+         $topic_tag = $notes_path;
+         $notes_path = "";
+      }
    }
-   else
-   {
-      $topic_tag = $notes_path;
-      $notes_path = "";
-   }
-}
 
 
 

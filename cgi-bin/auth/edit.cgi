@@ -137,7 +137,7 @@ else
       print "failed to write $file\n";
       exit(1);
    }
-    $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
+   $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
    print FOUT $text;
    close(FOUT);
    print "wrote $file\n";

@@ -32,20 +32,20 @@ opendir(DIR, "$wkn::define::notes_dir/$notes_path");
 my $file;
 while($file = readdir(DIR))
 {
-	next if( $file =~ m:^\.: );
-	next if( $file =~ m:^README(\.html)?:);
-	next if( $file eq "index.html");
+   next if( $file =~ m:^\.: );
+   next if( $file =~ m:^README(\.html)?:);
+   next if( $file eq "index.html");
 
-	if( $file =~ m:^([^/]*)$: ) # untaint dir entry
-        {
-		$file = $1;
-	}
-	else
-	{
-		print "hey, /'s ? not ggod.\n";
-                exit;
-	}
-	print_topic_table( "$notes_path/$file");	
+   if( $file =~ m:^([^/]*)$: ) # untaint dir entry
+   {
+      $file = $1;
+   }
+   else
+   {
+      print "hey, /'s ? not ggod.\n";
+      exit;
+   }
+   print_topic_table( "$notes_path/$file");	
 }
 closedir(DIR);
 
@@ -60,67 +60,67 @@ print "</HTML>\n";
 
 sub print_main_topic_table
 {
-	my($notes_path) = @_;
-	$notes_path =~ m:([^/]*)$:;
-	my $notes_name = $1;
+   my($notes_path) = @_;
+   $notes_path =~ m:([^/]*)$:;
+   my $notes_name = $1;
 
-	print "<table border=0 cellpadding=8>\n";
-	print "<tr><td $wkn::attr::td_title>\n";
-	print "<b><font $wkn::attr::font_table_title>$notes_name</font></b><br>\n";
-	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_highlight>\n";
-	&wkn::print_modification($notes_path);
-	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_description>\n";
-	&wkn::print_dir_file($notes_path);
-	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_highlight>\n";
-	wkn::actions2($notes_path);
-	print "</td></tr>\n";
-	print "</table><br>\n";
+   print "<table border=0 cellpadding=8>\n";
+   print "<tr><td $wkn::attr::td_title>\n";
+   print "<b><font $wkn::attr::font_table_title>$notes_name</font></b><br>\n";
+   print "</td></tr>\n";
+   print "<tr><td $wkn::attr::td_highlight>\n";
+   &wkn::print_modification($notes_path);
+   print "</td></tr>\n";
+   print "<tr><td $wkn::attr::td_description>\n";
+   &wkn::print_dir_file($notes_path);
+   print "</td></tr>\n";
+   print "<tr><td $wkn::attr::td_highlight>\n";
+   wkn::actions2($notes_path);
+   print "</td></tr>\n";
+   print "</table><br>\n";
 }
 
 sub print_topic_table
 {
-	my($notes_path) = @_;
-	$notes_path =~ m:([^/]*)$:;
-	my $notes_name = $1;
+   my($notes_path) = @_;
+   $notes_path =~ m:([^/]*)$:;
+   my $notes_name = $1;
 
-	print "<table border=0 cellpadding=8>\n";
-	print "<tr><td $wkn::attr::td_highlight>\n";
+   print "<table border=0 cellpadding=8>\n";
+   print "<tr><td $wkn::attr::td_highlight>\n";
 #	print "<b>$notes_name</b><br>\n";
-	wkn::print_link_html($notes_path);
+   wkn::print_link_html($notes_path);
 #        print_icon_link_info($notes_path);
-	print "</td></tr>\n";
-	print "<tr><td $wkn::attr::td_description>\n";
-	&wkn::print_dir_file($notes_path);
-	print "</td></tr>\n";
+   print "</td></tr>\n";
+   print "<tr><td $wkn::attr::td_description>\n";
+   &wkn::print_dir_file($notes_path);
+   print "</td></tr>\n";
 #	print "<tr><td $wkn::attr::td_list>\n";
 #	wkn::actions2($notes_path);
 #	print "</td></tr>\n";
 #	print "<tr><td $wkn::attr::td_list>\n";
 #	&wkn::list_html($notes_path);
 #	print "</td></tr>\n";
-	print "</table><br>\n";
+   print "</table><br>\n";
 }
 
 sub print_icon_link_info
 {
-        my($path) = @_;
-        $path =~ m:([^/]*)$:;
-        my $name = $1;
+   my($path) = @_;
+   $path =~ m:([^/]*)$:;
+   my $name = $1;
 
-        print "<table>\n";
-        print "<tr><td rowspan=2>\n";
-        print "<A HREF=\"$wkn::define::cgi_wpath/"
-           &wkn::mode_to_scriptprefix($wkn::define::page_mode) ,
-        "$path\">";
-        wkn::print_icon_img($path);
-	print "</a></td>\n<td>";
-        print "<A HREF=\"$wkn::define::cgi_wpath/"
-           &wkn::mode_to_scriptprefix($wkn::define::page_mode) ,
-        "$path\">";
-        print "$name</a></td></tr><tr><td>\n";
-	&wkn::print_modification($notes_path);
-        print "</td></tr></table>\n";
+   print "<table>\n";
+   print "<tr><td rowspan=2>\n";
+   print "<A HREF=\"$wkn::define::cgi_wpath/"
+      &wkn::mode_to_scriptprefix($wkn::define::page_mode) ,
+      "$path\">";
+   wkn::print_icon_img($path);
+   print "</a></td>\n<td>";
+   print "<A HREF=\"$wkn::define::cgi_wpath/"
+      &wkn::mode_to_scriptprefix($wkn::define::page_mode) ,
+      "$path\">";
+   print "$name</a></td></tr><tr><td>\n";
+   &wkn::print_modification($notes_path);
+   print "</td></tr></table>\n";
 }

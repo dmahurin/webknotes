@@ -14,43 +14,43 @@ undef($notes_path);
 $unsubscribe = 0;
 while($line = <STDIN>)
 {
-	chomp($line);
-	if (! $line ) # end of header
-	{
-		last;
-	}
+   chomp($line);
+   if (! $line ) # end of header
+   {
+      last;
+   }
 
-	if ( $line =~ m/^From:.*/ )
-	{
-		$email = $line;
-		$email =~ s/^From: *//;
-	}
+   if ( $line =~ m/^From:.*/ )
+   {
+      $email = $line;
+      $email =~ s/^From: *//;
+   }
 
-	if ( $line =~ m/^Subject:.*/ )
-	{
-		$line =~ s/^Subject: *//;
-		if( $line =~ m/^KN.unsubs:.*/)
-		{
-			$unsubscribe = 1;
-		}
-		$notes_path = $line;
-		$notes_path =~ s/.*subs: //;
+   if ( $line =~ m/^Subject:.*/ )
+   {
+      $line =~ s/^Subject: *//;
+      if( $line =~ m/^KN.unsubs:.*/)
+      {
+         $unsubscribe = 1;
+      }
+      $notes_path = $line;
+      $notes_path =~ s/.*subs: //;
 
-		print("notes_path = $notes_path \n");
-	}
+      print("notes_path = $notes_path \n");
+   }
 
-	if( $email && $notes_path )
-	{
-		if($unsubscribe)
-		{
-			&kn_unsubs($notes_path, $email);
-		}
-		else
-		{
-			&kn_subs($notes_path, $email);
-		}
-		last;
-	}
+   if( $email && $notes_path )
+   {
+      if($unsubscribe)
+      {
+         &kn_unsubs($notes_path, $email);
+      }
+      else
+      {
+         &kn_subs($notes_path, $email);
+      }
+      last;
+   }
 }
 
 1;

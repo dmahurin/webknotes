@@ -13,38 +13,38 @@ $mail_header = "";
 $notes_body = "";
 while($line = <STDIN>)
 {
-	$mail_header .= $line;
+   $mail_header .= $line;
 
-	chomp($line);
-	if (! $line ) # end of header
-	{
-		last;
-	}
+   chomp($line);
+   if (! $line ) # end of header
+   {
+      last;
+   }
 
-	if ( $line =~ m/^From:.*/ )
-	{
-		# avoid a KNOTES loop
-		if( $line =~ m/.*KNOTES.*/ )
-		{
-			exit;
-		}
-		$notes_body = "$line\n\n";
-		$notes_body =~ s/^From:/Sender:/;
-	}
+   if ( $line =~ m/^From:.*/ )
+   {
+      # avoid a KNOTES loop
+      if( $line =~ m/.*KNOTES.*/ )
+      {
+         exit;
+      }
+      $notes_body = "$line\n\n";
+      $notes_body =~ s/^From:/Sender:/;
+   }
 
-	if ( $line =~ m/^Subject: KN.add:.*/ )
-	{
-		$notes_path = $line;
-		$notes_path =~ s/^Subject: KN.add:\ *//;
-	}
+   if ( $line =~ m/^Subject: KN.add:.*/ )
+   {
+      $notes_path = $line;
+      $notes_path =~ s/^Subject: KN.add:\ *//;
+   }
 }
 
 while($line = <STDIN>)
 {
-        $notes_body .= $line;
+   $notes_body .= $line;
 }
 
 if( $mail_header && $notes_path )
 {
-	&kn_add_topic($notes_path, "note", $mail_header, $notes_body);
+   &kn_add_topic($notes_path, "note", $mail_header, $notes_body);
 }
