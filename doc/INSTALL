@@ -62,5 +62,31 @@ Create configuration files (y|n) [y]:
 
 ----
 
-The complicated MANUAL instructions were removed because they were out of
-date, and ... complicated.
+Some have told me that I neglected to document the final step.
+"How to run the damn thing?"
+
+I put a new configure script out in CVS that creates a default index, and
+ prints out the URL address of the default index and browse_help.cgi as a 
+ last step.
+
+Starting points would be:
+cgi-bin/wkn/browse_notes.cgi
+cgi-bin/wkn/browse_help.cgi
+
+
+A main index.html file can be generated with 'cgitohtml' util.
+
+A simple case would be:
+
+webknotes/util/cgitohtml /~awebuser/cgi-bin
+~awebuser/public_html/cgi-bin/browse_table.cgi ""
+
+Or, really specifically, on my web page(they use cgi-wrap for cgi scripts),
+I do:
+
+webknotes/util/cgitohtml /cgi-bin/cgiwrap/dmahurin/wkn
+~dmahurin/public_html/cgi-bin/wkn/browse_page.cgi \
+"" "wknbook" "Computer/Linux" "" \
+"People/Don Mahurin" "colspan=2" "People/Don Mahurin/Projects/wkn" \
+> ~/public_html/index.html
+

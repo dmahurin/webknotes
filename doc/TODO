@@ -2,4 +2,19 @@ Better documentation(INSTALL)
 
 Have another level of users that get passwords via email.(to verify address)
 
-Email subscription.(requires email password users)
+With email verified users, this could allow:
+- Ability to Add topics via EMAIL
+- Email subscription.
+  - auto-subscribe to topics that you create
+  - [un/]subscribe to other/all topics
+- Ability to usubscribe ALL.
+- Ability to reply to a knotes email and have it put in DB
+- Ability to subscribe to a flat dir or the dir tree.
+
+
+Some other possible future additions:
+- Abreviations for note paths.(KN:fvwm = KN:/X/window_managers/fvwm)
+- Ability to download the entire archive(as a tar.gz file) or part of it.
+
+Don Mahurin
+mailto:dmahurin@users.sourceforge.net
