@@ -47,7 +47,8 @@ A:active { color: #336699 }
 
 
 .topic-table-border {
-  background: black;
+  background: #000000;
+  color: #ffffff;
   border: 1px solid black;
 }
 

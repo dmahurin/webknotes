@@ -1,7 +1,12 @@
+
 .topics-back
 {
   background: #000000;
+  color: #006666;
 }
+
+.topics-back-text A:link { color: #ffffff }
+.topics-back-text A:visited { color: #ffffff }
 
 A:link { color: #006666 }
 A:visited { color: #006666 }
@@ -10,62 +15,96 @@ A:visited { color: #006666 }
 {
   background: #ffffff;
   color: #000000;
+  border: 1px solid #cccccc;
 }
 
+.topic-text-border
+{
+  background: #cccccc;
+  border: 1px solid #cccccc;
+}
 
 .topic-title
 {
-  background: #006666;
+  background-color: #006666;
+  color: #ffffff;
+  border: 1px solid #006666;
+}
+
+.topic-title-border
+{
+   background: #006666;
   color: #ffffff;
 }
 
 .topic-title a:link {color: #ffffff}
 .topic-title a:visited {color: #ffffff}
 
-.sub-topic-title-border
+.sub-topic-table-border
 {
   border: 1px none;
-  border: 1px solid black;
-  background: black;
+  border: 1px solid #cccccc;
+  background: #cccccc;
 }
 
 .sub-topic-title
 {
    background: #cccccc;
+   border: 1px solid #cccccc;
    color: #000000;
 }
 
 .topic-info
 {
-  font-style: italic; 
+/*  font-style: italic; */
+  border: 1px solid #cccccc;
+  font-weight: bold;
   background: #ffffff;
   color: #000000;
 }
 
-
-.topic-table-border {
-  background: black;
-  border: 1px solid #ffffff;
+.topic-info-border
+{
+  background: #cccccc;
 }
+
+
+/*
+.topic-table-border {
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid black;
+}
+*/
 
 
 .topic-table {
    background: #ffffff;
+}
+
+.sub-topic-table {
+   background: #ffffff;
    border: 1px solid #ffffff;
 }
 
-
 .topic-actions {
-   background: #cccccc;
-  border: 1px solid #ffffff;
+   background: #ffffff;
+  border: 1px solid #cccccc;
    color: #000000;
+  font-weight: bold;
 }
 
 
+.topic-actions-border {
+  border: 1px solid #cccccc; 
+  background: #cccccc;
+}
 .topic-listing {
    background: #CCCCCC;
-  border: 1px solid #ffffff;
+  border: 1px solid #000000;
 }
 
+.topic-listing-border {
+   background: #000000;
+}
 
-                                                s

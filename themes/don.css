@@ -1,6 +1,11 @@
-.topics-back { background: #006374}
 a:link { color: #0033CC }
 v:link { color: #800080 }
+
+.topics-back { background: #006374;
+ color: #ffffff;}
+.topics-back-text a:link { color: #EEEE00; }
+.topics-back-text a:visited { color: #EEEE00; }
+
 
 .topic-title { background: #00AAAA; color: black }
 

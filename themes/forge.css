@@ -1,10 +1,12 @@
-.topics-back { background: #6C7198; }
 #background-image: url(themes/steel3.jpg)}
 
 a:link { color:#6666aa }
 a:active {color:#aa6666 }
 a:visited { color :#6666aa }
 
+.topics-back { background: #6C7198; color: #cccccc}
+.topics-back-text a:link { color: #ffffff }
+.topics-back-text a:visited { color: #ffffff }
 
 
 
