@@ -1,0 +1,21 @@
+.topics-back { background: #6C7198 }
+#background-image: url(themes/steel3.jpg)}
+
+a:link { color:#6666aa }
+a:active {color:#aa6666 }
+a:visited { color :#6666aa }
+
+
+
+
+
+.topic-table-border { border: 1px solid white}
+.topic-table { background: #ffffff}
+.topic-title { background: #D1D5D7; color: black }
+.topic-info { background: #E3E3E3; font-style: italic}
+.topic-text { background: #ffffff; color black }
+.topic-actions { background: #D1D5D7; color: black}
+.topic-actions { background: #ffffff; color: black}
+.topic-actions-border { background: black; border: 1px solid black}
+.topic-listing {background: #EAECEF}
+                             

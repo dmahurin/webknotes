@@ -10,68 +10,47 @@ else
    $user = "root";
 }
 
-my ($default_doc_root, $default_cgi_root, $default_cgi_alias,
+my ($doc_root, $cgi_root, $cgi_root_wpath,
    $user_dir) =
    &chomp_slashs(parse_httpd());
-my $root_alias;
    
-print "\nThese first few question are general questions about your web server setup\n\n";
 $default = ($< && $user ne "www") ? "u" : "r";
    
 if(prompt_default("Install in web Root or User directory", $default, "(r|u)") eq "r")
 {
-   $default_doc_root = "/home/httpd/html"
-      unless(defined($default_doc_root));
-   $default_cgi_root = "/home/httpd/cgi-bin"
-      unless(defined($default_cgi_root));
-   $default_cgi_alias = "/cgi-bin"
-      unless(defined($default_cgi_alias));
-   $doc_root_alias = "/";
-   $default_private_web_dir = "/home/httpd/private";
+   $doc_root = "/home/httpd/html"
+      unless(defined($doc_root));
+   $cgi_root = "/home/httpd/cgi-bin"
+      unless(defined($cgi_root));
+   $cgi_root_wpath = "/cgi-bin"
+      unless(defined($cgi_root_wpath));
+   $doc_root_wpath = "/";
+   $private_web_dir = "/home/httpd/private";
 }
 else
 {
    if(defined($user_dir))
    {
-      $default_doc_root = "$ENV{\"HOME\"}/$user_dir";
+      $doc_root = "$ENV{\"HOME\"}/$user_dir";
    }
    else
    {
-      $default_doc_root = "$ENV{\"HOME\"}/public_html";
+      $doc_root = "$ENV{\"HOME\"}/public_html";
    }
-   undef $default_cgi_root;
-   undef $default_cgi_alias;
-   $doc_root_alias = "/~$ENV{\"USER\"}";
-   $default_private_web_dir = "$ENV{\"HOME\"}/web_private";
+   undef $cgi_root;
+   undef $cgi_root_wpath;
+   $doc_root_wpath = "/~$ENV{\"USER\"}";
+   $private_web_dir = "$ENV{\"HOME\"}/web_private";
 }
 
+unless($cgi_root)
+{
+   $cgi_root = "$doc_root/cgi-bin";
+   $cgi_root_wpath = "$doc_root_wpath/cgi-bin";
+}
 $webknotes_base = ( $0 =~ m:/[^/]*$: ) ?  $` : ".";
 
-$public_html_dir= prompt_default("Public html directory", $default_doc_root);
-unless(-d $public_html_dir)
-{
-   print "Public html directory does not exist\n";
-   exit(0);
-}
-if($public_html_dir =~ m:$default_doc_root/:)
-{
-   $doc_root_alias = '/' . $';
-}
-$public_html_wpath=prompt_default("Public html url path", $doc_root_alias);
-
-$public_cgi_dir= prompt_default("cgi-bin directory", ($default_cgi_root || "$public_html_dir/cgi-bin"));
-if(!defined($default_cgi_alias))
-{
-   $default_cgi_alias =   ($public_cgi_dir =~ ( m:^$public_html_dir/: )? "$public_html_wpath/$'" : 
-   "$public_html_wpath/cgi-bin");
-}
-elsif($public_cgi_dir =~  m:^${default_cgi_root}/:)
-{
-   $default_cgi_alias =   "$default_cgi_alias/$'";
-}
-
-$public_cgi_wpath= prompt_default("cgi-bin url path", $default_cgi_alias);
-$private_web_dir= prompt_default("Private web data directory", $default_private_web_dir);
+$private_web_dir= prompt_default("Private web data directory", $private_web_dir);
 unless(-d $private_web_dir)
 {
    if(mkdir($private_web_dir,0755))
@@ -86,67 +65,98 @@ unless(-d $private_web_dir)
    }
 }
 
-print "\nThe questions that follow allow changing the default webknotes sub paths\n\n";
-$doc_sub_path = prompt_default("Document sub path ( '/' for toplevel)", "notes");
-$doc_sub_path = "" if ($doc_sub_path eq '/');
-$doc_dir = "$public_html_dir/$doc_sub_path";
-$doc_wpath = "$public_html_wpath/$doc_sub_path";
+$notes_subpath = "notes";
+$notes_dir = prompt_default("Notes file path", "$doc_root/$notes_subpath");
+if($notes_dir =~ m:^$doc_root/:)
+{
+   $in_doc_root=1;
+   $notes_subpath = $';
+}
+$notes_wpath = prompt_default("Notes web path", "$doc_root_wpath/$notes_subpath");
 
-if( ! -d $doc_dir )
+mkdir($doc_root,0755) if ($in_doc_root);
+if( ! -d $notes_dir )
 {
    if(prompt_default("Create directory", "y", "(y|n)") eq "y")
    {
-      print "Error creating director\n" unless(mkdir($doc_dir,0755));
+      print "Error creating director\n" unless(mkdir($notes_dir,0755));
       if(prompt_default("Copy sample notes", "y", "(y|n)") eq "y")
       {
-	 system("cp -r '$webknotes_base/example/public/notes'/* $doc_dir");
+	 system("cp -r '$webknotes_base/example/public/notes'/* $notes_dir");
       }
    }
 }
 
-$icons_sub_path = prompt_default("Icons sub path", "icons");
-$icons_dir = "$public_html_dir/icons";
-$icons_wpath = "$public_html_wpath/icons";
-
-   
-
-if( ! -d $icons_dir )
+$icon_subpath = "icons";
+$theme_subpath = "themes";
+$icons_dir = prompt_default("Icons file path", "$doc_root/$icon_subpath");
+if($icons_dir =~ m:^$doc_root/:)
 {
-   if(prompt_default("Create icons directory", "y", "(y|n)") eq "y")
-   {
-      print "Error creating director\n" unless(mkdir($icons_dir,0755));
-      if(prompt_default("Copy sample icons", "y", "(y|n)") eq "y")
-      {
-	 system("cp -r '$webknotes_base/example/public/icons'/* $icons_dir");
-      }
+   $in_doc_root=1;
+   $icon_subpath = $';
+   if($icon_subpath =~ m:/icons:)
+   {      
+      $theme_subpath = $`;
    }
 }
+$icons_wpath = prompt_default("Icons web path", "$doc_root_wpath/$icon_subpath");
 
-$cgi_subpath = prompt_default("cgi-bin webknotes subpath", "wkn");
+$themes_dir = prompt_default("Themes file path", "$doc_root/$theme_subpath");
+if($themes_dir =~ m:^$doc_root/:)
+{
+   $in_doc_root=1;
+   $theme_subpath = $';
+}
+$themes_wpath = prompt_default("Themes web path", "$doc_root_wpath/$theme_subpath");
 
-   mkdir("$public_cgi_dir", 0755);
-   mkdir("$public_cgi_dir/$cgi_subpath", 0755);
+
+mkdir($doc_root,0755) if ($in_doc_root);
+if(prompt_default("Copy sample icons", ( -d $icons_dir )? "n" : "y",
+   "(y|n)") eq "y")
+{
+   mkdir($icons_dir,0755);
+   system("cp -r '$webknotes_base/example/public/icons'/* $icons_dir");
+}
+
+if(prompt_default("Copy sample themes", ( -d $themes_dir )? "n" : "y",
+   "(y|n)") eq "y")
+{
+   mkdir($themes_dir,0755);
+   system("cp -r '$webknotes_base/themes'/* $themes_dir");
+}
+
+$wkn_cgi_subpath = "wkn";
+$wkn_cgi_dir = prompt_default("webknotes cgi-bin directory", "$cgi_root/$wkn_cgi_subpath");
+if($wkn_cgi_dir =~ m:^$cgi_root/:)
+{
+   $in_cgi_root = 1;
+   $wkn_cgi_subpath = $';
+}
+$wkn_cgi_wpath = prompt_default("webknotes cgi-bin web path", "$cgi_root_wpath/$wkn_cgi_subpath");
+
+mkdir($cgi_root,0755) if ($in_cgi_root);
+mkdir($wkn_cgi_dir, 0755);
 
 #$default = ( -d "$public_cgi_dir/$cgi_subpath" ) ? "n" : "y";
 if(prompt_default("Copy webknotes cgi-bin", "y", "(y|n)") eq "y")
 {
-   system("cp -r $webknotes_base/cgi-bin/* $public_cgi_dir/$cgi_subpath");
+   system("cp -r $webknotes_base/cgi-bin/* $wkn_cgi_dir");
 
    if(prompt_default("Set Setuid on scripts", "y", "(y|n)") eq "y")
    {
-      system("chmod a+x,u+s $public_cgi_dir/$cgi_subpath/*.cgi");
+      system("chmod a+x,u+s $wkn_cgi_dir/*.cgi");
    }
 }
 
 
-$default = ( -f "$public_cgi_dir/$cgi_subpath/auth_define.pl" ) ? "n" : "y";
+$default = ( -f "$wkn_cgi_dir/auth_define.pl" ) ? "n" : "y";
 
 if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
 {
    
    
-   unlink("$public_cgi_dir/$cgi_subpath/auth_define.pl");
-   if(open(FILE, ">$public_cgi_dir/$cgi_subpath/auth_define.pl"))
+   unlink("$wkn_cgi_dir/auth_define.pl");
+   if(open(FILE, ">$wkn_cgi_dir/auth_define.pl"))
    {
       print FILE
 "#!/usr/bin/perl
@@ -154,8 +164,8 @@ if(prompt_default("Create configuration files", $default, "(y|n)") eq "y")
 package auth::define;
 
 \$private_dir = \"$private_web_dir\";
-\$doc_dir = \"$doc_dir\";
-\$doc_wpath = \"$doc_wpath\";
+\$doc_dir = \"$notes_dir\";
+\$doc_wpath = \"$notes_wpath\";
 
 \$path_permissions = { \"\" => \"+rn\"};
 
@@ -194,12 +204,14 @@ package auth::define;
       }
    }
 
-   unlink("$public_cgi_dir/$cgi_subpath/wkn_define.pl");
-   if(open(FILE, ">$public_cgi_dir/$cgi_subpath/wkn_define.pl"))
+   unlink("$wkn_cgi_dir/wkn_define.pl");
+   if(open(FILE, ">$wkn_cgi_dir/wkn_define.pl"))
    {
       print FILE
 "package wkn::define;
 \$icons_wpath = \"$icons_wpath\";" , 
+"\$themes_wpath = \"$themes_wpath\";" , 
+"\$themes_dir = \"$icons_dir\";" , 
 '
 $default_layout = "table";
 $default_theme = "don";

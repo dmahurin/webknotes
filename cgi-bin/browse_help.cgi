@@ -42,7 +42,7 @@ if($cgi_query_str =~ m:theme=([^&]*):)
 }
 else
 {
-   if(opendir(CDIR, "themes"))
+   if(opendir(CDIR, $wkn::define::themes_dir))
    {
       while(defined($file = readdir(CDIR)))
       {
