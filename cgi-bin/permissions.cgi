@@ -54,9 +54,6 @@ if( $dir =~ m:^(.*)$:)
 }
 $dir =~ s:^/+::;
 
-my $full_dir = "$filedb::define::doc_dir/$dir";
-
-
 my $user = auth::get_user();
 my $user_info = auth::get_user_info($user);
 
@@ -67,24 +64,10 @@ if( ! defined($permissions) )
       print "You are not authorized to change permissions  on: $dir\n";
       exit 0;
    }
-   if(open( PERM, "$full_dir/.permissions" ) )
-   {
-      $permissions= <PERM>;
-      chomp($permissions);
-      close(PERM);
-   }
-   if(open( GRP, "$full_dir/.group" ) )
-   {
-      $group= <GRP>;
-      chomp($group);
-      close(GRP);
-   }
-   if(open( OWN, "$full_dir/.owner" ) )
-   {
-      $owner= <OWN>;
-      chomp($owner);
-      close(OWN);
-   }
+   $permissions = filedb::get_hidden_data($dir, "permissions");
+   $group = filedb::get_hidden_data($dir, "group");
+   $owner = filedb::get_hidden_data($dir, "owner");
+
    print <<"EOT";
 <pre>
 The permission flags are as follows:
@@ -119,15 +102,14 @@ else
       exit 0;
    }
    
+   
    if( $permissions eq "")
    {
-      unlink("$full_dir/.permissions");
+      undef($permissions);
       print "Using default permissions for: $dir<br>\n";
    }
-   elsif(open( FOUT, ">$full_dir/.permissions" ) )
+   if(filedb::set_hidden_data($dir, "permissions", $permissions))
    {
-      print FOUT "$permissions";
-      close(FOUT);
       print "Wrote permissions for: $dir<br>\n";
    }
    else
@@ -137,14 +119,11 @@ else
    
    if( $group eq "")
    {
-      unlink("$full_dir/.group");
+      undef($group);
       print "No group defined for: $dir<br>\n";
-
    }
-   elsif(open( FOUT, ">$full_dir/.group" ) )
+   if(filedb::set_hidden_data($dir, "group", $group))
    {
-      print FOUT "$group";
-      close(FOUT);
       print "Wrote group for: $dir<br>\n";
    }
    else
@@ -154,14 +133,12 @@ else
    
    if( $owner eq "")
    {
-      unlink("$full_dir/.owner");
+      unef($owner);
       print "No owner defined for: $dir<br>\n";
 
    }
-   elsif(open( FOUT, ">$full_dir/.owner" ) )
+   if(filedb::set_hidden_data($dir, "owner", $owner))
    {
-      print FOUT "$owner";
-      close(FOUT);
       print "Wrote owner for: $dir<br>\n";
    }
    else

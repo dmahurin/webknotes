@@ -47,11 +47,25 @@ sub path_file
         return ();
 }
 
+sub get_default_file
+{  
+   my($path) = @_;
+   my($dir) = get_full_path($path);
+   return () if( -f $dir);
+   return () unless ( -d $dir);
+
+   for my $index ( "index.html", "index.htm", "FrontPage", "FrontPage.wiki", "HomePage", "README.html", "README", "README.txt" )
+   {
+      return $index if (-f "$dir/$index");
+   }
+   return ();
+}
+
 sub get_full_path
 {
    my($path) = @_;
    my($full) = $filedb::define::doc_dir;
-   $full .= "/$path" if ($path ne "");
+   $full .= "/$path" if ($path ne "" and $path ne "/");
 
    return $full;
 }
@@ -67,7 +81,7 @@ sub get_file
    return($text);
 }
 
-sub mkfile
+sub make_file
 {
    my($notes_filepath, $contents) = @_;
 
@@ -89,4 +103,119 @@ sub make_dir
       return 0;
    }
    return 1;
+}
+
+sub remove_dir
+{
+   my($path) = @_;
+   return rmdir("$filedb::define::doc_dir/$path");
+}  
+
+sub remove_file
+{
+   my($path) = @_;
+   return unlink("$filedb::define::doc_dir/$path");
+}
+
+sub is_dir
+{
+   my($path) = @_;
+   return( -d "$filedb::define::doc_dir/$path");
+}
+
+sub is_file
+{
+   my($path) = @_;
+   return( -f "$filedb::define::doc_dir/$path");
+}
+
+sub get_hidden_data
+{
+   my($path, $name) = @_;
+   my($file) = get_full_path($path) . "/." . $name;
+  
+   if ( -f $file and open (FILE, $file))
+   {
+      my($value) = <FILE>;
+      chomp($value);
+      close(FILE);
+      return $value;
+   }
+   return ();
+}
+
+sub set_hidden_data
+{
+   my($path, $name, $value) = @_;
+   my($file) = get_full_path($path) . "/." . $name;
+   unless(defined($value))
+   {
+      return 1 unless( -f $file);
+      return unlink($file); 
+   }
+  
+   if ( open (FILE, ">$file"))
+   {
+      print FILE $value;
+      close(FILE);
+      return 1;
+   }
+   return 0;
+}
+
+sub unset_all_hidden_data
+{
+   my($path) = get_full_path(@_);
+
+   if(opendir(DIR, $path))
+   {
+      my($success) = 1;
+      my $file;
+      while(defined($file = readdir(DIR)))
+      {
+          next if($file eq '.' or $file eq '..');
+          unless(unlink($path . '/' . $file))
+          {
+              $success = 0;
+              last;
+          }
+      }
+      closedir(DIR);
+      return $success;
+   } 
+   return 0;
+}
+
+sub append_hidden_data
+{
+   my($path, $name, $value) = @_;
+   my($file) = get_full_path($path) . "/." . $name;
+   return 1 unless(defined($value));
+  
+   if ( open (FILE, ">>$file"))
+   {
+      print FILE $value;
+      close(FILE);
+      return 1;
+   }
+   return 0;
+}
+
+# get a directory list, ignoring hidden files
+sub get_directory_list
+{
+   my($path) = @_;
+   my($full) = get_full_path($path);
+   my(@files);
+   if(opendir(DIR, $full))
+   {
+      while(my $file = readdir(DIR))
+      {
+         next if($file =~ m:^\.:);
+         push(@files, $file);
+      }
+      closedir(DIR);
+      return @files;
+   }
+   return ();
 }

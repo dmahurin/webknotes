@@ -53,7 +53,7 @@ Password <input type=password name="password" size=20><p>
 <input type=submit value="Login"><input type=reset>
 </form>
 <p>
-Add <a href="/cgi-bin/wkn/add_user.cgi">new user</a>
+Add <a href="add_user.cgi">new user</a>
 </body>
 </html>
 END

@@ -307,12 +307,7 @@ sub print_link_html
 		my($icon_image) = $view::define::dir_icon;
                 if ( -r "${real_path}/.icon")
                 {
-		        if(open(ICONFILE, "$real_path/.icon"))
-			{
-				$icon_image = <ICONFILE>;
-				chomp($icon_image);
-				close(ICONFILE);
-			}
+                        $icon_image = filedb::get_hidden_data($notes_path, "icon");
 		}
 		if(defined($icon_image))
 		{
@@ -361,14 +356,9 @@ sub get_icon
 	
         return () if($dir =~ /^\..*/ );
 	
-        my($icon_image) = $view::define::dir_icon;
-        if ( -r "${real_path}/.icon" )
-        {
-           open(ICONFILE, "$real_path/.icon") || return ();
-           $icon_image = <ICONFILE>;
-           chomp($icon_image);
-           close(ICONFILE);
-        }
+            
+        my($icon_image) = filedb::get_hidden_data($notes_path, "icon");
+        $icon_image = $view::define::dir_icon unless(defined($icon_image));
         return  "$view::define::icons_wpath/$icon_image" if(defined($icon_image));
         return ();
 }
@@ -400,14 +390,8 @@ sub print_icon_img
 	{
 		return if($dir =~ /^\..*/ );
 		
-                my($icon_image) = $view::define::dir_icon;
-                if ( -r "${real_path}/.icon" )
-                {
-		        open(ICONFILE, "$real_path/.icon") || die "icon file";
-			$icon_image = <ICONFILE>;
-			chomp($icon_image);
-			close(ICONFILE);
-                }
+		my($icon_image) = filedb::get_hidden_data($notes_path, "icon");
+		$icon_image = $view::define::dir_icon unless(defined($icon_image));
                 if(defined($icon_image))
                 {
 			$icon_image =~ m:([^/\.]*)[^/]*$:;
@@ -612,7 +596,7 @@ $atime,$mtime,$ctime,$blksize,$blocks)
    my(@months) = ( "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" );
    my $mtime_str = "$year $months[$mon] $mday $hour:$min:$sec";
         
-   print create_modification_string($mtime_str, auth::get_path_owner($notes_path), auth::get_path_group($notes_path));
+   print create_modification_string($mtime_str, filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"));
 }
 
 sub print_file
@@ -620,12 +604,16 @@ sub print_file
 	my($notes_file) = @_;
         my($line);
 
-	open(MYFILE, "$filedb::define::doc_dir/$notes_file") || return 0;
-	while(defined($line = <MYFILE>))
-	{
-		print($line);
-	}
-	close(MYFILE);
+	my $text = filedb::get_file($notes_file);
+        return 0 unless(defined($text));
+        print $text;
+        return 1;
+	#open(MYFILE, "$filedb::define::doc_dir/$notes_file") || return 0;
+	#while(defined($line = <MYFILE>))
+	#{
+	#	print($line);
+	#}
+	#close(MYFILE);
         return 1;
 }
 
@@ -637,11 +625,7 @@ sub log
    my $date=localtime;
    my $log = "$date:$user:$ENV{'REMOTE_ADDR'}:$ENV{'REMOTE_HOST'}\n";
 
-   if(open(LOG, ">>$filedb::define::doc_dir/$notes_path/.log"))
-   {
-      print LOG $log;
-      close(LOG);
-   }
+   return filedb::append_hidden_data($notes_path,"log", $log);
 }
 
 sub get_cgi_prefix

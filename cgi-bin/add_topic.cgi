@@ -216,11 +216,11 @@ print "Failed to create dir: $notes_path\n";
 if(auth::check_current_user_file_auth( 'i', $parent_path ))
 {
    my($permissions, $group);
-   if(defined($permissions = auth::get_path_permissions($parent_path)))
+   if(defined($permissions = filedb::get_hidden_data($parent_path, "permissions")))
    {
       auth::set_path_permissions($permissions, $notes_path);
    }
-   if(defined($group = auth::get_path_group($parent_path)))
+   if(defined($group = filedb::get_hidden_data($parent_path, "group")))
    {
       auth::set_path_group($group, $notes_path);
    }
@@ -233,27 +233,27 @@ else
 
 if( $text_type eq "text" )
 {
-   &filedb::mkfile(
+   &filedb::make_file(
       $should_make_dir ? "$notes_path/README" : "$parent_path/${topic}.txt",
       $message);
 }
 elsif( $text_type eq "pre" )
 {
-   &filedb::mkfile(
+   &filedb::make_file(
       $should_make_dir ? "$notes_path/README.html" :
          "$parent_path/${topic}.html",
     "<pre>\n" . $message . "</pre>\n");
 }
 elsif( $text_type eq "wiki" )
 {
-   &filedb::mkfile(
+   &filedb::make_file(
       $should_make_dir ? "$notes_path/FrontPage.wiki" :
         "$parent_path/${topic}.wiki",
       $message);
 }
 else
 {
-   &filedb::mkfile(
+   &filedb::make_file(
       $should_make_dir ? "$notes_path/README.html" :
         "$parent_path/${topic}.html",
       $message);
@@ -262,13 +262,13 @@ else
 #&view::mail_subscribers($notes_path);
 my $log = localtime;
 $log .= "\n$source_details\n";
-&filedb::mkfile("$notes_path/.create-log", $log );
-#&filedb::mkfile("$notes_path/.type", $topic_type);
+&filedb::set_hidden_data($notes_path, "create-log", $log );
+#&filedb::set_hidden_data($notes_path, "type", $topic_type);
 
 my($user) = auth::get_user();
 if( defined($user))
 {
-   &filedb::mkfile("$notes_path/.owner", $user);
+   filedb::set_hidden_data($notes_path, "owner", $user);
 }
 
 return 1;

@@ -148,80 +148,6 @@ sub path_check
    return $path;
 }
 
-
-sub get_path_group
-{
-   my(@path) = @_;
-   my($gfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.group');
-   
-   if ( -f $gfile and open (GFILE, $gfile))
-   {
-     my($group) = <GFILE>;
-     chomp($group);
-     close(GFILE);
-     return $group;
-   }
-   return ();
-}
-
-sub get_path_owner
-{
-   my(@path) = @_;
-   my($ofile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.owner');
-   
-   if ( -f $ofile and open (OFILE, $ofile))
-   {
-      my($owner) = <OFILE>;
-      chomp($owner);
-      close(OFILE);
-      return $owner;
-   }
-   return ();
-}
-      
-
-sub get_path_permissions
-{
-   my(@path) = @_;
-   my($pfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.permissions');
-   if( -f $pfile and open(PFILE, $pfile ) )
-   {
-
-      my($permissions) = <PFILE>;
-      chomp($permissions);
-      close(PFILE);
-      return $permissions;
-   }
-   return "";
-}
-
-sub set_path_group
-{
-   my($group, @path) = @_;
-   my($gfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.group');
-   
-   if ( open (GFILE, ">$gfile"))
-   {
-      print GFILE "$group";
-      close(GFILE);
-      return 0;
-   }
-   return 1;
-}
-
-sub set_path_permissions
-{
-   my($permissions,@path) = @_;
-   my($pfile) = join('/', $filedb::define::doc_dir, grep(/./,@path), '.permissions');
-   if( open(PFILE, ">$pfile" ) )
-   {
-      print PFILE "$permissions";
-      close(PFILE);
-      return 0;
-   }
-   return 1;
-}
-
 sub change_flags
 {
    my($flags, $new_flags, $op) = @_;
@@ -278,7 +204,7 @@ sub check_file_auth
   {
      return 0;     
   }
-  my(@path_permissions) = split(/,/, get_path_permissions($file_dir)) 
+  my(@path_permissions) = split(/,/, filedb::get_hidden_data($file_dir, "permissions")) 
      or ();
   if(defined($auth::define::path_permissions))
   {
@@ -293,9 +219,9 @@ sub check_file_auth
      }
   }	
   
-  my $owner = get_path_owner($file_dir);
+  my $owner = filedb::get_hidden_data($file_dir, "owner");
   my $is_owner = (defined($owner) && $user eq $owner);
-  my $group = get_path_group($file_dir);
+  my $group = filedb::get_hidden_data($file_dir, "group");
   my $group_info;
   my $in_group = (defined($group) && 
      defined($group_info = get_group_info($group)) &&

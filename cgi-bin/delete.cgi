@@ -28,31 +28,31 @@ my $illegal_dir = "cgi-bin";
 my %in;
 &ReadParse(\%in);
 
-my $file = $in{'file'};
-if(!defined( $file )) { $file=$ENV{'QUERY_STRING'}};
-if(!defined( $file ) or $file eq "" ) { $file=$ARGV[0]};
-if( !defined( $file ) or $file eq "" )
+my $filepath = $in{'file'};
+if(!defined( $filepath )) { $filepath=$ENV{'QUERY_STRING'}};
+if(!defined( $filepath ) or $filepath eq "" ) { $filepath=$ARGV[0]};
+if( !defined( $filepath ) or $filepath eq "" )
 {
    print ("No file defined\n");
    exit(0);
 }
 
-if($file =~ m:(^|/+)\.+:)
+if($filepath =~ m:(^|/+)\.+:)
 {
    print "Illegal chars\n";
    exit(0);
 }
 #untaint file
-if( $file =~ m:^(.*)$:)
+if( $filepath =~ m:^(.*)$:)
 {
-   $file = $1;
+   $filepath = $1;
 }
-$file =~ s:^/+::;
+$filepath =~ s:^/+::;
 
-my $file_encoded = $file;
-$file = auth::url_unencode_path($file);
+my $filepath_encoded = $filepath;
+$filepath = auth::url_unencode_path($filepath);
 
-if( $file =~ m:$illegal_dir: )
+if( $filepath =~ m:$illegal_dir: )
 {
    print "Illegal dir\n";
    exit(0);
@@ -66,25 +66,23 @@ if( ! defined ($user) )
 }
 
 if( ! auth::check_file_auth( $user,
-   auth::get_user_info($user), 'd', $file ) )
+   auth::get_user_info($user), 'd', $filepath ) )
 {
-   print "You are not authorized to delete this file: $file\n";
+   print "You are not authorized to delete this file: $filepath\n";
    exit 0;
 }
-
-my($full_file) = auth::url_unencode_path($filedb::define::doc_dir) . "/" . $file;
 
 if( ! defined($in{confirm}))
 {
    my $dir;
-   if( -d $full_file )
+   if( filedb::is_dir($filepath) )
    {
       print <<"EOT";
 <h1>Confirm delete</h1>
 <form action="delete.cgi" method="post">
-<input type=hidden name=file value="$file_encoded">
+<input type=hidden name=file value="$filepath_encoded">
 <input type=hidden name=confirm value="yes">
-Delete Dir: "$file"<br>
+Delete Dir: "$filepath"<br>
 <INPUT TYPE=submit VALUE="Delete Dir">
 </form>
 EOT
@@ -94,9 +92,9 @@ EOT
       print <<"EOT";
 <h1>Confirm delete</h1>
 <form action="delete.cgi" method="post">
-<input type=hidden name=file value="$file_encoded">
+<input type=hidden name=file value="$filepath_encoded">
 <input type=hidden name=confirm value="yes">
-Delete File: "$file"<br>
+Delete File: "$filepath"<br>
 <INPUT TYPE=submit VALUE="Delete File">
 </form>
 EOT
@@ -104,72 +102,37 @@ EOT
 }
 else
 {
-   if( -d $full_file )
-   {
-      my @delete_files = ();
-      my $found_files = 0;
-      opendir(DIR, $full_file) or print "could not open dir\n";
-      while(defined($file = readdir(DIR)))
+   if( filedb::is_dir($filepath) )
       {
-         #untaint file
-         if( $file =~ m:^([^/]*)$: ) # untaint dir entry
+      my @dirlist = filedb::get_directory_list($filepath);
+      my $default_file = filedb::get_default_file($filepath);
+      if(@dirlist < 1 || @dirlist == 1 && $dirlist[0] eq $default_file)
          {
-            $file = $1;
-         }
-
-         next if( $file eq "." or $file eq ".." );
-         if( -d "$full_file/$file")
+         if(filedb::unset_all_hidden_data($filepath) &&
+         filedb::remove_dir($filepath))
          {
-            print "Sub directory exists: $file\n";
-            $found_files=1;
-            last;
-         }
-         elsif($file =~ m:^(README|\.):)
-         {
-            push(@delete_files, $file);
+            print "Sucessfull deleting: $filepath\n";
          }
          else
          {
-            print "File exist: $file\n";
-            $found_files=1;
-            last;
+            print "Failed deleting: $filepath\n";
          }
       }
-      closedir(DIR);
-      if((! $found_files ) and @delete_files)
-      {
-          foreach $file (@delete_files)
-          {
-              unless (unlink("$full_file/$file") )
-              {
-                 print "Could not delete file: $file\n";
-                 $found_files=1;
-                 last;
-              }
-          }
-      }
-      unless($found_files)
-      {
-         if(rmdir($full_file))
-         {
-            print "Directory deleted\n";
-         }
          else
          {
-            print "could not rmdir: $full_file\n" unless rmdir($full_file);
-         }
+         print "Directory is not empty\n";
       }
    }
-   elsif(-f $full_file)
+   elsif(filedb::is_file($filepath))
    {
       print "<h1>Delete File</h1>\n";
-            if(unlink($full_file))
+            if(filedb::remove_file($filepath))
       {
-          print "Sucessfull deleting: $file\n";
+          print "Sucessfull deleting: $filepath\n";
       }
       else
       {
-         print "Failed deleting: $file\n";
+         print "Failed deleting: $filepath\n";
       }
    }
    else
