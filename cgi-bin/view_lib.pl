@@ -364,7 +364,7 @@ sub print_link_html
 
 sub get_icon
 {
-	my( $notes_path ) = @_;
+	my( $notes_path, $default_icon ) = @_;
 
         my($icon_image) = filedb::get_hidden_data($notes_path, "icon");
         $icon_image = $default_icon unless(defined($icon_image));
