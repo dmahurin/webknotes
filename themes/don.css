@@ -5,7 +5,7 @@ v:link { color: #800080 }
 .topic-title { background: #00AAAA; color: black }
 
 .topic-table { background: #CCCCCC }
-.topic-text { background: #CCCCCC }
+.topic-text { background: #CCCCCC; color: #000000; }
 .topic-actions {background: #AAAAAA}
 .topic-info {background: #AAAAAA; font-style: italic}
 .topic-listing {background: #AAAAAA}

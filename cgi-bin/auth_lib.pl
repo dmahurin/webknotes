@@ -26,7 +26,13 @@ sub init_private_dir()
    return 1;
 }
 
-sub get_user()
+sub set_user
+{
+  my($user)=@_;
+  $current_user = $user;
+}
+
+sub get_user
 {
    return $current_user if(defined($current_user));
    my($chip,$value);

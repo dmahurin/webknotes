@@ -58,6 +58,7 @@ if(auth::check_pass($user, auth::get_user_info($user), $password))
 {
    if(auth::create_session($user))
    {
+      auth::set_user($user); # mimic a login
       my $line;
       #my $user_info = auth::get_user_info($user);
       print "Content-type: text/html\n\n";

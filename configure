@@ -255,13 +255,13 @@ $default_theme = "don";
 if(prompt_default("Generate top level index", "y", "(y|n)") eq "y")
 {
    $index_file = prompt_default("Name of index file", "$public_dir/index.html");
-   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/browse_help.cgi '' >$index_file";
+   my $command  = "util/cgitohtml $wkn_cgi_wpath $wkn_cgi_dir/help_browse.cgi '' >$index_file";
    print "Running command: $command\n\n";
    system($command);
 }
 
 $wpath_prefix = 'localhost' if($wkn_cgi_wpath =~ m:^/:);
-print "\nhttp://$wpath_prefix$wkn_cgi_wpath/browse_help.cgi\n";
+print "\nhttp://$wpath_prefix$wkn_cgi_wpath/help_browse.cgi\n";
 print "http://$wpath_prefix$public_wpath/\n";
 
 sub prompt_default
