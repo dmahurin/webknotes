@@ -507,8 +507,7 @@ sub get_file_type
       }
       else
       {
-         $file_type = "txt";
-         #$file_type = $view::define::default_file_type;
+         $file_type = $view::define::default_file_type;
       }
    }
    return $file_type;
@@ -519,20 +518,15 @@ sub get_dir_file_html
 {
    my($notes_path) = @_;
 
-   my($file) = filedb::path_file($notes_path);
-   return () unless(defined($file));
-   my($text);
+   my($text) = filedb::path_file($notes_path);
+   return () unless(defined($text));
    my($file_type) = get_file_type($notes_path);
 
    my $prefix = ( $0 =~ m:/[^/]*$: ) ? "$`/":"";
    if(defined($file_type) and -f "${prefix}filter_${file_type}.pl" )
    {
       require "filter_${file_type}.pl";
-      $text = &{"filter_${file_type}::filter_file"}($file);
-   }
-   else
-   {
-      $text = filedb::get_file($notes_path);
+      $text = &{"filter_${file_type}::filter_file"}($text);
    }
       
    return $text;
