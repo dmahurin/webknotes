@@ -56,8 +56,6 @@ my($debug) = defined($in{debug});
 #  $view::view_mode{"layout"} = $notes_mode;
 #}
 
-##
-my($match_prefix_url) =  &view::get_cgi_prefix();
 
 my($notes_subpath) =  "$in{'notes_subpath'}";
 
@@ -275,9 +273,10 @@ DIR: while (@dirs)
 
    if ($found )
    {
-      if(auth::check_current_user_file_auth( 'r', $notes_subpath ))
+      my $found_path = filedb::join_paths($in{'notes_subpath'},$subpath);
+      if(auth::check_current_user_file_auth( 'r', $found_path ))
       {
-         &print_file_match_html($subpath, $file, $match_prefix_url);
+         &print_file_match_html($found_path, $file);
          $number_of_hits++;
       }
    }
@@ -462,7 +461,8 @@ EOT
 
 sub print_file_match_html
 {
-    my($filename, $title, $match_prefix_url) = @_;
+    my($filename, $title) = @_;
+    my($match_prefix_url) = &view::get_cgi_prefix();
 
     my $filename_enc =  view::url_encode_path($filename);
 

@@ -38,7 +38,7 @@ unless(defined(param('upload')))
 }
 else
 {
-   wkn_save_file($upload_path);
+   wkn_save_file($upload_path,param('upload'));
 }
 print end_html;
 
@@ -54,10 +54,11 @@ sub print_form {
 
 sub wkn_save_file
 {
-   my($upload_path) = @_;
+   my($upload_path, $file) = @_;
    
-   my $length;
-   my $file = param('upload');
+   my $filename;
+   if($file =~ m:([^/\\]+)$:) { $filename = $1; }
+   else { return 0 }
    if (!$file) 
    {
       print "No file uploaded.";
