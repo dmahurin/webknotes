@@ -24,7 +24,7 @@ my $line;
 while(defined($line = <SCRIPT>))
 {
    #prefix relative paths with the cgi path
-   $line =~ s#\b(href=\"|src=\")(?!http://|ftp://|/)#$1$cgi_wpath/$2#gi;
+   $line =~ s#\b(href=\"|src=\")(?![^/]+:|/)#$1$cgi_wpath/$2#gi;
    print $line;
 }
 close(SCRIPT);
