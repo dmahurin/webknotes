@@ -72,7 +72,7 @@ print <<"EOT";
 <input type=hidden name="username" value="$username">
 User Path<input type=text name="path" size=20 value="$path"><br>
 Access Flags <input type=text name="access" value="$access" size=20>
-(o-owner, r-read, c-create, m-modify, d-delete, s-system)<br>
+(o-owner, r-read, c-create, m-modify, d-delete, u-upload, s-system)<br>
 EOT
    }
    else
