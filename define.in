@@ -1,9 +1,10 @@
 
 PACKAGE filedb
-STRING doc_wpath "Web document path" "${web_doc_root_wpath}/docs"
 STRING doc_dir "Document base path" "${web_doc_root}/docs"
 BOOL use_cvs "Use cvs client for CVS directories"
 STRING private_dir "Private directory" "${HOME}/web_private"
+STRING doc_wpath "Web document path" "${web_doc_root_wpath}/docs"
+BOOL default_browse_index "Default to browse using browser index"
 
 PACKAGE auth
 STRING default_permissions "Default permissions (see permissions.txt)" "a+rn,u+aM,o+mdc,v+S"
