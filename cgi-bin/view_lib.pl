@@ -308,6 +308,7 @@ sub print_link_html
 		
 		my($icon_image) = $view::define::dir_icon;
                 $icon_image = filedb::get_hidden_data($notes_path, "icon");
+		$icon_image = $view::define::dir_icon unless(defined($icon_image));
 		if(defined($icon_image))
 		{
 			print '<A HREF="',
