@@ -59,9 +59,12 @@ if(defined($frame))
    }
    exit(0);
 }
+&wkn::set_view_mode("layout", "list2");
+my $list_cgi_script_prefix = wkn::get_cgi_prefix();
+&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
+&wkn::unset_view_mode("sublayout");                          
 my $cgi_script_prefix = wkn::get_cgi_prefix();
-my $list_cgi_script_prefix = wkn::get_cgi_prefix("browse_list2.cgi");
-my $this_cgi_script_prefix = wkn::get_cgi_prefix($this_script);
+my $this_cgi_script_prefix = wkn::get_cgi_prefix("frames_list");
 
 #print "$cgi_script_prefix, $list_cgi_script_prefix, $this_cgi_script_prefix\n";
 print "<html> <head>\n";

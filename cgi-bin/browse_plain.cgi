@@ -35,15 +35,6 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 $notes_path =~ m:([^/]*)$:;
 my($notes_name) = $1;
 
-
-my($user) = auth::get_user();
-unless (auth::check_file_auth( $user, auth::get_user_info($user),
-   'r', $notes_path) )
-{
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
-
 my $head_tags = wkn::get_style_head_tags();
 
 print <<"END";

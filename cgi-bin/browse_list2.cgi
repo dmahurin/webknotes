@@ -67,22 +67,16 @@ if($wkn::view_mode{"target"})
 }
 
 my($notes_path_encoded)=wkn::url_encode_path($notes_path);
-my $this_script_prefix = wkn::get_cgi_prefix("browse_list2.cgi");
-undef($wkn::view_mode{"target"}); # don't want to pass target to main script
+my $this_script_prefix = wkn::get_cgi_prefix("list2");
+&wkn::unset_view_mode("target"); # don't want to pass target to main script
+&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
+&wkn::unset_view_mode("sublayout");
 my $script_prefix = wkn::get_cgi_prefix();
 
 my $open_tree = unflatten_tree(wkn::url_unencode_paths(@paths));
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
-
-my($user) = auth::get_user();
-if( ! auth::check_file_auth( $user, auth::get_user_info($user),
-   'r', $notes_path ) )
-{
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
 
 my $head_tags = wkn::get_style_head_tags();
 

@@ -28,9 +28,7 @@ $notes_path =~ m:([^/]+)$:;
 my($notes_name) = $1;
 
 
-my($user) = auth::get_user();
-my $user_info = auth::get_user_info($user);
-unless (auth::check_file_auth( $user, $user_info, 'r',  $notes_path) )
+unless (auth::check_current_user_file_auth( 'r',  $notes_path) )
 {
    print "You are not authorized to access this path.\n";
    exit(0);
@@ -52,13 +50,13 @@ if(-f $real_path)
 {
    print "[ <a href=\"$auth::define::doc_wpath/$notes_path_encoded\">View</a> ] \n";
 	       
-   if(auth::check_file_auth( $user, $user_info, 'm',  $notes_path) )
+   if(auth::check_current_user_file_auth( 'm',  $notes_path) )
    {
       print "[ <a href=\"edit.cgi?$notes_path_encoded\">Edit</a> ] \n";
    }
 }
 
-if(auth::check_file_auth( $user, $user_info, 'd',  $notes_path) and 
+if(auth::check_current_user_file_auth( 'd',  $notes_path) and 
    $notes_path ne "")
 {
    print "[ <a href=\"delete.cgi?$notes_path_encoded\">Delete</a> ] \n";
@@ -67,15 +65,17 @@ if(auth::check_file_auth( $user, $user_info, 'd',  $notes_path) and
 if(-d $real_path and opendir(DIR, $real_path))
 {
    print "[ <a href=\"$auth::define::doc_wpath/$notes_path\">Browse</a> ] \n";
-   if(auth::check_file_auth( $user, $user_info, 'p',  $notes_path) )
+   if(auth::check_current_user_file_auth( 'p',  $notes_path) )
    {
       print "[ <a href=\"permissions.cgi?path=$notes_path_encoded\">Permissions</a> ] \n";
    }
-   if(auth::check_file_auth( $user, $user_info, 'u',  $notes_path) )
+   if(auth::check_current_user_file_auth(  'u',  $notes_path) )
    {
       print "[ <a href=\"upload.cgi?path=$notes_path_encoded\">Upload</a> ] \n";
    }
 }
+
+my($user) = auth::get_user();
 
 if(defined($user))
 {

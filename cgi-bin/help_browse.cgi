@@ -14,7 +14,7 @@ print "<html><head>
 print <<"END";
 
 <dl>
-<dt>Table
+<dt><A HREF=\"browse.cgi?layout=table&$cgi_query_str\"> Table </A>
 <dd>
 This version displays the text for topic directory and lists subdirs in a
 table.
@@ -22,7 +22,8 @@ table.
 
 <dl>
 <dt>
-Tables
+<A HREF=\"browse.cgi?layout=tables&$cgi_query_str\"> Tables
+</A>
 <dd>
 This version puts the topic text in a table, and does the same thing for all of its
 sub directories.
@@ -30,21 +31,22 @@ sub directories.
 
 <dl>
 <dt>
-Extended Tables
+<A HREF=\"browse.cgi?layout=tables2&$cgi_query_str\"> Extended Tables
+</A>
 <dd>
 This version puts the topic text in a table, and for each of the subdirectories, creates a table with the subtopic text and sub-sub topic list.
 </dl>
 
 <dl>
 <dt>
-List
+<A HREF=\"browse.cgi?layout=list&$cgi_query_str\"> List </A>
 <dd>
 Hierarchy using HTML list, with possible maximum depth
 </dl>
 
 <dl>
 <dt>
-Expanding List
+<A HREF=\"browse.cgi?layout=list2&$cgi_query_str\"> Expanding List </A>
 <dd>
 Expanding Hierarching using HTML tables and [+] and [-] tags for
 expand/collapse.
@@ -52,7 +54,7 @@ expand/collapse.
 
 <dl>
 <dt>
-JavaScript Expanding List
+<A HREF=\"browse.cgi?layout=js&$cgi_query_str\"> JavaScript Expanding List </A>
 <dd>
 Expanding Hierarching using HTML tables and [+] and [-] tags for
 expand/collapse.
@@ -60,7 +62,7 @@ expand/collapse.
 
 <dl>
 <dt>
-Frames List
+<A HREF=\"browse.cgi?layout=frames_list&$cgi_query_str\"> Frames List</A>
 <dd>
 Puts Expanding List Index on Left, Current Directory as main frame and has
 a title and footer section.
@@ -68,7 +70,7 @@ a title and footer section.
 
 <dl>
 <dt>
-Frames JavaScript
+<A HREF=\"browse.cgi?layout=frames_js&$cgi_query_str\"> Frames JavaScript</A>
 <dd>
 Puts Expanding List Index on Left, Current Directory as main frame and has
 a title and footer section.
@@ -76,14 +78,14 @@ a title and footer section.
 
 <dl>
 <dt>
-Plain
+<A HREF=\"browse.cgi?layout=plain&$cgi_query_str\"> Plain </A>
 <dd>
 No table, just Topic text separate from subtopic list.
 </dl>
 
 <dl>
 <dt>
-News Page
+<A HREF=\"browse.cgi?layout=page&$cgi_query_str\"> News Page </A>
 <dd>
 Multiple topics can be given. Separate topics with &'s.
 Table is created with each topic put in Table with topic text.
@@ -99,7 +101,7 @@ Just brose the notes directory using the web servers file browsing.
  
 <dl>
 <dt>
-Browse Notes
+<a href=\"$auth::define::doc_wpath/$notes_dir"> Browse Notes </a>
 <dd>
 Just brose the notes directory using the web servers file browsing.
 </dl>

@@ -29,9 +29,8 @@ unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 
 my($notes_path_encoded) = wkn::url_encode_path($notes_path);
 
-my $frame = $wkn::view_mode{frame};
-undef $wkn::view_mode{frame};
-my $script_prefix = wkn::get_cgi_prefix();
+my $frame = &wkn::get_view_mode("frame");
+&wkn::unset_view_mode("frame");
 
 if(defined($frame))
 {
@@ -58,6 +57,12 @@ if(defined($frame))
    exit(0);
 }
 
+&wkn::set_view_mode("layout", "js");
+my $js_script_prefix = wkn::get_cgi_prefix();
+&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout")); 
+&wkn::unset_view_mode("sublayout"); 
+my $script_prefix = wkn::get_cgi_prefix();
+
 print "<html> <head>\n";
 print "<title>$wkn::define::index_title</title>\n" 
   if(defined($wkn::define::index_title));
@@ -70,7 +75,7 @@ print <<EOT
       marginheight="0" scrolling="no">
     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
-          <frame src="browse_js.cgi?target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
+          <frame src="${js_script_prefix}target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
           <frame src="$this_script?frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
                  marginheight="0" scrolling="no">
         </frameset>

@@ -25,6 +25,9 @@ if($wkn::view_mode{"target"})
 {
    $target = "target=\"$wkn::view_mode{\"target\"}\"";
 }
+&wkn::unset_view_mode("target"); # don't want to pass target to main script
+&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
+&wkn::unset_view_mode("sublayout");
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;

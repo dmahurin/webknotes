@@ -30,9 +30,7 @@ $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
 
 
-my($user) = auth::get_user();
-if( ! auth::check_file_auth( $user, auth::get_user_info($user),
-    'r', $notes_path ) )
+if( ! auth::check_current_user_file_auth( 'r', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
    exit(0);

@@ -113,7 +113,7 @@ sub strip_view_mode_args
    {
 # below strips off trailing '/', and breaks list2
 #      $arg = auth::path_check($arg);
-      if($arg =~ /^(theme|layout|target|frame)=/)
+      if($arg =~ /^(theme|layout|sublayout|target|frame)=/)
       {
          $wkn::view_mode{$1} = $';
       }
@@ -191,7 +191,7 @@ sub actions2
    print "[ Browse ";
    print "<A HREF=\"$auth::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
    print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File Only</A> \n";
-   print "| <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme.cgi") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
+   print "| <A HREF=\"" . &wkn::get_cgi_prefix("layout_theme") . "path=$notes_path_encoded\">Layout/Theme</A> ]\n";
    #   print "<br>\n";
 }
 
@@ -883,17 +883,29 @@ sub log
 
 sub get_cgi_prefix
 {
-   my ($script) = shift; # optionally start with a cgi script
+   my ($layout) = shift; # optionally start with a cgi script
+   my ($prefix);
    
-   unless($script)
+   if($layout eq "layout_theme")
    {
-     $script = "browse_" . 
-      ( $wkn::view_mode{"layout"}
-            || $wkn::define::default_layout )
-         . ".cgi";
+      $prefix = "layout_theme.cgi?";
+      if($wkn::view_mode{"layout"})
+      {
+         $prefix .= ( "layout=" . $wkn::view_mode{"layout"} . "&" );
+      }
    }
-   my($prefix) = "${script}?";
+   else
+   {
+      $prefix = "browse_" . 
+      ( $layout || $wkn::view_mode{"layout"}
+            || $wkn::define::default_layout )
+            . ".cgi?";
+   }
          
+   if($wkn::view_mode{"sublayout"})
+   {
+      $prefix .= ( "sublayout=" . $wkn::view_mode{"sublayout"} . "&" );
+   }
    if($wkn::view_mode{"theme"})
    {
       $prefix .= ( "theme=" . $wkn::view_mode{"theme"} . "&" );
@@ -909,17 +921,36 @@ sub get_cgi_prefix
    return $prefix;
 }
 
+sub get_view_mode
+{
+  my($param) = @_;
+
+  my $val = $wkn::view_mode{$param};
+  if(! defined($val))
+   {
+      my $user_info = auth::get_current_user_info();
+     $val = $user_info->{ucfirst($param)};
+  }
+  return $val;
+   }
+
+sub set_view_mode
+{
+   my($param, $val) = @_;
+   $wkn::view_mode{$param} = $val;
+}
+
+sub unset_view_mode
+{
+   undef $wkn::view_mode{$param};
+}
+
 # return the <HEAD> tags to style/css to current theme along with
 # site specific head tags
 sub get_style_head_tags
 {
-   my $theme = $wkn::view_mode{"theme"};
-   if(! defined($theme))
-   {
-      my $user_info = auth::get_current_user_info();
-      $theme = $user_info->{"Theme"};
-      $theme =  $wkn::define::default_theme unless(defined($theme));
-   }
+   my $theme = get_view_mode("theme");
+   $theme = $wkn::define::default_theme unless $theme;
    my $head_tags = (-f "$wkn::define::themes_dir/$theme.css") ?
    "<LINK HREF=\"$wkn::define::themes_wpath/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
       MEDIA=\"screen\" type=\"text/css\" >\n" : "";
