@@ -233,7 +233,7 @@ sub check_file_auth
   my $permissions;
   for $permissions ( @path_permissions)
   {                
-     if($permissions =~ m:^(o|u|g|a)?(\+|-|=):)
+     if($permissions =~ m:^(o|u|v|g|a)?(\+|-|=):)
      {
 	my $who = $1;
 	my $mod = $2;
@@ -269,7 +269,7 @@ sub check_file_auth
      }
      else
      {
-	$have_auth_flags = change_flags($have_auth_flags, '=', $permissions);
+	$have_auth_flags = change_flags($have_auth_flags, $permissions, '=');
      }
   }
   
