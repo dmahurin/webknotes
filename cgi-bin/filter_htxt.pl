@@ -126,7 +126,7 @@ sub filter_file
    $textin =~ s:>:&gt;:g;
    
    # convert raw URL to [[ ]]
-   $textin =~ s/\b((http|ftp|mailto):.*)(?=$)/[[$1]]/;
+   $textin =~ s/(^|[^\[])((http|ftp|mailto):.*)(?=$)/$1[[$2]]/;
    # process  htxt [[ ]] markup
    $textin =~ s/\[\[([^\]]+)\]\]/&my_link_translate($notes_path,$1)/gie;
    
