@@ -321,7 +321,7 @@ sub check_file_auth
   }
   else
   {
-     return (0, "no authorization");
+     return 0;
   }
 }
 
@@ -421,7 +421,8 @@ sub get_current_user_info
 {
    return $current_user_info if(defined($current_user_info));
    get_user() unless(defined($current_user));
-   return get_user_info($current_user);
+   $current_user_info = get_user_info($current_user);
+   return $current_user_info;
 }
 
 sub get_group_info

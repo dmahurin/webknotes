@@ -156,12 +156,12 @@ sub actions2
    }
    $notes_path .= '/' if($notes_path ne "");
 
-   $notes_path = url_encode_path($notes_path);
+   my($notes_path_encoded) = url_encode_path($notes_path);
    $dir_file = url_encode_path($dir_file);
 
    if( $is_dir )
    {
-      print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path}\">Add</A> ]\n";
+      print "[ <A HREF=\"add_topic.cgi?notes_path=${notes_path_encoded}\">Add</A> ]\n";
       #if(auth::check_current_user_file_auth( 'd', $notes_path))
       #{
       #print "[ <A HREF=\"delete.cgi?$notes_path\">Delete</A> ]\n";
@@ -181,11 +181,11 @@ sub actions2
    {
       print "<A HREF=\"edit.cgi?file=$dir_file\">File</a> | \n";
    }
-      print "<A HREF=\"browse_edit.cgi?$notes_path\">Directory</a> ]\n";
+      print "<A HREF=\"browse_edit.cgi?$notes_path_encoded\">Directory</a> ]\n";
    print "[ Browse ";
-   print "<A HREF=\"$auth::define::doc_wpath/${notes_path}\">Directory</A> | \n";
+   print "<A HREF=\"$auth::define::doc_wpath/${notes_path_encoded}\">Directory</A> | \n";
    print "<A HREF=\"$auth::define::doc_wpath/$dir_file\">File Only</A> \n";
-   print "| <A HREF=\"" . &wkn::get_cgi_prefix("browse_help.cgi") . "$notes_path\">Other method</A> ]\n";
+   print "| <A HREF=\"" . &wkn::get_cgi_prefix("browse_help.cgi") . "$notes_path_encoded\">Other method</A> ]\n";
    #   print "<br>\n";
 }
 
