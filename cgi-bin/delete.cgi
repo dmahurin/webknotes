@@ -49,6 +49,8 @@ if( $file =~ m:^(.*)$:)
 }
 $file =~ s:^/+::;
 
+my $file_encoded = $file;
+$file = auth::url_unencode_path($file);
 
 if( $file =~ m:$illegal_dir: )
 {
@@ -70,7 +72,7 @@ if( ! auth::check_file_auth( $user,
    exit 0;
 }
 
-my($full_file) = auth::url_unencode_path("$filedb::define::doc_dir/$file");
+my($full_file) = auth::url_unencode_path($filedb::define::doc_dir) . "/" . $file;
 
 if( ! defined($in{confirm}))
 {
@@ -80,7 +82,7 @@ if( ! defined($in{confirm}))
       print <<"EOT";
 <h1>Confirm delete</h1>
 <form action="delete.cgi" method="post">
-<input type=hidden name=file value="$file">
+<input type=hidden name=file value="$file_encoded">
 <input type=hidden name=confirm value="yes">
 Delete Dir: "$file"<br>
 <INPUT TYPE=submit VALUE="Delete Dir">
@@ -92,7 +94,7 @@ EOT
       print <<"EOT";
 <h1>Confirm delete</h1>
 <form action="delete.cgi" method="post">
-<input type=hidden name=file value="$file">
+<input type=hidden name=file value="$file_encoded">
 <input type=hidden name=confirm value="yes">
 Delete File: "$file"<br>
 <INPUT TYPE=submit VALUE="Delete File">
