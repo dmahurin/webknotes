@@ -2,7 +2,7 @@
 use strict;
 # script called by the add topic form. Adds topic, displays success.
 
-# The WebKNotes system is Copyright 1996-2000 Don Mahurin.
+# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
 # For information regarding the copying/modification policy read 'LICENSE'.
 # - dmahurin@users.sourceforge.net
 
@@ -21,65 +21,65 @@ my($my_main) = view::localize_sub(\&main);
 
 sub main
 {
-umask(022);
-my %in;
-&ReadParse(\%in);
-$in{'notes_path'} =~ m:^(.*)$:;
-use vars qw($notes_path);
-local($notes_path) = $1;
-$notes_path=~ s:/$::;
+   umask(022);
+   my %in;
+   &ReadParse(\%in);
+   $in{'notes_path'} =~ m:^(.*)$:;
+   use vars qw($notes_path);
+   local($notes_path) = $1;
+   $notes_path=~ s:/$::;
 
-if( ! auth::check_current_user_file_auth(
-'n', $notes_path ) )
-{
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
-
-if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} eq "")
-{
-   my $description;
-   $description = $in{description};
-   print_form($in{'topic_tag'}, $in{'text_type'}, $description);
-   exit 0;
-}
-
-my $notes_path_encoded = &view::url_encode_path($notes_path);
-$in{'topic_tag'} =~ m:^([^/]*)$:;
-my($topic_tag) = $1;
-
-#$topic_tag=~s/([^\w\/])/sprintf("%%%02lx", unpack('C',$1))/ge;
-#$topic_tag =~ s/ /_/g;
-
-print "<HTML><HEAD>\n";
-print "<TITLE>Adding Topic</TITLE></HEAD><BODY>\n";
-
-my($source_details) = " $ENV{'REMOTE_ADDR'}, $ENV{'REMOTE_HOST'}\n";
-
-if( $in{description} eq "" )
-{
-	print("<br>Required description missing <br>\n");
-}
-elsif( $topic_tag eq "")
-{
-	print("<br>Required topic tag missing <br>\n");
-}
-else
-{
-   $in{'description'} =~ s:\r\n:\n:g; # rid ourselves of the two char newlines
-   if( &add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
+   if( ! auth::check_current_user_file_auth(
+      'n', $notes_path ) )
    {
+      print "You are not authorized to access this path.\n";
+      exit(0);
+   }
 
-      #view::browse_show_page($notes_path);
-      print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$notes_path_encoded\"></head><html><body>\n";
-print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
-print "</body></html>\n";
+   if(!defined($in{'description'}) || !defined($in{'topic_tag'}) || $in{topic_tag} eq "")
+   {
+      my $description;
+      $description = $in{description};
+      print_form($in{'topic_tag'}, $in{'text_type'}, $description);
+      exit 0;
+   }
+
+   my $notes_path_encoded = &view::url_encode_path($notes_path);
+   $in{'topic_tag'} =~ m:^([^/]*)$:;
+   my($topic_tag) = $1;
+
+   #$topic_tag=~s/([^\w\/])/sprintf("%%%02lx", unpack('C',$1))/ge;
+   #$topic_tag =~ s/ /_/g;
+
+   print "<HTML><HEAD>\n";
+   print "<TITLE>Adding Topic</TITLE></HEAD><BODY>\n";
+
+   my($source_details) = " $ENV{'REMOTE_ADDR'}, $ENV{'REMOTE_HOST'}\n";
+
+   if( $in{description} eq "" )
+   {
+      print("<br>Required description missing <br>\n");
+   }
+   elsif( $topic_tag eq "")
+   {
+      print("<br>Required topic tag missing <br>\n");
    }
    else
    {
-	print("<br>Topic creation was unsuccessful<br>\n");
+      $in{'description'} =~ s:\r\n:\n:g; # rid ourselves of the two char newlines
+      if( &add_topic($notes_path, $topic_tag, $in{'text_type'}, $in{description}, $source_details, $in{'topic_type'}))
+      {
+
+         #view::browse_show_page($notes_path);
+         print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$notes_path_encoded\"></head><html><body>\n";
+         print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
+         print "</body></html>\n";
+      }
+      else
+      {
+         print("<br>Topic creation was unsuccessful<br>\n");
+      }
    }
-}
 }
 
 sub print_form
