@@ -11,6 +11,9 @@ With email verified users, this could allow:
 - Ability to reply to a knotes email and have it put in DB
 - Ability to subscribe to a flat dir or the dir tree.
 
+CVS - Allow the notes to sit in CVS
+
+Database - Add a database backend - maybe someday
 
 Some other possible future additions:
 - Abreviations for note paths.(KN:fvwm = KN:/X/window_managers/fvwm)

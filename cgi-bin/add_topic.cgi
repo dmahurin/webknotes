@@ -22,7 +22,7 @@ my($notes_path) = $1;
 $notes_path=~ s:/$::;
 
 my($user) = auth::get_user();
-if( ! auth::check_file_auth( $user, auth::get_user_info($user),
+if( ! auth::check_current_user_file_auth(
 'n', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
@@ -208,15 +208,13 @@ $notes_path =~ s#^/*##g;
 # but I need to define that in the define file, as edit needs it too.
 #$message=~s:<(?!\s*/?(a|b|i|p|li|ul|em|br|strong|blockquote|hr|div|tt)( |>))[^>]*>::gi;
 
-my $user = auth::get_user();
-my $user_info = auth::get_user_info($user);
-my @auth_parent_path = ( $parent_path );
-my @auth_path = ( $notes_path );
-if( ! auth::check_file_auth( $user, $user_info, 'n', @auth_path ) )
-{
-   print "User does not have permission to add note\n";
-   return 0;
-}
+# checking auth of nonexistant file will not work anymore
+#my $user = auth::get_user();
+#if( ! auth::check_current_user_file_auth( 'n', $notes_path ) )
+#{
+#   print "User does not have permission to add note\n";
+#   return 0;
+#}
 
 if( ! &wkn::make_dir($notes_path))
 {
@@ -225,16 +223,16 @@ if( ! &wkn::make_dir($notes_path))
 print "Failed to create dir: $notes_path\n";
 	return 0;
 }
-if(auth::check_file_auth( $user, $user_info, 'i', @auth_parent_path ))
+if(auth::check_current_user_file_auth( 'i', $parent_path ))
 {
    my($permissions, $group);
-   if(defined($permissions = auth::get_path_permissions(@auth_parent_path)))
+   if(defined($permissions = auth::get_path_permissions($parent_path)))
    {
-      auth::set_path_permissions($permissions, @auth_path);
+      auth::set_path_permissions($permissions, $notes_path);
    }
-   if(defined($group = auth::get_path_group(@auth_parent_path)))
+   if(defined($group = auth::get_path_group($parent_path)))
    {
-      auth::set_path_group($group, @auth_path);
+      auth::set_path_group($group, $notes_path);
    }
 }
 

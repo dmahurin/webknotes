@@ -239,7 +239,6 @@ sub check_path_exists
 sub check_file_auth
 {
   my($user, $user_info, $check_flag, $file_path) = @_;
-  #  my($auth_pass, $auth_path, ags, @other);
   
   return 1 if($user_info->{"Permissions"} =~ m:s:);
 
