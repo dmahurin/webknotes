@@ -75,7 +75,7 @@ sub my_link_translate
          $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
       }
    }
-   elsif( filedb::is_file($path, "${ref}.wiki"))
+   elsif( filedb::is_file($path, "${ref}.htxt"))
    {
       unless(defined($text))
       {
