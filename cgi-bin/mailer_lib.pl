@@ -59,7 +59,7 @@ $message .= "Content-Base: \"$http_base\"\n";
 $message .= "\n";
 
 $message .= "<hr>\n";
-$message .= view::create_modification_string(filedb::get_mtime($notes_path), filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"));
+$message .= view::create_modification_string(filedb::get_mtime($temp_path), filedb::get_hidden_data($temp_path, "owner"), filedb::get_hidden_data($temp_path, "group"));
 $message .= "<br><a href=\"login.cgi?next=subscribe.cgi&path=" . view::url_encode_path($temp_path) . "\">Subscribed</a> to WKN path: $temp_path<br>\n\n";
 
 $message .= "--${boundary}--\n";
@@ -68,7 +68,7 @@ $message .= "--${boundary}--\n";
 	for my $user (@subscribers)
 	{
            my $user_info = auth::get_user_info($user);
-           next unless(auth::check_file_auth( $user, $user_info, 'S', $notes_path));
+           next unless(auth::check_file_auth( $user, $user_info, 'S', $temp_path));
            if(defined($user_info) and defined($user_info->{Email}))
            {
 		&mailer::send_email( "WKN: ${notes_path_short}", $mailer::define::admin_email, $user_info->{Email},
