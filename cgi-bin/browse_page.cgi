@@ -32,9 +32,9 @@ my(@notes_paths) = wkn::get_args();
 
 for (@notes_paths)
 {
-   unless( auth::check_current_user_file_auth( 'r', $_ ) )
+   unless( /=/ or auth::check_current_user_file_auth( 'r', $_ ) )
    {
-      print "You are not authorized to access this path.\n";
+      print "You are not authorized to access this path: $_\n";
       exit(0);
    }
 }
