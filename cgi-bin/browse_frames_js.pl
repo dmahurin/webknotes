@@ -6,21 +6,10 @@ use strict;
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-print "Content-type: text/html\n\n";
-
-my $this_script;
-if( $0 =~ m:/([^/]*)$: ) 
-{  push @INC, $`; $this_script = $1; }
-else
-{ $this_script = $0; }
-
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
-
-my($notes_path) = wkn::get_args();
-$notes_path = auth::path_check($notes_path);
-exit(0) unless(defined($notes_path));
-
+package browse;
+sub show_page
+{
+  my($notes_path)=@_;
 unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
@@ -57,6 +46,7 @@ if(defined($frame))
    exit(0);
 }
 
+my $this_script_prefix = wkn::get_cgi_prefix();
 &wkn::set_view_mode("layout", "js");
 my $js_script_prefix = wkn::get_cgi_prefix();
 &wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout")); 
@@ -71,12 +61,12 @@ print <<EOT
 <title>$wkn::define::index_title</title>
   </head>
   <frameset rows = "60,*">
-    <frame src="$this_script?frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
+    <frame src="${this_script_prefix}frame=header&$notes_path_encoded" name="header" noresize marginwidth="0"
       marginheight="0" scrolling="no">
     <frameset cols = "25%,*">
         <frameset rows = "*, 50">
           <frame src="${js_script_prefix}target=body&$notes_path_encoded" name="menu" marginwidth="0" marginheight="0">
-          <frame src="$this_script?frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
+          <frame src="${this_script_prefix}frame=footer&$notes_path_encoded" name="footer" marginwidth="0"
                  marginheight="0" scrolling="no">
         </frameset>
       <frame src="$script_prefix$notes_path_encoded" name="body" marginwidth="0" marginheight=
@@ -85,3 +75,5 @@ print <<EOT
   </frameset>
 </html>
 EOT
+}
+1;

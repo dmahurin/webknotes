@@ -7,44 +7,38 @@ use strict;
 # For information regarding the Copying policy read 'LICENSE'
 # dmahurin@users.sourceforge.net
 
-print "Content-type: text/html
-
-<HTML>
-";
-
-
-$|=1;
-
-if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-
-require 'wkn_define.pl';
 require 'wkn_lib.pl';
+package browse;
 
-local($wkn::define::mode) = "plain";
-
-my($notes_path) = wkn::get_args();
-$notes_path = auth::path_check($notes_path);
-exit(0) unless(defined($notes_path));
-
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+sub show_page
 {
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
-
-$notes_path =~ m:([^/]*)$:;
-my($notes_name) = $1;
-
+   my($path) = @_;
 my $head_tags = wkn::get_style_head_tags();
 
 print <<"END";
 <HTML>
 <head>
-<title>${notes_path}</title>
+<title>${path}</title>
 $head_tags
 </head>
 <BODY class="topics-back">
 END
+   show($path);
+print "</BODY>\n";
+print "</HTML>\n";
+}
+
+sub show
+{
+my($notes_path) = @_;
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   return(0);
+}
+
+$notes_path =~ m:([^/]*)$:;
+my($notes_name) = $1;
 
 my($real_path) = "$auth::define::doc_dir/${notes_path}";
 #print "<h1>";
@@ -102,5 +96,5 @@ my($real_path) = "$auth::define::doc_dir/${notes_path}";
 #	print "Notes path '${notes_path}' is not accessible<br>";
 #}
 
-print "</BODY>\n";
-print "</HTML>\n";
+return 1;
+}

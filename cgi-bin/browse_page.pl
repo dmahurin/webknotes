@@ -6,39 +6,14 @@ use strict;
 # For information regarding the Copying policy read 'LICENSE'
 # dmahurin@users.sourceforge.net
 
-print "Content-type: text/html\n\n";
-
-$|=1;
-if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-
-require 'wkn_define.pl';
 require 'wkn_lib.pl';
 require 'css_tables.pl';
 
+package browse;
 
-my $files_base;
-if(defined($wkn::define::files_ftp))
-{ $files_base = $wkn::define::files_ftp }
-elsif(defined($wkn::define::files_wpath))
-{ $files_base = $wkn::define::files_wpath } 
-
-   
-
-my $theme;
-my $layout;
-
-my(@notes_paths) = wkn::get_args();
-@notes_paths = ( "/" ) unless(@notes_paths);
-
-for (@notes_paths)
+sub show_page
 {
-   unless( /=/ or auth::check_current_user_file_auth( 'r', $_ ) )
-   {
-      print "You are not authorized to access this path: $_\n";
-      exit(0);
-   }
-}
-
+my(@paths) = @_;
 my $head_tags = wkn::get_style_head_tags();
 
 print <<"END";
@@ -49,7 +24,28 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
+show(@paths);
+print "</BODY>\n";
+print "</HTML>\n";
 
+}
+
+
+sub show
+{
+ my(@notes_paths) = @_;
+   for (@notes_paths)
+   {
+      unless( $_ =~ m:=: or auth::check_current_user_file_auth( 'r', $_ ) )
+      {
+         print "You are not authorized to access this path.\n";
+         return(0);
+      }
+   }
+   &wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
+
+
+   @notes_paths=("/") unless(@notes_paths);
 
 if (defined($wkn::define::index_header))
 {
@@ -135,6 +131,6 @@ print "<table border=0 cellpadding=8><tr><td class=\"topics-footer\">\n",
 }
 
 #print "<a href=\"mailto:dmahurin\@users.sourceforge.net\" >dmahurin\@users.sourceforge.net</a>\n";
-print "</BODY>\n";
-print "</HTML>\n";
 
+return 1;
+}

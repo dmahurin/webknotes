@@ -1,33 +1,18 @@
 #!/usr/bin/perl
 use strict;
+package browse;
 # single table version of main WebKNotes script table version
 
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-print "Content-type: text/html\n\n";
+require "css_tables.pl";
 
-if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
 
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
-require 'css_tables.pl';
-
-$wkn::view_mode{"layout"} = "table";
-
-my($notes_path) = wkn::get_args();
-$notes_path = auth::path_check($notes_path);
-exit(0) unless(defined($notes_path));
-
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+sub show_page
 {
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
-
-$notes_path =~ m:([^/]*)$:;
-my($notes_name) = $1;
+   my($path) = @_;
 
 my $head_tags = wkn::get_style_head_tags();
 
@@ -38,6 +23,22 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
+    show($path);
+print "</BODY>\n";
+print "</HTML>\n";
+}
+
+sub show
+{
+   my($notes_path) = @_;
+   unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+   {
+      print "You are not authorized to access this path.\n";
+      return(0);
+   }
+
+$notes_path =~ m:([^/]*)$:;
+my($notes_name) = $1;
 
 print css_tables::table_begin("topic-table") . "\n";
 
@@ -71,6 +72,8 @@ wkn::actions3($notes_path);
 print css_tables::trtd_end() . "\n";
 print css_tables::table_end() . "\n";
 
-wkn::log($notes_path);
-print "</BODY>\n";
-print "</HTML>\n";
+#wkn::log($notes_path);
+return 1;
+}
+
+1;

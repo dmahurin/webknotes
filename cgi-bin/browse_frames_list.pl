@@ -6,21 +6,10 @@ use strict;
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-print "Content-type: text/html\n\n";
-
-my $this_script;
-if( $0 =~ m:/([^/]*)$: ) 
-{  push @INC, $`; $this_script = $1; }
-else
-{ $this_script = $0; }
-
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
-
-my($notes_path) = wkn::get_args();
-$notes_path = auth::path_check($notes_path);
-exit(0) unless(defined($notes_path));
-
+package browse;
+sub show_page
+{
+  my($notes_path)=@_;
 unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
 {
    print "You are not authorized to access this path.\n";
@@ -58,13 +47,13 @@ if(defined($frame))
       print "</body></html>\n";
    }
    exit(0);
-}
+}  
+my $this_cgi_script_prefix = wkn::get_cgi_prefix();
 &wkn::set_view_mode("layout", "list2");
 my $list_cgi_script_prefix = wkn::get_cgi_prefix();
 &wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
 &wkn::unset_view_mode("sublayout");                          
 my $cgi_script_prefix = wkn::get_cgi_prefix();
-my $this_cgi_script_prefix = wkn::get_cgi_prefix("frames_list");
 
 #print "$cgi_script_prefix, $list_cgi_script_prefix, $this_cgi_script_prefix\n";
 print "<html> <head>\n";
@@ -100,3 +89,5 @@ print <<"EOT";
   </frameset>
 </html>
 EOT
+}
+1;

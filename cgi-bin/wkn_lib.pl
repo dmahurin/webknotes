@@ -113,7 +113,7 @@ sub strip_view_mode_args
    {
 # below strips off trailing '/', and breaks list2
 #      $arg = auth::path_check($arg);
-      if($arg =~ /^(theme|layout|sublayout|target|frame)=/)
+      if($arg =~ /^(theme|layout|sublayout|target|frame|save)=/)
       {
          $wkn::view_mode{$1} = $';
       }
@@ -160,9 +160,10 @@ sub actions2
       }
       $is_dir = 1;
    }
-   $notes_path .= '/' if($notes_path ne "");
-
    my($notes_path_encoded) = url_encode_path($notes_path);
+# What was below for?
+#   $notes_path .= '/' if($notes_path ne "");
+
    $dir_file = url_encode_path($dir_file);
 
    if( $is_dir )
@@ -889,32 +890,37 @@ sub get_cgi_prefix
    if($layout eq "layout_theme")
    {
       $prefix = "layout_theme.cgi?";
-      if($wkn::view_mode{"layout"})
-      {
-         $prefix .= ( "layout=" . $wkn::view_mode{"layout"} . "&" );
-      }
    }
    else
    {
-      $prefix = "browse_" . 
-      ( $layout || $wkn::view_mode{"layout"}
-            || $wkn::define::default_layout )
-            . ".cgi?";
+      $prefix = "browse.cgi?";
    }
+   if(defined($wkn::view_mode{"layout"}))
+   {
+      $prefix .= ( "layout=" . $wkn::view_mode{"layout"} . "&" );
+   }
+#   }
+#   else
+#   {
+#      $prefix = "browse_" . 
+#      ( $layout || $wkn::view_mode{"layout"}
+#               || $wkn::define::default_layout )
+#            . ".cgi?";
+#   }
          
-   if($wkn::view_mode{"sublayout"})
+   if(defined($wkn::view_mode{"sublayout"}))
    {
       $prefix .= ( "sublayout=" . $wkn::view_mode{"sublayout"} . "&" );
    }
-   if($wkn::view_mode{"theme"})
+   if(defined($wkn::view_mode{"theme"}))
    {
       $prefix .= ( "theme=" . $wkn::view_mode{"theme"} . "&" );
    }
-   if($wkn::view_mode{"target"})
+   if(defined($wkn::view_mode{"target"}))
    {
       $prefix .= ( "target=" . $wkn::view_mode{"target"} . "&" );
    }
-   if($wkn::view_mode{"frame"})
+   if(defined($wkn::view_mode{"frame"}))
    {
       $prefix .= ( "frame=" . $wkn::view_mode{"frame"} . "&" );
    }
@@ -942,6 +948,7 @@ sub set_view_mode
 
 sub unset_view_mode
 {
+   my($param) = @_;
    undef $wkn::view_mode{$param};
 }
 
@@ -973,4 +980,54 @@ sub text_icon
       return $text;
    }
 }
+
+sub content_header
+{
+   print "Content-type: text/html\n\n";
+}
+
+sub browse_show_page
+{
+   my $layout = get_view_mode("layout");
+   $layout = $wkn::define::default_layout unless($layout);
+   require "browse_${layout}.pl";
+   browse::show_page(@_);
+}
+
+# persistent layout and theme settings for user
+sub persist_view_mode
+{
+my $username = auth::get_user();
+
+if( defined($username) )
+{
+   my $theme = $wkn::view_mode{"theme"};
+   my $layout = $wkn::view_mode{"layout"};
+   my $sublayout = $wkn::view_mode{"sublayout"};
+
+   my($user_info) = auth::get_current_user_info();
+   if(defined($theme) && defined($layout) && defined($sublayout) &&
+      ($user_info->{"Theme"} ne $theme ||
+      $user_info->{"Layout"} ne $layout ||
+      $user_info->{"Sublayout"} ne $sublayout)
+   )
+   {
+      $user_info->{"Sublayout"} = $sublayout;
+      $user_info->{"Layout"} = $layout;
+      $user_info->{"Theme"} = $theme;
+      if(&auth::write_user_info(auth::check_user_name($username), $user_info))
+      {
+         $saved = 1;
+      }
+      else
+      {
+         print "Could not modify user information?\n";
+      }
+   }
+   undef $wkn::view_mode{"theme"};
+   undef $wkn::view_mode{"layout"};
+   undef $wkn::view_mode{"sublayout"};
+}
+}
+
 1;

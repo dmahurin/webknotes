@@ -1,31 +1,18 @@
 #!/usr/bin/perl
 use strict;
-# expanded tables version of the main WebKNotes script table version
+# main WebKNotes script table version
 
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin
-# For information regarding the Copying policy read 'LICENSE'
+# For information regarding the Copying policy read 'COPYING'
 # dmahurin@users.sourceforge.net
 
-print "Content-type: text/html\n\n";
-
-if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
 require 'css_tables.pl';
 
-$wkn::view_mode{"layout"} = "tables";
+package browse;
 
-my($notes_path) = wkn::get_args();
-$notes_path = auth::path_check($notes_path);
-exit(0) unless(defined($notes_path));
-
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+sub show_page
 {
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
-
+my($path) = @_;
 my $head_tags = wkn::get_style_head_tags();
 
 print <<"END";
@@ -35,9 +22,21 @@ $head_tags
 </head>
 <BODY class="topics-back">
 END
+show($path);
 
+print "</BODY>\n";
+print "</HTML>\n";
+}
+
+sub show
+{
+   my($notes_path) = @_;
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   exit(0);
+}
 print_main_topic_table($notes_path);
-print "<br>";
 
 exit unless
 opendir(DIR, "$auth::define::doc_dir/$notes_path");
@@ -45,8 +44,8 @@ my $file;
 while($file = readdir(DIR))
 {
 	next if( $file =~ m:^\.: );
-        next if ($file eq 'README' or
-           $file =~ m:^(README|index)\.(txt|html|htm)$: );
+	next if( $file =~ m:^README(\.html)?:);
+	next if( $file eq "index.html");
 
 	if( $file =~ m:^([^/]*)$: ) # untaint dir entry
         {
@@ -57,18 +56,19 @@ while($file = readdir(DIR))
 		print "hey, /'s ? not ggod.\n";
                 exit;
 	}
-	print_topic_table( "$notes_path/$file");	
+        $file = "$notes_path/$file" if($notes_path);
+	print_topic_table( "$file");	
 }
 closedir(DIR);
 
 print css_tables::table_begin("topic-table") . "\n";
-print css_tables::trtd_begin("topic-actions") . "\n";
+print "<tr>" . css_tables::trtd_begin("topic-actions") . "\n";
 wkn::actions3($notes_path);
-print css_tables::trtd_end();
+print css_tables::trtd_end() . "</tr>\n";
 print css_tables::table_end() . "\n";
+return 1;
+}
 
-print "</BODY>\n";
-print "</HTML>\n";
 
 sub print_main_topic_table
 {
@@ -77,6 +77,7 @@ sub print_main_topic_table
 	my $notes_name = $1;
 
         print css_tables::table_begin("topic-table") . "\n";
+        
         print css_tables::trtd_begin("topic-title") . "\n";
 	print "<b>$notes_name</b>\n";
         print css_tables::trtd_end() . "\n";
@@ -86,7 +87,7 @@ sub print_main_topic_table
         print css_tables::trtd_end() . "\n";
         
         print css_tables::trtd_begin("topic-text") . "\n";
-	print "&nbsp;" unless (&wkn::print_dir_file($notes_path));
+	print "&nbsp;" unless(&wkn::print_dir_file($notes_path));
         print css_tables::trtd_end() . "\n";
         
         print css_tables::trtd_begin("topic-actions") . "\n";
@@ -102,7 +103,6 @@ sub print_topic_table
 	my $notes_name = $1;
 
         print css_tables::table_begin("topic-table") . "\n";
-        
         print css_tables::trtd_begin("sub-topic-title") . "\n";
 #	print "<b>$notes_name</b><br>\n";
         print_icon_link($notes_path);
@@ -112,17 +112,17 @@ sub print_topic_table
 	&wkn::print_modification($notes_path);
         print css_tables::trtd_end() . "\n";
         
-        
         print css_tables::trtd_begin("topic-text") . "\n";
-	print "&nbsp;" unless (&wkn::print_dir_file($notes_path));
+	&wkn::print_dir_file($notes_path);
         print css_tables::trtd_end() . "\n";
         
-        #	print "<tr><td class=\"listing\">\n";
-#	wkn::actions2($notes_path);
-#	print "</td></tr>\n";
-#	print "<tr><td class=\"listing\">\n";
-#	&wkn::list_html($notes_path);
-#	print "</td></tr>\n";
+        print css_tables::trtd_begin("topic-actions") . "\n";
+	wkn::actions2($notes_path);
+        print css_tables::trtd_end() . "\n";
+        
+        print css_tables::trtd_begin("topic-listing") . "\n";
+        print "&nbsp;" unless(&wkn::list_html($notes_path));
+        print css_tables::trtd_end() . "\n";
         print css_tables::table_end() . "\n";
 }
 
@@ -143,3 +143,4 @@ sub print_icon_link
         "$wpath\">";
         print "<b>$name</b></a>";
 }
+1;

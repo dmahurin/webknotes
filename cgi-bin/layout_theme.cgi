@@ -5,49 +5,26 @@ require 'wkn_define.pl';
 require 'wkn_lib.pl';
 use CGI qw(:standard);
 
-my $layout = param("layout"); 
-my $sublayout = param("sublayout"); 
-my $theme = param("theme");
+my $go = param("go");
 my $path = param("path");
+# set local view
+wkn::set_view_mode("layout", param("layout"));
+wkn::set_view_mode("sublayout", param("sublayout"));
+wkn::set_view_mode("theme", param("theme"));
 
-my $saved = 0;
+# get view mode params ( falls back to users settings )
+$theme = wkn::get_view_mode("theme");
+$layout = wkn::get_view_mode("layout");
+$sublayout = wkn::get_view_mode("sublayout");
 
-#auto persistent save layout and theme settings for user
-my $username = auth::get_user();
-if( defined($username) )
+wkn::persist_view_mode();
+
+wkn::content_header();
+if($go)
 {
-   my($user_info) = auth::get_current_user_info();
-   if(defined($theme) && defined($layout) && defined($sublayout) &&
-      ($user_info->{"Theme"} ne $theme ||
-      $user_info->{"Layout"} ne $layout ||
-      $user_info->{"Sublayout"} ne $sublayout)
-   )
-   {
-      $user_info->{"Sublayout"} = $sublayout;
-      $user_info->{"Layout"} = $layout;
-      $user_info->{"Theme"} = $theme;
-      if(&auth::write_user_info(auth::check_user_name($username), $user_info))
-      {
-         $saved = 1;
-      }
-      else
-      {
-         print "Could not modify user information?\n";
-      }
+  wkn::browse_show_page($path);
+  exit(0);
    }
-   else
-   {
-   	$sublayout = $user_info->{"Sublayout"};
-   	$layout = $user_info->{"Layout"};
-        $theme = $user_info->{"Theme"};
-        $saved = 1;
-   }
-}   
-$theme = "" unless(defined($theme));
-$layout = "" unless(defined($layout));
-$sublayout = "" unless(defined($sublayout));
-
-print "Content-Type: text/html\n\n";
 print "<html><head>
 <TITLE>Layout and Theme</TITLE>
 <base target=\"_top\">
@@ -71,7 +48,7 @@ if(opendir(CDIR, $runpath))
 {
    while(defined($file = readdir(CDIR)))
    {
-       if($file =~ m:^browse_([^\.]+)\.cgi$:)
+       if($file =~ m:^browse_([^\.]+)\.pl$:)
        {
            push(@layouts, $1);
        }
@@ -79,8 +56,9 @@ if(opendir(CDIR, $runpath))
    closedir(CDIR);
 }
    
-print "<FORM METHOD=POST ACTION=\"layout_theme.cgi\">\n";
+print "<FORM METHOD=GET ACTION=\"browse.cgi\">\n";
 print "<INPUT TYPE=\"hidden\" NAME=\"path\" value=\"$path\">\n";
+print "<INPUT TYPE=\"hidden\" NAME=\"save\" value=\"yes\">\n";
 print "Theme: <select name=\"theme\">";
 for $sel ('', @themes)
 {
@@ -113,16 +91,8 @@ print "</select> ( For frame and list layout modes )<br>\n";
 
 print "<INPUT TYPE=\"SUBMIT\" VALUE=\"Change\">\n";
 
-$layout = $wkn::define::default_layout unless($layout);
-undef $theme if($layout eq "edit");
-my $return_link = "browse_$layout.cgi?";
-$return_link .= "sublayout=$sublayout&" 
-if((!$saved) && $sublayout &&
-$sublayout ne $wkn::define::default_layout);
-$return_link .= "theme=$theme&" 
-if((!$saved) && $theme &&
-($theme ne $wkn::define::default_theme));
-$return_link .=  &wkn::url_encode_path($path);
+#my $return_link = wkn::get_cgi_prefix();
+#$return_link .=  &wkn::url_encode_path($path);
 
-print "<p><a href=\"$return_link\">Return to browsing</a>";
+#print "<p><a href=\"$return_link\">Return to browsing</a>";
 print "</body></html>\n";

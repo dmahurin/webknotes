@@ -3,18 +3,39 @@ use strict;
 no strict 'refs';
 
 # expanding list version of main WebKNotes script table version
-
 # The WebKNotes system is Copyright 1996-2000 Don Mahurin.
 # For information regarding the copying, modification policy read 'LICENSE'.
 # dmahurin@users.sourceforge.net
 
-print "Content-type: text/html\n\n";
-
-if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-
-require 'wkn_define.pl';
 require 'wkn_lib.pl';
+package browse;
 
+
+sub show_page
+{
+  my($notes_path, @paths)= @_;
+my $head_tags = wkn::get_style_head_tags();
+
+print
+"<HTML>
+<head>
+<title>${notes_path}</title>
+$head_tags
+</head>" .
+"<BODY class=\"topic-listing\">";
+show($notes_path,@paths);
+print "</BODY>\n";
+print "</HTML>\n";
+}
+
+sub show
+{
+  my($notes_path, @paths)= @_;
+unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+{
+   print "You are not authorized to access this path.\n";
+   return(0);
+}
 #my $INDENT = " ";
 #my $LSTART = "<dl>";
 #my $LITEM = "<dt>";
@@ -47,19 +68,6 @@ my $CLOSED_SYMBOL = "[+]";
 my $OPENED_SYMBOL = "[-]";
 my $FILE_SYMBOL = "[.]";
 
-my ($arg);
-my($theme);
-
-my($notes_path, @paths) = wkn::get_args();
-$notes_path = auth::path_check($notes_path);
-exit(0) unless(defined($notes_path));
-
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
-{
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
-
 my $target;
 if($wkn::view_mode{"target"})
 {
@@ -78,15 +86,7 @@ my $open_tree = unflatten_tree(wkn::url_unencode_paths(@paths));
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
 
-my $head_tags = wkn::get_style_head_tags();
 
-print
-"<HTML>
-<head>
-<title>${notes_path}</title>
-$head_tags
-</head>" .
-"<BODY class=\"topic-listing\">";
 
 my($toppath) = $auth::define::doc_dir;
 $toppath .= "/$notes_path" if( $notes_path ne "");
@@ -236,8 +236,9 @@ if(-d $toppath)
        }
    }
 }
-print "</BODY>\n";
-print "</HTML>\n";
+return 1;
+}
+
 
 
 sub read_dir_entries
@@ -278,14 +279,7 @@ sub unflatten_tree
 
    foreach $item(@items)
    {
-      if($item =~ m:/$: )
-      {
-         $item = $`;
-         %{$current->{$item}} = ();
-         push(@branches, $current);
-         $current = \%{$current->{$item}};
-      }
-      elsif($item eq "")
+      if($item eq "")
       {
          unless($current = pop(@branches))
          {
@@ -295,7 +289,9 @@ sub unflatten_tree
       }
       else
       {
-         $current->{$item} = 1;
+         %{$current->{$item}} = ();
+         push(@branches, $current);
+         $current = \%{$current->{$item}};
       }
    }
    return \%tree;
@@ -311,16 +307,12 @@ sub flatten_tree
    {
       if(defined($tree_ref->{$item}))
       {
+         push(@items, $item);
          if(defined(%{$tree_ref->{$item}}))
          {
-            push(@items, $item . '/');
             push(@items, flatten_tree($tree_ref->{$item}));
-            push(@items, '');
          }
-         else
-         {
-            push(@items, $item);
-         }
+         push(@items, '');
       }
    }
    return @items;

@@ -74,7 +74,8 @@ else
    if( &wkn::add_topic($notes_path, $topic_tag, $in{'topic_type'}, $in{'text_type'}, $source_details, $in{description}))
    {
 
-print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
+#print("<br>Successfully created topic ${notes_path}/${topic_tag}. <br>\n");
+      wkn::browse_show_page($notes_path);
    }
    else
    {

@@ -74,4 +74,5 @@ if(! auth::write_user_info(auth::check_user_name($in{'username'}),
    print "Sorry: Could not add user.\n";
    exit(0);
 }
-print "added user\n";
+print "added user.<br>\n";
+print "Now, go <a href=\"login.cgi\">login</a>.\n";

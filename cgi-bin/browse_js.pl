@@ -1,24 +1,11 @@
 #!/usr/bin/perl
 use strict;
+package browse;
 no strict 'refs';
 
-
-print "Content-type: text/html\n\n";
-
-if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
-
-require 'wkn_define.pl';
-require 'wkn_lib.pl';
-
-my($notes_path) = wkn::get_args();
-$notes_path = auth::path_check($notes_path);
-exit(0) unless(defined($notes_path));
-
-unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+sub show_page
 {
-   print "You are not authorized to access this path.\n";
-   exit(0);
-}
+   my($path) = @_;
 
 my $target;
 if($wkn::view_mode{"target"})
@@ -26,11 +13,35 @@ if($wkn::view_mode{"target"})
    $target = "target=\"$wkn::view_mode{\"target\"}\"";
 }
 &wkn::unset_view_mode("target"); # don't want to pass target to main script
-&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
-&wkn::unset_view_mode("sublayout");
+
+print <<"EOT";
+<html>
+  <head>
+    <title>js menu</title>
+    <base $target>
+  </head>
+  <body>
+EOT
+  show($path);
+print <<"EOT";
+</body>
+</html>
+EOT
+}
+
+sub show
+{
+   my($notes_path) = @_;
+   unless( auth::check_current_user_file_auth( 'r', $notes_path ) )
+   {
+      print "You are not authorized to access this path.\n";
+      return(0);
+   }
 
 $notes_path =~ m:([^/]*)$:;
 my $notes_name = $1;
+&wkn::set_view_mode("layout", &wkn::get_view_mode("sublayout"));
+&wkn::unset_view_mode("sublayout");
 
 my $OPENED_SYMBOL = &wkn::text_icon($wkn::define::opened_icon_text, 
                    $wkn::define::opened_icon);
@@ -42,13 +53,6 @@ my $DIR_SYMBOL = &wkn::text_icon($wkn::define::dir_icon_text,
                    $wkn::define::dir_icon);
 
 print <<"EOT";
-<html>
-  <head>
-    <title>js menu</title>
-    <base $target>
-  </head>
-
-  <body>
     <script language="JavaScript">
     <!-- hide from browsers without js enabled
 
@@ -456,6 +460,7 @@ menu.display();
    Your browser does not have JavaScript enabled.
    <p>See <a href="browse_help.cgi">other browse method</a> instead.
    </NOSCRIPT>
-</body>
-</html>
 EOT
+return  1;
+}
+1;

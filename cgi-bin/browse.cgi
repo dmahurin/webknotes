@@ -1,26 +1,28 @@
 #!/usr/bin/perl
-# wrapper that calls the underlying browse layout script.
-my $runpath;
-if( $0 =~ m:/([^/]*)$: ) { $runpath = $`; push @INC, $runpath}
+use strict;
+# The WebKNotes system is Copyright 1996-2000 Don Mahurin
+# For information regarding the Copying policy read 'LICENSE'
+# dmahurin@users.sourceforge.net
 
-require 'auth_lib.pl';
-require 'wkn_define.pl';
+if( $0 =~ m:/[^/]*$: ) {  push @INC, $` }
+require 'wkn_lib.pl';
 
-use CGI qw(:standard);
+wkn::content_header();
+my(@paths) = wkn::get_args();
 
-my $layout = param(layout);
-unless(defined($layout))
+my $path;
+for $path (@paths)
 {
-   my $user_info = auth::get_current_user_info();
-   $layout = $user_info->{"Layout"};
-   $layout = $wkn::define::default_layout unless(defined($layout));
-}
-if( -f "$runpath/browse_${layout}.cgi")
+   $path = auth::path_check($path);
+   unless(defined($path))
 {
-   exec ("$runpath/browse_${layout}.cgi", @ARGV);
+       print "Bad path\n";
+       exit(1);
 }
-else
-{
-   print header;
-   print "Error executing cgi script\n";
 }
+
+my $save = wkn::get_view_mode("save");
+wkn::unset_view_mode("save");
+wkn::persist_view_mode() if($save);
+
+wkn::browse_show_page(@paths);
