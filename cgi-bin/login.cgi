@@ -28,18 +28,20 @@ my($password) = $in{'password'};
 my($path) = $in{'path'};
 my($next) = $in{'next'};
 
-if(defined($next) and defined(auth::get_user()))
+if(defined($next))
 {
+  my $current_user =  auth::get_user();
+  if(defined($current_user) and ((!defined($user)) or $current_user eq $user))
+  {
    redirect("$next?path=$path");
    exit(0);
+  }
 }
-print "user : $user" if(defined (auth::get_user()));
-
 
 #$this_cgi = 'login.cgi';
 my($this_cgi) = $ENV{'SCRIPT_NAME'};
 
-if ( ! defined($user) )
+if ( ! defined($password) )
 {
 print "Content-type: text/html\n\n";
    print <<"END";
@@ -63,7 +65,7 @@ if(defined($next))
 }
 
    print <<"END";
-User Name <input type=text name="user" size=20><br>
+User Name <input type=text name="user" value="$user" size=20><br>
 Password <input type=password name="password" size=20><p>
 <input type=submit value="Login"><input type=reset>
 </form>

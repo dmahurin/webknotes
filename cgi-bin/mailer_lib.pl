@@ -60,9 +60,8 @@ $message .= "\n";
 
 $message .= "<hr>\n";
 $message .= view::create_modification_string(filedb::get_mtime($temp_path), filedb::get_hidden_data($temp_path, "owner"), filedb::get_hidden_data($temp_path, "group"));
-$message .= "<br><a href=\"login.cgi?next=subscribe.cgi&path=" . view::url_encode_path($temp_path) . "\">Subscribed</a> to WKN path: $temp_path<br>\n\n";
 
-$message .= "--${boundary}--\n";
+my $message_end = "--${boundary}--\n";
 
 	my @subscribers = split(/\s+/, $subscribed);
 	for my $user (@subscribers)
@@ -71,8 +70,10 @@ $message .= "--${boundary}--\n";
            next unless(auth::check_file_auth( $user, $user_info, 'S', $temp_path));
            if(defined($user_info) and defined($user_info->{Email}))
            {
+# user specific part of message
+my $message_user .= "<br><a href=\"login.cgi?next=subscribe.cgi&user=$user&path=" . view::url_encode_path($temp_path) . "\">Subscribed</a> to WKN path: $temp_path<br>\n\n";
 		&mailer::send_email( "WKN: ${notes_path_short}", $mailer::define::admin_email, $user_info->{Email},
-			$message, $extra);
+			$message . $message_user . $message_end, $extra);
            }
 	} 
         
