@@ -19,20 +19,30 @@ sub url_encode_path
 {
    my($path) = @_;
    my ($skip, $after);
-   if($path =~ m:(#.*|\.cgi\?):) # don't encode cgi? and # #a name refs
+   if($path =~ m:(\.cgi\??):) # don't encode cgi? and # #a name refs
    {
       $path = $`;
       $skip = $&;
       $after = $';
+      return url_encode_path0($path) . $skip . $after;
    }
-  
-   return url_encode_name($path) . $skip . url_encode_name($after);
+   else
+   {
+      return url_encode_path0($path);
+   }
 }
+
 
 sub url_encode_name
 {
   my($name) = @_;
-  $name =~s/([^\w\/\.\~-])/sprintf("%%%02lx", unpack('C',$1))/ge;
+  $name =~s/([^\w\.\~\-\_])/sprintf("%%%02lx", unpack('C',$1))/ge;
+  return $name;
+}
+sub url_encode_path0
+{
+  my($name) = @_;
+  $name =~s/([^\w\.\~\-\_\/\#])/sprintf("%%%02lx", unpack('C',$1))/ge;
   return $name;
 }
 
@@ -394,7 +404,7 @@ sub list_dirs_html
 
 sub list_html
 {
-   my( $notes_path ) = @_;
+	my( $notes_path ) = @_;
    my($found) = 0;
 
 	if ( ! -d "$auth::define::doc_dir/$notes_path" )
@@ -438,7 +448,7 @@ sub list_html
 				last SWITCH if ($file =~ /\~$/ );
 				last SWITCH if ($file =~ /^README(\.html)?$/ );
 				last SWITCH if ($file eq "index.html" );
-                                last SWITCH if ($file eq "index.htm" );
+				last SWITCH if ($file eq "index.htm" );
                                 $found = 1;
 				$file_ext =~ /^\.html/ && do
 				{
@@ -693,7 +703,7 @@ sub smart_ref
    #elsif( $ref =~ m:^[^/]+\.cgi: ) # local cgi script
    {
        if( -f "$auth::define::doc_dir/$path_enc/$ref")
-   {
+       {
           $path_enc =~ s:^/::;
           $path_enc =~ s:(/|^)[^/]*$:$1:; # strip off file
           return $auth::define::doc_wpath . '/' . $path_enc . $ref_enc;
@@ -835,7 +845,7 @@ sub get_style_header_string
 {
    my $theme = $wkn::view_mode{"theme"};
    $theme =  $wkn::define::default_theme unless($theme);
-   return "<LINK HREF=\"$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
+   return "<LINK HREF=\"themes/$theme.css\" REL=\"stylesheet\" TITLE=\"Default Styles\"
       MEDIA=\"screen\" type=\"text/css\" >\n";
 }
 

@@ -42,7 +42,7 @@ if($cgi_query_str =~ m:theme=([^&]*):)
 }
 else
 {
-   if(opendir(CDIR, "."))
+   if(opendir(CDIR, "themes"))
    {
       while(defined($file = readdir(CDIR)))
       {
