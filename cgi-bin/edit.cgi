@@ -120,7 +120,11 @@ else
 {
    $text =~ s:\r\n:\n:g; # rid ourselves of the two char newline
    filedb::put_file($dir, $file, $text);
-
+   my $user = auth::get_user();
+   if(defined($user) and $dir eq $path)
+   {
+      filedb::set_hidden_data($dir, "last-modify-user", $user);
+   }
 
    print "<html><head><meta HTTP-EQUIV=\"Refresh\" CONTENT=\"1; url=browse.cgi?$encoded_path\"></head><html>\n";
    print "wrote $file\n";

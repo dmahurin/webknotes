@@ -549,13 +549,14 @@ sub print_dir_file
 
 sub create_modification_string
 {
-   my($time, $user, $group) = @_;
+   my($time, $user, $group, $by) = @_;
    my($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
            localtime($time);
    $year +=1900;
    $mon++;
    my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $min, $sec);
    my($text) = "Modified $date ";
+   $text .= " by " . user_link($by) . " " if(defined($by));
    
    if( defined($user))
    {
@@ -572,7 +573,7 @@ sub print_modification
 {
    my($notes_path) = @_;
 
-   print create_modification_string(filedb::get_mtime($notes_path), filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"));
+   print create_modification_string(filedb::get_mtime($notes_path) , filedb::get_hidden_data($notes_path, "owner"), filedb::get_hidden_data($notes_path, "group"), filedb::get_hidden_data($notes_path, "last-modify-user"));
 }
 
 sub log

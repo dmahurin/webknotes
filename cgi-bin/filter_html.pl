@@ -26,8 +26,6 @@ sub filter_file
 # detail append comments - now in view_lib.pl
 #   $text =~ s#<hr\s+title="Modified\s([\d\s\:-]+)(\sby\s+([^\"]+))?"\s*>#&enclose_topic_info(view::create_modification_string($1,$3))#ge;
 
-
-   
    if(defined(&view::define::code_filter))
    {
       $text =~ s=<code\s*([^\s>]*)>(((?!</code>).)*)=&view::define::code_filter($1,$2);=gsie;

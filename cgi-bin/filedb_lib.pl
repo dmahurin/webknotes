@@ -238,7 +238,7 @@ sub get_hidden_data
       close(FILE);
       return $value;
    }
-   return ();
+   return undef;
 }
 
 sub set_hidden_data

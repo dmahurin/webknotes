@@ -146,6 +146,10 @@ my($date) = sprintf("%d-%02d-%02d %02d:%02d:%02d", $year, $mon, $mday, $hour, $m
    $header .= "\n";
    
    filedb::append_file($dir, $file, $header . $text); 
+   if(defined($user) and $dir eq $path)
+   {
+      filedb::set_hidden_data($dir, "last-modify-user", $user);
+   }
    if(auth::check_current_user_file_auth( 'M', $dir ))
    {
      &mailer::mail_subscribers($dir, $file);
