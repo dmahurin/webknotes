@@ -1,0 +1,13 @@
+<html>
+<body>
+This is a WebKnotes2 bookmarklet.
+Right click on the following link, and select 'Bookmark this Link'.
+This will allow editing files on a WebDav or SVN server, without change to the server.
+<p>
+<script type="text/javascript">
+var href = document.location.href;
+href = href.replace(/[^\/]+\/?$/, '');
+document.write("<a href=\"javascript:document.open('text/html'); document.write('<html><head><base href=&quot;" + href + "&quot;/></head><body></body><scr" + "ipt id=&quot;edit_script&quot; type=&quot;text/javascript&quot; src=&quot;edit.js&quot;></scr" + "ipt></body></html>');document.close();\">WebKnotes2 bookmarklet</a>");
+</script>
+</body>
+</html>
