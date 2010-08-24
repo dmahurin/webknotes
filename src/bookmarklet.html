@@ -7,7 +7,7 @@ This will allow editing files on a WebDav or SVN server, without change to the s
 <script type="text/javascript">
 var href = document.location.href;
 href = href.replace(/[^\/]+\/?$/, '');
-document.write("<a href=\"javascript:document.open('text/html'); document.write('<html><head><base href=&quot;" + href + "&quot;/></head><body></body><scr" + "ipt id=&quot;edit_script&quot; type=&quot;text/javascript&quot; src=&quot;edit.js&quot;></scr" + "ipt></body></html>');document.close();\">WebKnotes2 bookmarklet</a>");
+document.write("<a href=\"javascript:document.open('text/html'); document.write('<html><head><" + "script id=&quot;edit_script&quot; type=&quot;text/javascript&quot; src=&quot;" + href + "edit.js&quot;></" + "script></head><body></body></html>');document.close();\">WebKnotes2 bookmarklet</a>");
 </script>
 </body>
 </html>

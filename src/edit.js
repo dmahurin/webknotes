@@ -1,5 +1,7 @@
 // Client side only WebDav/SVN/HTTP File/Directory editor
 
+var ERR_Not_Found = '<html><body>404 Not Found</body></html>';
+
 function FileList(path)
 {
 	if(path == undefined)
@@ -7,9 +9,10 @@ function FileList(path)
 	var file_area_document = top.frames['file_area'].document;
 
 	var responses = null;
-	if(top.document.location.protocol != 'file:')
-	{
 
+	// try PROPFIND and ignore for non-webdav, non-svn, or file
+	try
+	{
 		var req = new XMLHttpRequest();
 		req.open("PROPFIND", path, false);
 		req.setRequestHeader("Depth", "1");
@@ -17,6 +20,9 @@ function FileList(path)
 		req.send(null);
 		if(req.status < 300)
 			responses = req.responseXML.getElementsByTagName("D:multistatus")[0].getElementsByTagName("D:response");
+	}
+	catch(err)
+	{
 	}
 
 	if(responses == null)
@@ -54,15 +60,124 @@ function FileList(path)
 			else
 				file_area_document.writeln('<a href="javascript:top.FileList(\'' + href + '\')">' + file + '/</a><br>');
 		}
-		else
+		else if(null != (href.match(/\.(txt|html?)$/))
 		{
 			file_area_document.writeln('<a href="' + href + '">' + file + '</a><br>');
+		}
+		else
+		{
+			file_area_document.writeln('<a href="javascript:top.FileShow(' + "'" + href + "'" + ')">' + file + '</a><br>');
 		}
 	}
 	file_area_document.writeln('<input type="hidden" id="button_mode" value="dir"/>');
 	file_area_document.writeln('<input type="hidden" id="filepath" value="' + path + '"/>');
 	file_area_document.writeln("</body></html>");
 	file_area_document.close();
+}
+
+function get_top_href_path()
+{
+	var path;
+        var script = top.document.getElementById("edit_script");
+	if(!script)
+	{
+		var head = top.document.getElementsByTagName("head")[0];
+		script = script.getElementsByTagName("head")[0]
+	}
+	if(script && script.src && script.src.match(/:/))
+		path = script.src;
+	else
+		path = top.document.location.href;
+
+	path = path.replace(/[^\/]*$/, '');
+
+	return path;
+}
+
+function do_link(file)
+{
+	if(null != file.match(/\/$/))
+		FileList(file);
+	else
+		FileShow(file);
+
+	return false;
+}
+
+function my_onload(win)
+{
+	var head = win.document.getElementsByTagName("head")[0];
+	var base = head.getElementsByTagName("base");
+	if(base && base[0])
+		base = base[0].href.replace(/^[^\/]*:\/\/[^\/]*(.*\/)[^\/]*/, '$1');
+	else
+		base = '';
+
+	// replace local references with internal function calls
+	win.document.body.innerHTML = win.document.body.innerHTML.replace(/<a href="([^":]*)"/g, '<a href="$1" onClick="return top.do_link(\'' + base + '$1\')"');
+/*
+	var links = win.document.links;
+	for(var i=0; i <links.length;i++)
+	{
+		links[i].setAttribute('onclick',"return top.on_link('" + links[i].href + "');");
+	}
+*/
+}
+
+function FileShow(file, text)
+{
+	if(file == null)
+		file = get_filepath();
+
+	var type;
+	var matches;
+
+	if((matches = file.match(/\.([^\.]+)$/)))
+		type = matches[1];
+
+	var view_area_document;
+	if(top.document.getElementById('file_div').style.visibility == 'hidden')
+		view_area_document = top.frames['preview_area'].document;
+	else
+		view_area_document = top.frames['file_area'].document;
+
+	var href = top.frames['file_area'].document.location.protocol + "//" + top.frames['file_area'].document.location.host + file;
+
+	if(text == null)
+		text = get_file_data(file);
+
+	if(text == ERR_Not_Found)
+	{
+		FileEdit(file);
+		return;
+	}
+
+	view_area_document.open("text/html");
+	if(type == 'html')
+	{
+		var href = top.frames['file_area'].document.location.protocol + "//" + top.frames['file_area'].document.location.host + file;
+
+		var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
+		var base = head.getElementsByTagName("base")[0];
+		if(base == undefined)
+		{
+			text = text.replace('<html>', '<html><base href="' + href + '">');
+		}
+		view_area_document.write(text);
+	}
+	else
+	{
+		view_area_document.writeln('<html><head><base href="' + href + '"/>');
+		if(type != null)
+		{
+			view_area_document.writeln('<script src="' + get_top_href_path() + type + '.js"></script>');
+			view_area_document.writeln("<script type=\"text/javascript\">var other_onload = window.onload;\nfunction new_onload() { other_onload(); top.my_onload(window); }\nwindow.onload = new_onload; </script>");
+		}
+		view_area_document.writeln('</head><body><pre>');
+		view_area_document.write(text);
+		view_area_document.writeln('</pre></body></html>');
+	}
+	view_area_document.close();
 }
 
 function get_uuid()
@@ -223,14 +338,18 @@ function get_file_data(file)
 	req.open("GET", file, false);
 	req.setRequestHeader('Cache-Control', 'no-cache');
 	req.send(null);
-	var data = req.responseText;
+	var data = req.status == 404 ? ERR_Not_Found : req.responseText;
 	return data;
 }
 
-function FileEdit()
+function FileEdit(file)
 {
-	var file = get_filepath();
+	if(file == null)
+		file = get_filepath();
+
 	var data = get_file_data(file);
+	if(data == ERR_Not_Found) data = '';
+
 	var mimetype = top.frames['file_area'].document.contentType;
 	if( mimetype == undefined )
 		mimetype = top.frames['file_area'].document.mimeType;
@@ -274,29 +393,14 @@ function FileEditSavePreview()
 
 function FileEditPreview()
 {
-	var file = get_filepath();
 	var mimetype = top.frames['file_area'].document.getElementById("mimetype").value;
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	top.document.getElementById('file_div').style.visibility='hidden';
 	top.document.getElementById('preview_div').style.visibility='visible';
 
-	var href = top.frames['file_area'].document.location.protocol + "//" + top.frames['file_area'].document.location.host + file;
+	var file = get_filepath();
 
-	var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
-	var base = head.getElementsByTagName("base")[0];
-
-	if(base == undefined && mimetype == "text/html")
-	{
-		//base = document.createElement('base');
-		//base.setAttribute('href', href);
-		//head.appendChild(base);
-		text = text.replace('<html>', '<html><base href="' + href + '">');
-	}
-
-	top.frames['preview_area'].document.open(mimetype);
-	top.frames['preview_area'].document.write(text);
-	top.frames['preview_area'].document.title = file;
-	top.frames['preview_area'].document.close();
+	FileShow(file, text);
 }
 
 function dirname(path)
@@ -341,12 +445,15 @@ function get_buttonmode()
 		return "preview"; 
 
 	var button_mode = top.frames['file_area'].document.getElementById('button_mode');
+
 	if(!top.frames['file_area'].document.body.childNodes.length)
 		return undefined;
 	else if(button_mode)
 		return button_mode.value;
+/*
 	else if(null != top.frames['file_area'].document.location.href.match(/\/$/))
 		return "dir";
+*/
 	else
 		return "file";
 }
@@ -354,10 +461,15 @@ function get_buttonmode()
 function get_filepath()
 {
 	var path = top.frames['file_area'].document.getElementById('filepath');
+	var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
+	var base = head.getElementsByTagName("base");
 
 	// non-file-preview/show windows will have filepath set
 	if(path)
 		return path.value;
+	// if base href is specified and not directory, assume file path
+	else if(base && base[0] && base[0].href && null == base[0].href.match(/\/$/))
+		return base[0].href.replace(/^[^\/]*:\/\/[^\/]*/, '');
 	// otherwise it is a normal file show. use the location path
 	else
 		return top.frames['file_area'].document.location.pathname;
@@ -424,10 +536,8 @@ function load_preview_buttons()
 
 function OnFramesLoad()
 {
-	if(top.frames['file_area'].document.body.childNodes.length)
-		return;
-
-	top.FileList(dirname(top.document.location.pathname));
+	if(!top.frames['file_area'].document.body.childNodes.length)
+		top.FileList(dirname(top.document.location.pathname));
 }
 
 function OnLoadPath(mode)
@@ -470,5 +580,5 @@ function ShowFrames()
 	'</div>';
 }
 
-ShowFrames();
+window.onload = ShowFrames;
 
