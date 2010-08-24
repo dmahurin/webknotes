@@ -61,6 +61,8 @@ var Wiky = {
        { rex:/~([^~]+)~/g, tmplt:"<sub>$1</sub>" },
        { rex:/\(-(.+?)-\)/g, tmplt:"<del>$1</del>" },
        { rex:/\?([^ \t\f\v\xB6]+)\((.+)\)\?/g, tmplt:"<abbr title=\"$2\">$1</abbr>" },  // .. abbreviation ..
+       //{ rex:/\[\[([^ ,]+)[, ]([^\]]*)\]\]/g, tmplt:"<a href=\"$1\">$1</a>" },
+       { rex:/\[\[([^ ,\]]+)([, \]]([^\]]*))?\]\]/g, tmplt:function($0,$1,$2){return Wiky.store("<a href=\""+$1+"\">"+($2?$3:$1)+"</a>"); } },
        { rex:/\[(?:\{([^}]*)\})?[Ii]ma?ge?\:([^ ,\]]*)(?:[, ]([^\]]*))?\]/g, tmplt:function($0,$1,$2,$3){return Wiky.store("<img"+Wiky.style($1)+" src=\""+$2+"\" alt=\""+($3?$3:$2)+"\" title=\""+($3?$3:$2)+"\"/>");} },  // wikimedia image style ..
        { rex:/\[([^ ,]+)[, ]([^\]]*)\]/g, tmplt:function($0,$1,$2){return Wiky.store("<a href=\""+$1+"\">"+$2+"</a>");}},  // wiki block style uri's ..
        { rex:/(((http(s?))\:\/\/)?[A-Za-z0-9\._\/~\-:]+\.(?:png|jpg|jpeg|gif|bmp))/g, tmplt:function($0,$1,$2){return Wiky.store("<img src=\""+$1+"\" alt=\""+$1+"\"/>");} },  // simple images .. 
@@ -371,3 +373,11 @@ var Wiky = {
                                                .replace(/<p><\/p>/, "");
    }
 }
+
+// auto convert added to original wiky.js
+function convert()
+{
+        document.body.innerHTML = Wiky.toHtml(document.body.innerHTML);
+}
+
+window.onload = convert;
