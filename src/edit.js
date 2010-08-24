@@ -2,10 +2,20 @@
 
 var ERR_Not_Found = '<html><body>404 Not Found</body></html>';
 
+var INDEX_ORDER = { null:999, 'index.html':1, 'index.htm':2, 'index.wiki':3, 'index.htxt':4};
+
+function is_edit_on()
+{
+	return top.document.getElementById('button_span').style.visibility!='hidden';
+}
+
 function FileList(path)
 {
+	var edit_on = is_edit_on();
+
 	if(path == undefined)
 		path = get_filepath();
+
 	var file_area_document = top.frames['file_area'].document;
 
 	var responses = null;
@@ -31,12 +41,8 @@ function FileList(path)
 		return;
 	}
 
-	file_area_document.open("text/html");
-	file_area_document.writeln("<html><body>");
-	file_area_document.writeln("<h1>Index of " + path + "</h1><hr><pre>");
-	file_area_document.writeln('<a href="javascript:top.FileList(\'' + parentdir(path) + '\')">Parent Directory</a><br>');
+	var index_page = null;
 
-	var output = '';
 	var list = [];
 	for (i = 0; i < responses.length; i++)
 	{
@@ -45,13 +51,29 @@ function FileList(path)
 
 		var name = responses[i].getElementsByTagName("D:propstat")[0].getElementsByTagName("D:prop")[0].getElementsByTagName("D:displayname")[0];
 		if(name)
-			name = file.firstChild.nodeValue;
+			name = name.firstChild.nodeValue;
 		else
 			name = decodeURI(href.replace(/^.*\/([^\/]+)\/?/g, "$1"));
+
+		if(INDEX_ORDER[name] != null && INDEX_ORDER[name] < INDEX_ORDER[index_page])
+		{
+			index_page = name;
+		}
 
 		var values = {'name':name, 'href': href};
 		list[name] = values;
 	}
+
+	if((!edit_on) && index_page != null)
+	{
+		FileShow(list[index_page]['href']);
+		return;
+	}
+
+	file_area_document.open("text/html");
+	file_area_document.writeln("<html><body>");
+	file_area_document.writeln("<h1>Index of " + path + "</h1><hr><pre>");
+	file_area_document.writeln('<a href="javascript:top.FileList(\'' + parentdir(path) + '\')">Parent Directory</a><br>');
 
 	var sorted_keys = [];
 	for (var i in list) { sorted_keys.push(i); }
@@ -71,10 +93,12 @@ function FileList(path)
 			else
 				file_area_document.writeln('<a href="javascript:top.FileList(\'' + href + '\')">' + name + '/</a>');
 		}
+/*
 		else if(null != (href.match(/\.(txt|html?)$/)))
 		{
 			file_area_document.writeln('<a href="' + href + '">' + name + '</a>');
 		}
+*/
 		else
 		{
 			file_area_document.writeln('<a href="javascript:top.FileShow(' + "'" + href + "'" + ')">' + name + '</a>');
@@ -86,7 +110,12 @@ function FileList(path)
 	file_area_document.close();
 }
 
-function get_top_href_path()
+function get_base_href_path()
+{
+	return top.document.location.href.replace(/^([^\/]*:\/\/[^\/]*).*/, '$1');
+}
+
+function get_script_href_path()
 {
 	var path;
         var script = top.document.getElementById("edit_script");
@@ -148,27 +177,25 @@ function FileShow(file, text)
 		type = matches[1];
 
 	var view_area_document;
-	if(top.document.getElementById('file_div').style.visibility == 'hidden')
+	if(top.document.getElementById('file_span').style.visibility == 'hidden')
 		view_area_document = top.frames['preview_area'].document;
 	else
 		view_area_document = top.frames['file_area'].document;
 
-	var href = top.frames['file_area'].document.location.protocol + "//" + top.frames['file_area'].document.location.host + file;
-
 	if(text == null)
 		text = get_file_data(file);
 
-	if(text == ERR_Not_Found)
+	if(is_edit_on() && text == ERR_Not_Found)
 	{
 		FileEdit(file);
 		return;
 	}
 
-	view_area_document.open("text/html");
-	if(type == 'html')
-	{
-		var href = top.frames['file_area'].document.location.protocol + "//" + top.frames['file_area'].document.location.host + file;
+	var href = get_base_href_path() + file;
 
+	if((type == 'html' || type == 'htm') && file != top.document.location.href && file != top.document.location.pathname)
+	{
+		view_area_document.open("text/html");
 		var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
 		var base = head.getElementsByTagName("base")[0];
 		if(base == undefined)
@@ -176,20 +203,24 @@ function FileShow(file, text)
 			text = text.replace('<html>', '<html><base href="' + href + '">');
 		}
 		view_area_document.write(text);
+		view_area_document.close();
 	}
 	else
 	{
+		text = text.replace(/</g, '&lt;');
+		text = text.replace(/>/g, '&gt;');
+		view_area_document.open("text/html");
 		view_area_document.writeln('<html><head><base href="' + href + '"/>');
 		if(type != null)
 		{
-			view_area_document.writeln('<script src="' + get_top_href_path() + type + '.js"></script>');
-			view_area_document.writeln("<script type=\"text/javascript\">var other_onload = window.onload;\nfunction new_onload() { other_onload(); top.my_onload(window); }\nwindow.onload = new_onload; </script>");
+			view_area_document.writeln('<script src="' + get_script_href_path() + type + '.js"></script>');
+			view_area_document.writeln("<script type=\"text/javascript\">var other_onload = window.onload;\nfunction new_onload() { if(other_onload) other_onload(); top.my_onload(window); }\nwindow.onload = new_onload; </script>");
 		}
 		view_area_document.writeln('</head><body><pre>');
 		view_area_document.write(text);
 		view_area_document.writeln('</pre></body></html>');
+		view_area_document.close();
 	}
-	view_area_document.close();
 }
 
 function get_uuid()
@@ -350,7 +381,11 @@ function get_file_data(file)
 	req.open("GET", file, false);
 	req.setRequestHeader('Cache-Control', 'no-cache');
 	req.send(null);
-	var data = req.status == 404 ? ERR_Not_Found : req.responseText;
+	var data;
+	if(is_edit_on() && req.status == 404)
+		data = ERR_Not_Found;
+	else
+		data = req.responseText;
 	return data;
 }
 
@@ -407,8 +442,8 @@ function FileEditPreview()
 {
 	var mimetype = top.frames['file_area'].document.getElementById("mimetype").value;
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
-	top.document.getElementById('file_div').style.visibility='hidden';
-	top.document.getElementById('preview_div').style.visibility='visible';
+	top.document.getElementById('file_span').style.visibility='hidden';
+	top.document.getElementById('preview_span').style.visibility='visible';
 
 	var file = get_filepath();
 
@@ -453,7 +488,7 @@ function FileDelete()
 
 function get_buttonmode()
 {
-	if(top.document.getElementById('preview_div').style.visibility == 'visible')
+	if(top.document.getElementById('preview_span').style.visibility == 'visible')
 		return "preview"; 
 
 	var button_mode = top.frames['file_area'].document.getElementById('button_mode');
@@ -549,7 +584,9 @@ function load_preview_buttons()
 function OnFramesLoad()
 {
 	if(!top.frames['file_area'].document.body.childNodes.length)
-		top.FileList(dirname(top.document.location.pathname));
+	{
+		FileList(dirname(top.document.location.pathname));
+	}
 }
 
 function OnLoadPath(mode)
@@ -572,25 +609,36 @@ function OnPreviewLoad()
 {
         if(!top.frames['preview_area'].document.body.childNodes.length)
 	{
-                top.document.getElementById('preview_div').style.visibility='hidden';
-		top.document.getElementById('file_div').style.visibility='visible';
+                top.document.getElementById('preview_span').style.visibility='hidden';
+		top.document.getElementById('file_span').style.visibility='visible';
 	}
 	OnLoadPath();
 }
 
-function ShowFrames()
+function ShowEditFrames()
 {
 	document.body.innerHTML =
-	'<div style="position:absolute;left:0px;top:0px;width:100%;height:50px"aaaa>' +
+	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px"aaaa>' +
 	'<iframe style="position:absolute;width:100%;height:100%" name="button_area" id="button_area" frameborder="0"> </iframe>' +
-	'</div>' +
-	'<div id="file_div" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px">' +
+	'</span>' +
+	'<span id="file_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px">' +
 	'<iframe style="position:absolute;width:100%;height:100%" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
-	'</div>' +
-	'<div id="preview_div" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;visibility:hidden">' +
+	'</span>' +
+	'<span id="preview_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;visibility:hidden">' +
 	'<iframe style="position:absolute;width:100%;height:100%" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
-	'</div>';
+	'</span>';
 }
 
-window.onload = ShowFrames;
-
+function ShowViewFrames()
+{
+	document.body.innerHTML =
+	'<span id="button_span" style="position:absolute;left:0px;top:0px;right:0px;bottom:0px;visibility:hidden">' +
+	'<iframe style="position:absolute;width:100%;height:100%" name="button_area" id="button_area" frameborder="0"> </iframe>' +
+	'</span>' +
+	'<span id="file_span" style="position:absolute;left:0px;top:0px;right:0px;bottom:0px">' +
+	'<iframe style="position:absolute;width:100%;height:100%" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
+	'</span>' +
+	'<span id="preview_span" style="position:absolute;left:0px;top:0px;right:0px;bottom:0px;visibility:hidden">' +
+	'<iframe style="position:absolute;width:100%;height:100%" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	'</span>';
+}
