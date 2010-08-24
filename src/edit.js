@@ -33,45 +33,56 @@ function FileList(path)
 
 	file_area_document.open("text/html");
 	file_area_document.writeln("<html><body>");
-	file_area_document.writeln("<h1>Index of " + path + "</h1>");
+	file_area_document.writeln("<h1>Index of " + path + "</h1><hr><pre>");
 	file_area_document.writeln('<a href="javascript:top.FileList(\'' + parentdir(path) + '\')">Parent Directory</a><br>');
 
 	var output = '';
+	var list = [];
 	for (i = 0; i < responses.length; i++)
 	{
 		var href = responses[i].getElementsByTagName("D:href")[0].firstChild.nodeValue;
 		if(href == path) continue;
 
-		var file = responses[i].getElementsByTagName("D:propstat")[0].getElementsByTagName("D:prop")[0].getElementsByTagName("D:displayname")[0];
-		if(file)
-			file = file.firstChild.nodeValue;
+		var name = responses[i].getElementsByTagName("D:propstat")[0].getElementsByTagName("D:prop")[0].getElementsByTagName("D:displayname")[0];
+		if(name)
+			name = file.firstChild.nodeValue;
 		else
-			file = href.replace(/^.*\/([^\/]+)\/?/g, "$1");
-/*
-		var filetype = responses[i].getElementsByTagName("D:propstat")[0].getElementsByTagName("D:prop")[0].getElementsByTagName("D:getcontenttype")[0];
-		if(filetype)
-			filetype = filetype.firstChild.nodeValue;
-		if(filetype == "httpd/unix-directory")
-*/
+			name = decodeURI(href.replace(/^.*\/([^\/]+)\/?/g, "$1"));
+
+		var values = {'name':name, 'href': href};
+		list[name] = values;
+	}
+
+	var sorted_keys = [];
+	for (var i in list) { sorted_keys.push(i); }
+	sorted_keys.sort();
+
+	list.sort(function(a,b){a.name.localeCompare(b.name);})
+	for ( var i in sorted_keys)
+	{
+		var key = sorted_keys[i];
+		var values = list[key];
+		var href = values['href'];
+		var name = values['name'];
 		if(null != href.match(/\/$/))
 		{
 			if(href == path)
 				continue;
 			else
-				file_area_document.writeln('<a href="javascript:top.FileList(\'' + href + '\')">' + file + '/</a><br>');
+				file_area_document.writeln('<a href="javascript:top.FileList(\'' + href + '\')">' + name + '/</a>');
 		}
-		else if(null != (href.match(/\.(txt|html?)$/))
+		else if(null != (href.match(/\.(txt|html?)$/)))
 		{
-			file_area_document.writeln('<a href="' + href + '">' + file + '</a><br>');
+			file_area_document.writeln('<a href="' + href + '">' + name + '</a>');
 		}
 		else
 		{
-			file_area_document.writeln('<a href="javascript:top.FileShow(' + "'" + href + "'" + ')">' + file + '</a><br>');
+			file_area_document.writeln('<a href="javascript:top.FileShow(' + "'" + href + "'" + ')">' + name + '</a>');
 		}
 	}
-	file_area_document.writeln('<input type="hidden" id="button_mode" value="dir"/>');
-	file_area_document.writeln('<input type="hidden" id="filepath" value="' + path + '"/>');
-	file_area_document.writeln("</body></html>");
+	file_area_document.write('<input type="hidden" id="button_mode" value="dir"/>');
+	file_area_document.write('<input type="hidden" id="filepath" value="' + path + '"/>');
+	file_area_document.writeln("</pre><hr></body></html>");
 	file_area_document.close();
 }
 
@@ -84,6 +95,7 @@ function get_top_href_path()
 		var head = top.document.getElementsByTagName("head")[0];
 		script = script.getElementsByTagName("head")[0]
 	}
+
 	if(script && script.src && script.src.match(/:/))
 		path = script.src;
 	else
