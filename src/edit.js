@@ -285,7 +285,7 @@ function FileWrite(url, content)
 		else if(req.status >= 300)
 		{
 			alert(req.responseText);
-			return;
+			return false;
 		}
 	}
 
@@ -298,10 +298,10 @@ function FileWrite(url, content)
 		if(req.status >= 300)
 		{
 			alert(req.responseText);
-			return;
+			return false;
 		}
 		var data = get_file_data(url);
-		return;
+		return true;
 	}
 
 /*
@@ -346,6 +346,8 @@ function FileWrite(url, content)
 	req.send(null);
 
 	var data = get_file_data(url);
+
+	return true;
 }
 
 function FileUpload()
@@ -365,7 +367,7 @@ function FileUpload()
 		alert("not in directory");
 		return;
 	}
-	FileWrite(dir + filename, content)
+	if(!FileWrite(dir + filename, content)) return;
 	file.value = '';
 	FileList(dir);
 }
@@ -418,7 +420,7 @@ function FileEditSave()
 {
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	var path = get_filepath();
-	FileWrite(path, text);
+	if(!FileWrite(path, text)) return;
 	top.frames['file_area'].history.back();
 //	top.frames['file_area'].location.replace(path);
 }
@@ -432,7 +434,7 @@ function FileEditSavePreview()
 {
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	var path = get_filepath();
-	FileWrite(path, text);
+	if(!FileWrite(path, text)) return;
 	top.frames['file_area'].history.go(-2);
 
 //	top.frames['file_area'].location.replace(path);
