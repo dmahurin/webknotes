@@ -1,172 +1,110 @@
-#!/usr/bin/perl
-use strict;
+// The WebKNotes system is Copyright 1996-2010 Don Mahurin.
+// For information regarding the copying/modification policy read 'LICENSE'.
+// dmahurin@sf.net
 
-# The WebKNotes system is Copyright 1996-2002 Don Mahurin.
-# For information regarding the copying/modification policy read 'LICENSE'.
-# dmahurin@users.sourceforge.net
+// this filter translates "Htxt" files. These are text files with implied
+// paragraphing and simple Hyperlinks.
 
-# this filter translates "Htxt" files. These are text files with implied
-# paragraphing and simple Hyperlinks.
+// The HTXT "specification is:
+//   - If a paragraph has no leading spaces then it is assumed to be <P> text.
+//  - If a paragraph has leading spaces, then it is assumed to be <pre> text.
+//   - Attachments/links and references are [[link]] or <<link>> and [[http://...]]
+//   - There is no other markup. This is not a new wiki.
 
-# The HTXT "specification is:
-#   - If a paragraph has no leading spaces then it is assumed to be <P> text.
-#   - If a paragraph has leading spaces, then it is assumed to be <pre> text.
-#   - Attachments/links and references are [[link]] or <<link>> and [[http://...]]
-#   - There is no other markup. This is not a new wiki.
+// This file is derived from WebKnotes filter_htxt.pl
 
-require "link_translate.pl";
-require 'filedb_lib.pl';
-require 'view_define.pl';
-
-package filter_htxt;
-
-# function to create a link to either browse existing htxt/note or add
-# non-existent htxt.
-sub my_link_translate
+// function to create a link to either browse existing htxt/note or add
+// non-existent htxt.
+function my_link_translate()
 {
-   my ($path, $ref) = @_;
-   my $link;
-   my $text;
+	var ref = arguments[1];
+	var text = ref;
+	var matches;
 
-   if($ref =~ m:\|:)
-   {
-      $ref = $`;
-      $text = $';
-   }
-
-   if( $ref =~ m:^[a-z]+\://[^/]+:)
-   {
-      unless(defined($text))
-      {
-         $text = $ref;
-      }
-      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
-   }
-   elsif( $ref =~ m:^mailto\::)
-   {
-      unless(defined($text))
-      {
-         $text = $';
-      }
-      $link = sprintf("<a href=\"%s\">%s<\/a>", $ref, $text);
-   }
-   elsif( filedb::is_dir($path, $ref))
-   {
-      unless(defined($text))
-      {
-         $ref =~ m:([^/]+)$:;
-         $text = $1;
-      }
-      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
-   }
-   elsif( filedb::is_file($path, $ref))
-   {
-      $ref =~ m:([^/]+)$:;
-      my $file = $1;
-      unless(defined($text))
-      { 
-         $text = $file;
-         if($text =~ m:\.(htm?|txt|wiki|htxt|url)$:)
-         {
-            $text = $`;
-         }
-      }	      
-
-      if($file =~ m:\.(url)$:)
-      {
-         my $url = filedb::get_file($path,$ref);
-         $url =~ s:\n::g;
-         $link = "<a href=\"$url\">$text</a>";
-      }
-      else
-      {
-         $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,$ref), $text);
-      }
-   }
-   elsif( filedb::is_file($path, "${ref}.htxt"))
-   {
-      unless(defined($text))
-      {
-         $ref =~ m:([^/]+)$:;
-         $text = $1;
-      }
-      $link = sprintf("<a href=\"%s\">%s<\/a>", link_translate::smart_ref($path,"$ref.htxt"), $text);
-   }
-   else
-   {
-      if($ref =~ m:/([^/]+)$:)
-      {
-         $ref = $1;
-	 $path .= "/$`";
-         # collapse ../dir
-         while($path =~ s~(^|/+)(?!\.\./)[^/]+/+\.\.($|/)~$1~g){}
-      }
-      unless(defined($text))
-      {
-         $text = $ref;
-      }	      
-
-      my($path_encoded) = view::url_encode_path($path);
-      my($topic) = view::url_encode_path($ref); 
-      my($bprefix, $bsuffix) = &view::get_cgi_prefix("");
-
-      my($add_url) =  "add_topic.cgi?path=${path_encoded}&text_type=htxt&topic_tag=";
-
-      $link = "<a href=\"$bprefix${add_url}$topic$bsuffix\">$text (?)<\/a>";
-   }
-   return $link;
-}
-
-sub filter_file 
-{
-   my($notes_file) = @_;
-   $notes_file =~ m:/([^\/]+)$:;
-   my $notes_path = $`;
-
-   my($textin) = filedb::get_file($notes_file);
-
-   return () if(! defined($textin));
-
-   # change "htxt" << >> markup to [[ ]]
-   #$textin =~ s/<<([^>]+)>>/[[$1]]/g;
-   
-   $textin =~ s:<:&lt;:g;
-   $textin =~ s:>:&gt;:g;
-   
-   # convert raw URL to [[ ]]
-   $textin =~ s/(^|[^\[])((http|ftp|mailto):.*)(?=$)/$1[[$2]]/;
-   # process  htxt [[ ]] markup
-   $textin =~ s/\[\[([^\]]+)\]\]/&my_link_translate($notes_path,$1)/gie;
-   
-   # mark each paragraph as either <p> or <pre>
-   my($textout) = "";
-   my($thistext, $type);
-   while($textin ne "")
-   {
-	if($textin =~ m/(^|\n)(\s*)(\n|$)/)
+	if(null != (matches = ref.match(/(.*?)\|(.*)/)))
 	{
-	   $thistext = $`;
-	   $textin = $';
-           next if($thistext eq ""); # leading blank
+		ref = matches[1];
+		text = matches[2];
 	}
+
+	if(ref.match(/^[a-z]+\:\/\/[^\/]+/))
+	{
+	}
+	else if((matches = ref.match(/^mailto:(.*)/)))
+	{
+		if(text == null)
+			text = matches[1];
+	}
+	// No dot. assume htxt
+	else if(null == (ref.match(/\./)))
+	{
+		ref = ref + ".htxt";
+	}
+	// directory
+	else if((matches = ref.match(/\/$/)))
+	{
+	}
+	// file
 	else
 	{
-	   $thistext = $textin;
-	   $textin = "";
+		if(text == null)
+		{
+			if((matches = ref.match(/([^\/]+)\.(html?|txt|wiki|htxt|url)$/)))
+				text = matches[1];
+		}
 	}
-	next unless($thistext ne "");
-	$type= ($thistext =~ m:^\s:m)? "pre" : "p";
-	
-	$textout .= "<$type>\n$thistext\n</$type>\n";
-	   
-   }
+	ref = ref.replace(/\s/g, '%20');
 
-   return $textout;
+	return '<a href="' + ref + '">' + text + '</a>';
 }
 
-sub print_file
+function htxt2html(text)
 {
-   print filter_file(@_);
+	text = text.replace(/^<pre>/,'');
+	text = text.replace(/<\/pre>$/,'');
+
+	// change "htxt" << >> markup to [[ ]]
+	text = text.replace(/<<([^>]+)>>/g, '[[$1]]');
+
+	text = text.replace(/</g, '&lt;');
+	text = text.replace(/>/g, '&gt;');
+
+	// convert raw URL to [[ ]]
+	text = text.replace(/(^|[^\[])((http|ftp|mailto):.*)(?=$)/g, '$1[[$2]]');
+	// process  htxt [[ ]] markup
+	text = text.replace(/\[\[([^\]]+)\]\]/g, my_link_translate);
+   
+	// mark each paragraph as either <p> or <pre>
+	var textout = "";
+	var thistext;
+	var type;
+	var matches;
+
+	while(text != '')
+	{
+		if(null != (matches = text.match(/([^]*?)(^|\n)(\s*)(\n|$)([^]*)$/)))
+		{
+			thistext = matches[1];
+			text = matches[5];
+			if(thistext == '') continue; // leading blank
+		}
+		else
+		{
+			thistext = text;
+			text = '';
+		}
+		if(thistext == '') continue;
+		type = (null != thistext.match(/^\s/)) ? "pre" : "p";
+	
+		textout += ("<" + type + ">\n" + thistext + "\n</" + type + ">\n");
+	}
+
+	return textout;
 }
 
-1;
+function convert()
+{
+	document.body.innerHTML = htxt2html(document.body.innerHTML);
+}
+
+window.onload = convert;
