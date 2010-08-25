@@ -145,7 +145,12 @@ function do_link(file)
 	return false;
 }
 
-function my_onload(win)
+function wkn_onload_show()
+{
+	top.document.getElementById('file_span').style.visibility='visible';
+}
+
+function wkn_onload_fix_links(win)
 {
 	var head = win.document.getElementsByTagName("head")[0];
 	var base = head.getElementsByTagName("base");
@@ -163,6 +168,7 @@ function my_onload(win)
 		links[i].setAttribute('onclick',"return top.on_link('" + links[i].href + "');");
 	}
 */
+	top.document.getElementById('file_span').style.visibility='visible';
 }
 
 function FileShow(file, text)
@@ -192,21 +198,26 @@ function FileShow(file, text)
 	}
 
 	var href = get_base_href_path() + file;
+	var win;
 
-	if((type == 'html' || type == 'htm') && file != top.document.location.href && file != top.document.location.pathname)
+	top.document.getElementById('file_span').style.visibility='hidden';
+
+	if(type == 'html' || type == 'htm')
 	{
 		view_area_document.open("text/html");
 		var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
 		var base = head.getElementsByTagName("base")[0];
 		if(base == undefined)
 		{
-			text = text.replace('<html>', '<html><base href="' + href + '">');
+			text = text.replace('<head>', '<head><base href="' + href + '">');
+			text = text.replace('</head>', "<script type=\"text/javascript\">var wkn_onload_other = window.onload;\nfunction wkn_onload() { if(wkn_onload_other) wkn_onload_other(); top.wkn_onload_show(); }\nwindow.onload = wkn_onload; </script></head>");
 		}
 		view_area_document.write(text);
 		view_area_document.close();
 	}
 	else
 	{
+		text = text.replace(/&/g, '&amp;');
 		text = text.replace(/</g, '&lt;');
 		text = text.replace(/>/g, '&gt;');
 		view_area_document.open("text/html");
@@ -214,7 +225,7 @@ function FileShow(file, text)
 		if(type != null)
 		{
 			view_area_document.writeln('<script src="' + get_script_href_path() + type + '.js"></script>');
-			view_area_document.writeln("<script type=\"text/javascript\">var other_onload = window.onload;\nfunction new_onload() { if(other_onload) other_onload(); top.my_onload(window); }\nwindow.onload = new_onload; </script>");
+			view_area_document.writeln("<script type=\"text/javascript\">var wkn_onload_other = window.onload;\nfunction wkn_onload() { if(wkn_onload_other) wkn_onload_other(); top.wkn_onload_fix_links(window); }\nwindow.onload = wkn_onload; </script>");
 		}
 		view_area_document.writeln('</head><body><pre>');
 		view_area_document.write(text);
@@ -270,6 +281,14 @@ function FileWrite(url, content)
 		svnbase = url.replace(svnpath, '');
 	}
 
+	var comment = top.frames['button_area'].document.getElementById("comment_text").value;
+	if(comment == null || comment == '')
+	{
+		top.frames['button_area'].document.getElementById("comment_span").style.visibility = 'visible';
+		alert('change comment required');
+		return;
+	}
+
 	if(svnbase)
 	{
 		var activity = svnbase + "/!svn/act/" + uuid;
@@ -304,36 +323,46 @@ function FileWrite(url, content)
 		return true;
 	}
 
-/*
-	alert(svnbase);
 	req = new XMLHttpRequest();
 	req.open("PROPFIND", svnbase + '/!svn/vcc/default', false);
 	req.send(null);
-	alert("propfind1 " + req.responseText);
-	var responses = req.responseXML.getElementsByTagName("D:multistatus")[0].getElementsByTagName("D:response");
-	var checked_in = responses[0].getElementsByTagName("D:propstat")[0].getElementsByTagName("D:prop")[0].getElementsByTagName("lp1:checked-in")[0].getElementsByTagName("D:href")[0].firstChild.nodeValue;
-	alert(checked_in);
+	if(req.status >= 300)
+	{
+		alert(req.responseText);
+	}
+	else
+	{
+		var responses = req.responseXML.getElementsByTagName("D:multistatus")[0].getElementsByTagName("D:response");
+		var default_checked_in = responses[0].getElementsByTagName("D:propstat")[0].getElementsByTagName("D:prop")[0].getElementsByTagName("lp1:checked-in")[0].getElementsByTagName("D:href")[0].firstChild.nodeValue;
+	}
 
 	req = new XMLHttpRequest();
-	req.open("CHECKOUT", checked_in, false);
-	
+	req.open("CHECKOUT", default_checked_in, false);
 	req.send("<?xml version=\"1.0\" encoding=\"utf-8\"?><D:checkout xmlns:D=\"DAV:\"><D:activity-set><D:href>" + activity + "</D:href></D:activity-set></D:checkout>");
+	var wbl = req.getResponseHeader('Location');
 
-	alert("checkout1 " + req.responseText);
+	// send log/comment
+	req = new XMLHttpRequest();
+	req.open("PROPPATCH", wbl, false);
+	req.send('<?xml version="1.0" encoding="utf-8"?><D:propertyupdate xmlns:D="DAV:"><D:set><D:prop><log xmlns="http://subversion.tigris.org/xmlns/svn/">' + comment + '</log></D:prop></D:set></D:propertyupdate>');
 
-*/
+	if(req.status >= 300)
+		alert(req.responseText);
 
 	req = new XMLHttpRequest();
 	req.open("CHECKOUT", checked_in_path, false);
 	
 	req.send('<?xml version="1.0" encoding="utf-8"?><D:checkout xmlns:D="DAV:"><D:activity-set><D:href>' + activity + '</D:href></D:activity-set></D:checkout>');
-	//alert("checkout2: " + req.responseText);
+	if(req.status >= 300)
+		alert("checkout2: " + req.responseText);
 
 	req = new XMLHttpRequest();
 	//alert("try PUT " + svnbase + '/!svn/wrk/' + uuid + svnpath);
 	req.open("PUT", svnbase + '/!svn/wrk/' + uuid + svnpath, false);
 	req.sendAsBinary(content);
-	//alert(req.responseText);
+	if(req.status >= 300)
+		alert(req.responseText);
+
 
 	req = new XMLHttpRequest();
 	req.open("MERGE", activity, false);
@@ -377,6 +406,13 @@ function FileEditCancel()
 	top.frames['file_area'].history.back();
 }
 
+function FileExit()
+{
+	var path = get_filepath();
+	if(path == null) path = '';
+	top.document.location.replace(path);
+}
+
 function get_file_data(file)
 {
 	var req = new XMLHttpRequest();
@@ -402,6 +438,10 @@ function FileEdit(file)
 	var mimetype = top.frames['file_area'].document.contentType;
 	if( mimetype == undefined )
 		mimetype = top.frames['file_area'].document.mimeType;
+
+	data = data.replace(/&/g, '&amp;');
+	data = data.replace(/</g, '&lt;');
+	data = data.replace(/>/g, '&gt;');
 
 	var pagedata = '<html>' +
 	'<body><form id="edit-form">' +
@@ -549,17 +589,20 @@ function load_buttons(button_group)
 <input type="button" value="Up" onClick="top.DirUp();"/> \
 <input type="button" value="Edit" onClick="top.FileEdit();"/> \
 <input type="button" value="Delete" onClick="top.FileDelete();"/> \
+<input type="button" value="Exit" onClick="top.FileExit();"/> \
 <input id="prev_button_group" type="hidden" /> \
 </form> \
 <form id="dir_buttons" style="position:absolute;visibility:hidden"> \
 <input type="button" value="Up" onClick="top.DirUp();"/> \
 <input id="fileinput" type="file" /> \
 <input type="button" value="Add" onClick="top.FileUpload();"/> \
+<input type="button" value="Exit" onClick="top.FileExit();"/> \
 </form> \
 <form id="edit_buttons" style="position:absolute;visibility:hidden"> \
 <input type="button" value="Save" onClick="top.FileEditSave();"/> \
 <input type="button" value="Preview" onClick="top.FileEditPreview();"/> \
 <input type="button" value="Cancel" onClick="top.FileEditCancel();"/> \
+<span style="visibility:hidden" id="comment_span">Change comment <input id="comment_text" size="20" type="text"/></span> \
 </form> \
 <form id="preview_buttons" style="position:absolute;visibility:hidden"> \
 <input type="button" value="Save" onClick="top.FileEditSavePreview();"/> \
@@ -587,7 +630,13 @@ function OnFramesLoad()
 {
 	if(!top.frames['file_area'].document.body.childNodes.length)
 	{
-		FileList(dirname(top.document.location.pathname));
+		var path = top.document.location.pathname;
+		if(path.match(/\/$/))
+			FileList(path);
+		else if (path.match(/(\/|^)(edit|view|wkn).html/))
+			FileList(dirname(path));
+		else
+			FileShow(path);
 	}
 }
 
@@ -595,7 +644,7 @@ function OnLoadPath(mode)
 {
 	OnFramesLoad();
 
-	if(!top.frames['file_area'].document.body.childNodes.length)
+	if(null == top.frames['file_area'].document.body || !top.frames['file_area'].document.body.childNodes.length)
 		return;
 
 	if(mode == null)
