@@ -40,7 +40,8 @@ var Wiky = {
        { rex:/\[(\{[^}]*\})?\|/g, tmplt:":t]$1[r:" },  // .. start table ..
        { rex:/\|\]/g, tmplt:":r][t:" },  // .. end table ..
        { rex:/\|\xB6[ ]?\|/g, tmplt:":r]\xB6[r:" },  // .. end/start table row ..
-       { rex:/\|/g, tmplt:":c][c:" },  // .. end/start table cell ..
+// below break standard wiki link [[my text|link]]
+//       { rex:/\|/g, tmplt:":c][c:" },  // .. end/start table cell ..
        { rex:/^(.*)$/g, tmplt:"[p:$1:p]" },  // start paragraph '[p:' at BOS .. end paragraph ':p]' at EOS ..
        { rex:/(([\xB6])([ \t\f\v\xB6]*?)){2,}/g, tmplt:":p]$1[p:" },  // .. separate paragraphs at blank lines ..
        { rex:/\[([01AIacdgilprtu]+)[:](.*?)[:]([01AIacdgilprtu]+)\]/g, tmplt:function($0,$1,$2,$3){return Wiky.sectionRule($1==undefined?"":$1,"",Wiky.apply($2,Wiky.rules.wikiinlines),!$3?"":$3);} },
@@ -55,6 +56,9 @@ var Wiky = {
        { rex:/%(.*?)%/g, tmplt:function($0,$1){return Wiky.store("<code>" + Wiky.apply($2, Wiky.rules.code) + "</code>");} }
      ],
      wikiinlines: [
+       { rex:/''''([^']+)''''/g, tmplt:"<strong><em>$1</em></strong>" },
+       { rex:/'''([^']+)'''/g, tmplt:"<em>$1</em>" },
+       { rex:/''([^']+)''/g, tmplt:"<strong>$1</strong>" },
        { rex:/\*([^*]+)\*/g, tmplt:"<strong>$1</strong>" },  // .. strong ..
        { rex:/_([^_]+)_/g, tmplt:"<em>$1</em>" },
        { rex:/\^([^^]+)\^/g, tmplt:"<sup>$1</sup>" },
@@ -62,7 +66,7 @@ var Wiky = {
        { rex:/\(-(.+?)-\)/g, tmplt:"<del>$1</del>" },
        { rex:/\?([^ \t\f\v\xB6]+)\((.+)\)\?/g, tmplt:"<abbr title=\"$2\">$1</abbr>" },  // .. abbreviation ..
        //{ rex:/\[\[([^ ,]+)[, ]([^\]]*)\]\]/g, tmplt:"<a href=\"$1\">$1</a>" },
-       { rex:/\[\[([^ ,\]]+)([, \]]([^\]]*))?\]\]/g, tmplt:function($0,$1,$2){var ref=$1; if(null == ref.match(/\./)) ref = ref + ".wiki"; return Wiky.store("<a href=\""+ref+"\">"+($2?$3:$1)+"</a>"); } },
+       { rex:/\[\[([^\|\]]+)([\|]([^\]]*))?\]\](s?)/g, tmplt:function($0,$1,$2,$3,$4){ var ref=$1; if(null == ref.match(/\./)) { ref = ref + ".wiki"; ref = ref.replace(/\s/g, '_'); }; return Wiky.store("<a href=\""+ref+"\">"+($2?$3:$1)+$4+"</a>"); } },
        { rex:/\[(?:\{([^}]*)\})?[Ii]ma?ge?\:([^ ,\]]*)(?:[, ]([^\]]*))?\]/g, tmplt:function($0,$1,$2,$3){return Wiky.store("<img"+Wiky.style($1)+" src=\""+$2+"\" alt=\""+($3?$3:$2)+"\" title=\""+($3?$3:$2)+"\"/>");} },  // wikimedia image style ..
        { rex:/\[([^ ,]+)[, ]([^\]]*)\]/g, tmplt:function($0,$1,$2){return Wiky.store("<a href=\""+$1+"\">"+$2+"</a>");}},  // wiki block style uri's ..
        { rex:/(((http(s?))\:\/\/)?[A-Za-z0-9\._\/~\-:]+\.(?:png|jpg|jpeg|gif|bmp))/g, tmplt:function($0,$1,$2){return Wiky.store("<img src=\""+$1+"\" alt=\""+$1+"\"/>");} },  // simple images .. 
