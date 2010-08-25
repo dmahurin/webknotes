@@ -147,7 +147,10 @@ function do_link(file)
 
 function wkn_onload_show()
 {
-	top.document.getElementById('file_span').style.visibility='visible';
+	if(get_buttonmode() == 'preview')
+		top.document.getElementById('preview_span').style.visibility ='visible';
+	else
+		top.document.getElementById('file_span').style.visibility='visible';
 }
 
 function wkn_onload_fix_links(win)
@@ -168,7 +171,7 @@ function wkn_onload_fix_links(win)
 		links[i].setAttribute('onclick',"return top.on_link('" + links[i].href + "');");
 	}
 */
-	top.document.getElementById('file_span').style.visibility='visible';
+	wkn_onload_show();
 }
 
 function FileShow(file, text)
@@ -200,7 +203,10 @@ function FileShow(file, text)
 	var href = get_base_href_path() + file;
 	var win;
 
-	top.document.getElementById('file_span').style.visibility='hidden';
+	if(get_buttonmode() == 'preview')
+		top.document.getElementById('preview_span').style.visibility ='hidden';
+	else
+		top.document.getElementById('file_span').style.visibility='hidden';
 
 	if(type == 'html' || type == 'htm')
 	{
@@ -281,13 +287,15 @@ function FileWrite(url, content)
 		svnbase = url.replace(svnpath, '');
 	}
 
-	var comment = top.frames['button_area'].document.getElementById("comment_text").value;
+	var comment = top.document.getElementById("comment_text").value;
 	if(comment == null || comment == '')
 	{
-		top.frames['button_area'].document.getElementById("comment_span").style.visibility = 'visible';
+		top.document.getElementById("comment_span").style.visibility = 'visible';
 		alert('change comment required');
 		return;
 	}
+	top.document.getElementById("comment_text").value = '';
+	top.document.getElementById("comment_span").style.visibility = 'hidden';
 
 	if(svnbase)
 	{
@@ -381,7 +389,7 @@ function FileWrite(url, content)
 
 function FileUpload()
 {
-	var file = top.frames['button_area'].document.getElementById("fileinput");
+	var file = top..document.getElementById("fileinput");
 	if(file == null || file.files.length == 0)
 	{
 		alert("no file selected");
@@ -445,7 +453,7 @@ function FileEdit(file)
 
 	var pagedata = '<html>' +
 	'<body><form id="edit-form">' +
-	'<textarea id="edit-text" style="width:100%;height:100%">' + data + '</textarea></form>' +
+	'<textarea id="edit-text" style="width:100%;height:100%;">' + data + '</textarea></form>' +
 	'<input type="hidden" id="button_mode" value="edit"/>' + 
 	'<input type="hidden" id="filepath" value="' + file + '"/>' +
 	'<input type="hidden" id="mimetype" value="' + mimetype + '"/>' +
@@ -530,15 +538,18 @@ function FileDelete()
 
 function get_buttonmode()
 {
-	if(top.document.getElementById('preview_span').style.visibility == 'visible')
-		return "preview"; 
-
 	var button_mode = top.frames['file_area'].document.getElementById('button_mode');
 
 	if(!top.frames['file_area'].document.body.childNodes.length)
 		return undefined;
 	else if(button_mode)
+	{
+		if(button_mode.value == 'edit' && top.document.getElementById('file_span').style.visibility == 'hidden')
+		{
+			return "preview"; 
+		}
 		return button_mode.value;
+	}
 /*
 	else if(null != top.frames['file_area'].document.location.href.match(/\/$/))
 		return "dir";
@@ -566,8 +577,11 @@ function get_filepath()
 
 function load_buttons(button_group)
 {
-	var button_area_document = top.frames['button_area'].document;
+	var button_area_document = top.document;
 	var prev_button_group = button_area_document.getElementById("prev_button_group");
+
+	// fixme. redo buttons in general
+	top.document.getElementById("comment_span").style.visibility = 'hidden';
 
 	if(prev_button_group != undefined && prev_button_group.value != '')
 	{
@@ -582,38 +596,44 @@ function load_buttons(button_group)
 		return;
 	}
 
-	top.frames['button_area'].document.open("text/html");
-	top.frames['button_area'].document.write('\
-<html><body> \
-<form id="file_buttons" style="position:absolute;visibility:hidden"> \
+	if(button_group != null)
+		button_area_document.getElementById(button_group).style.visibility = 'visible';
+	button_area_document.getElementById('prev_button_group').value = button_group;
+}
+
+function get_buttons_html()
+{
+	return '<html><body> \
+<span> \
+<input type="button" value="" style="visibility:hidden;float:right;"/> \
+<span id="file_buttons" style="position:absolute;visibility:hidden;"> \
 <input type="button" value="Up" onClick="top.DirUp();"/> \
 <input type="button" value="Edit" onClick="top.FileEdit();"/> \
 <input type="button" value="Delete" onClick="top.FileDelete();"/> \
 <input type="button" value="Exit" onClick="top.FileExit();"/> \
 <input id="prev_button_group" type="hidden" /> \
-</form> \
-<form id="dir_buttons" style="position:absolute;visibility:hidden"> \
+</span> \
+<span id="dir_buttons" style="position:absolute;visibility:hidden;"> \
 <input type="button" value="Up" onClick="top.DirUp();"/> \
 <input id="fileinput" type="file" /> \
 <input type="button" value="Add" onClick="top.FileUpload();"/> \
 <input type="button" value="Exit" onClick="top.FileExit();"/> \
-</form> \
-<form id="edit_buttons" style="position:absolute;visibility:hidden"> \
+</span> \
+<span id="edit_buttons" style="position:absolute;visibility:hidden;"> \
 <input type="button" value="Save" onClick="top.FileEditSave();"/> \
 <input type="button" value="Preview" onClick="top.FileEditPreview();"/> \
 <input type="button" value="Cancel" onClick="top.FileEditCancel();"/> \
-<span style="visibility:hidden" id="comment_span">Change comment <input id="comment_text" size="20" type="text"/></span> \
-</form> \
-<form id="preview_buttons" style="position:absolute;visibility:hidden"> \
+<span id="comment_span" style="visibility:hidden;"> \
+Change comment <input id="comment_text" size="40" type="text"/> \
+</span> \
+</span> \
+<span id="preview_buttons" style="position:absolute;visibility:hidden;"> \
 <input type="button" value="Save" onClick="top.FileEditSavePreview();"/> \
 <input type="button" value="Close Preview" onClick="top.FileEditClosePreview();"/> \
-</form> \
-</body></html>');
-	top.frames['button_area'].document.close();
+</span> \
+</span> \
+</body></html>';
 
-	if(button_group != null)
-		button_area_document.getElementById(button_group).style.visibility = 'visible';
-	button_area_document.getElementById('prev_button_group').value = button_group;
 }
 
 function load_file_buttons()
@@ -666,30 +686,53 @@ function OnPreviewLoad()
 	OnLoadPath();
 }
 
+function ShowEditFramesNoTables()
+{
+	document.body.innerHTML =
+	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px;"aaaa>' +
+	get_buttons_html() +
+//	'<iframe style="position:absolute;width:100%;height:100%;" name="button_area" id="button_area" frameborder="0"> </iframe>' +
+	'</span>' +
+	'<span id="file_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px">' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
+	'</span>' +
+	'<span id="preview_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;visibility:hidden">' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	'</span>';
+}
+
 function ShowEditFrames()
 {
 	document.body.innerHTML =
-	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px"aaaa>' +
-	'<iframe style="position:absolute;width:100%;height:100%" name="button_area" id="button_area" frameborder="0"> </iframe>' +
+	'<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>' +
+	'<span id="button_span">' +
+	get_buttons_html() +
+//	'<iframe style="with:100%;height:100%;" name="button_area" id="button_area" frameborder="0"> </iframe>' +
 	'</span>' +
-	'<span id="file_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px">' +
-	'<iframe style="position:absolute;width:100%;height:100%" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
+	'</td></tr><tr><td style="height:100%;">' +
+	'<div style="position:relative;width:100%;height:100%">' +
+	'<span id="file_span">' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
-	'<span id="preview_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;visibility:hidden">' +
-	'<iframe style="position:absolute;width:100%;height:100%" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
-	'</span>';
+	'<span id="preview_span" style="visibility:hidden;">' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	'</span>' +
+	'</div>' +
+	'</td></tr></table>';
 }
+
 
 function ShowViewFrames()
 {
 	document.body.innerHTML =
-	'<span id="button_span" style="position:absolute;left:0px;top:0px;right:0px;bottom:0px;visibility:hidden">' +
-	'<iframe style="position:absolute;width:100%;height:100%" name="button_area" id="button_area" frameborder="0"> </iframe>' +
+	'<span id="file_span" style="position:absolute;width:100%;height:100%;">' +
+	'<iframe style="width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
-	'<span id="file_span" style="position:absolute;left:0px;top:0px;right:0px;bottom:0px">' +
-	'<iframe style="position:absolute;width:100%;height:100%" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
+	'<span id="preview_span" style="position:absolute;width:100%;height:100%;">' +
+	'<iframe style="width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
 	'</span>' +
-	'<span id="preview_span" style="position:absolute;left:0px;top:0px;right:0px;bottom:0px;visibility:hidden">' +
-	'<iframe style="position:absolute;width:100%;height:100%" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	// buttons, hidden for view
+	'<span id="button_span" style="width:100%;visibility:hidden;">' +
+	get_buttons_html() +
 	'</span>';
 }
