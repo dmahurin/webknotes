@@ -516,10 +516,6 @@ function FileEdit(file)
 	var data = get_file_data(file);
 	if(data == ERR_Not_Found) data = '';
 
-	var mimetype = top.frames['file_area'].document.contentType;
-	if( mimetype == undefined )
-		mimetype = top.frames['file_area'].document.mimeType;
-
 	data = data.replace(/&/g, '&amp;');
 	data = data.replace(/</g, '&lt;');
 	data = data.replace(/>/g, '&gt;');
@@ -529,7 +525,6 @@ function FileEdit(file)
 	'<textarea id="edit-text" style="width:100%;height:100%;">' + data + '</textarea></form>' +
 	'<input type="hidden" id="button_mode" value="edit"/>' + 
 	'<input type="hidden" id="filepath" value="' + file + '"/>' +
-	'<input type="hidden" id="mimetype" value="' + mimetype + '"/>' +
 	'</body></html>';
 
 	top.frames['file_area'].document.open("text/html");
@@ -562,14 +557,13 @@ function FileEditSavePreview()
 
 function FileEditPreview()
 {
-	var mimetype = top.frames['file_area'].document.getElementById("mimetype").value;
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	top.document.getElementById('file_span').style.visibility='hidden';
 	top.document.getElementById('preview_span').style.visibility='visible';
 
 	var file = get_filepath();
 
-	FileShow(file, text);
+	FileShow(file, text, "text/plain", 200);
 }
 
 function dirname(path)
