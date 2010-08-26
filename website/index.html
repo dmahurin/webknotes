@@ -12,24 +12,17 @@
 <i>WebKNotes</i> is a dynamic web based Knowledge database.
 
 <p>
-<i>WebKNotes 1</i> was
-written in Perl/CGI, and stored files in a directory hierarchy.
-An existing static web page hierarchy can be changed into a interactive
-system by using WebKnotes.
-<br>
-See the <a href="/cgi-bin/wkn/browse.cgi?theme=forge">WebKNotes 1 Demo</a>.
-
-<p>
 <i>WebKNotes 2</i> is a rewrite of WebKnotes in Javascript, with the entire implementation existing on the client side.
 
 <p>
 Features of WebKnotes 2.
 <ul TYPE=disc>
 <li>Files can be created and edited, and deleted.</li>
-<li>No server modification required. For file edit, the server is required to support WebDAV or WebDAV+DeltaV (SVN).
-<LI>User Authentication is performed by HTTP server usual authentication.
-<li>Client side markup translation for custom formats including .wiki, .htxt, .chopro.
-<li>Bookmarklets are provided to allow use of WebKNotes 2 without installation.
+<li>Uses WebDAV or WebDAV+DeltaV (SVN) for file access. No server modification required.
+<li>Fallback implementation requires only HTTP GET for directory/file read, and HTTP PUT for write.
+<li>User Authentication is performed by HTTP server usual authentication.</li>
+<li>Client side markup translation for custom formats including .wiki, .htxt, .chopro.</li>
+<li>Bookmarklets are provided to allow use of WebKNotes 2 without installation.</li>
 </ul>
 
 The provided bookmarklets allow editing an arbitrary web page with no setup, other than WebDAV support.
@@ -41,9 +34,6 @@ Future enhancements.
 <li>Search support using WebDAV Search/DASL</li>
 <li>Theming</li>
 </ul>
-
-WebKNotes is written and maintained by <a href="mailto:dmahurin@users.sourceforge.net">
-Don Mahurin</a>.
 
 <p>
 <h3>Project</h3>
@@ -64,6 +54,14 @@ Though you may still try out the project, it one of the following ways:
 the sourceforge download site, or from the <a href="http://ftp1.sourceforge.net/webknotes"> sourceforge ftp1 site</a>
 <p>
 -->
+
+<p>
+<i>WebKNotes 1</i> was
+written in Perl/CGI, and stored files in a directory hierarchy.
+An existing static web page hierarchy can be changed into a interactive
+system by using WebKnotes.
+<br>
+See the <a href="/cgi-bin/wkn/browse.cgi?theme=forge">WebKNotes 1 Demo</a>.
 
 <h3>Disclaimer</h3>
 
