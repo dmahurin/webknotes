@@ -35,15 +35,40 @@ function FileList(path)
 	{
 	}
 
+	var index_page = null;
+	var list = [];
+
+	// No WebDAV directory. Get and use the directory index.
 	if(responses == null)
 	{
-		file_area_document.location.replace(path);
-		return;
+		var req = new XMLHttpRequest();
+		req.open("GET", path, false);
+		req.setRequestHeader('Pragma', 'no-cache');
+		req.setRequestHeader('Cache-Control', 'no-cache');
+		req.send(null);
+		data = req.responseText;
+
+		var reg = /.*?<a href="(([^"\?\/]+)\/?)"[^>]*>([^>]*)<\/a>([^]*)/;
+		while(null != (matches = reg.exec(data)))
+		{
+			var ref=matches[1];
+			var name=matches[2];
+			var text=matches[3];
+			data = matches[4];
+			var name=decodeURI(name);
+			ref = path + ref;
+			var values = {'name':name, 'href': ref};
+			list[name] = values;
+			if(INDEX_ORDER[name] != null && INDEX_ORDER[name] < INDEX_ORDER[index_page])
+			{
+				index_page = name;
+			}
+			data = data.substr(reg.lastIndex);
+		}
+
+		responses = [];
 	}
 
-	var index_page = null;
-
-	var list = [];
 	for (i = 0; i < responses.length; i++)
 	{
 		var href = responses[i].getElementsByTagName("D:href")[0].firstChild.nodeValue;
@@ -101,7 +126,7 @@ function FileList(path)
 */
 		else
 		{
-			file_area_document.writeln('<a href="javascript:top.FileShow(' + "'" + href + "'" + ')">' + name + '</a>');
+			file_area_document.writeln('<a href="' + href + '" onclick="top.FileShow(' + "'" + href + "'" + '); return false;">' + name + '</a>');
 		}
 	}
 	file_area_document.write('<input type="hidden" id="button_mode" value="dir"/>');
@@ -174,16 +199,40 @@ function wkn_onload_fix_links(win)
 	wkn_onload_show();
 }
 
-function FileShow(file, text)
+function FileShow(file, text, content_type, status_code)
 {
+	var file_type;
+
 	if(file == null)
 		file = get_filepath();
 
-	var type;
-	var matches;
+	// first call. start get file request
+	if(status_code == null && content_type == null)
+	{
+		get_file_async(file, FileShow);
+		return false;
+	}
 
 	if((matches = file.match(/\.([^\.]+)$/)))
-		type = matches[1];
+		file_type = matches[1];
+
+	// if file is not a text file, abort the request redirect to file
+	if(null==content_type.match(/^text/))
+	{
+		if(file_type.match(/^(html?|wiki|htxt|chopro)$/))
+			content_type = "text/plain";
+		else
+		{
+			top.frames['file_area'].location.replace(file);
+			return false;
+		}
+	}
+
+	// request is not yet complete. continue.
+	if(text == null)
+		return true;
+
+	var matches;
 
 	var view_area_document;
 	if(top.document.getElementById('file_span').style.visibility == 'hidden')
@@ -191,24 +240,24 @@ function FileShow(file, text)
 	else
 		view_area_document = top.frames['file_area'].document;
 
-	if(text == null)
-		text = get_file_data(file);
-
-	if(is_edit_on() && text == ERR_Not_Found)
+	if(is_edit_on() && status_code == 404)
 	{
 		FileEdit(file);
-		return;
+		return false;
 	}
 
 	var href = get_base_href_path() + file;
 	var win;
 
-	if(get_buttonmode() == 'preview')
-		top.document.getElementById('preview_span').style.visibility ='hidden';
-	else
-		top.document.getElementById('file_span').style.visibility='hidden';
+	if(file_type != null)
+	{
+		if(get_buttonmode() == 'preview')
+			top.document.getElementById('preview_span').style.visibility ='hidden';
+		else
+			top.document.getElementById('file_span').style.visibility='hidden';
+	}
 
-	if(type == 'html' || type == 'htm')
+	if(content_type == 'text/html' || file_type == 'html' || file_type == 'htm')
 	{
 		view_area_document.open("text/html");
 		var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
@@ -228,9 +277,9 @@ function FileShow(file, text)
 		text = text.replace(/>/g, '&gt;');
 		view_area_document.open("text/html");
 		view_area_document.writeln('<html><head><base href="' + href + '"/>');
-		if(type != null)
+		if(file_type != null)
 		{
-			view_area_document.writeln('<script src="' + get_script_href_path() + type + '.js"></script>');
+			view_area_document.writeln('<script src="' + get_script_href_path() + file_type + '.js"></script>');
 			view_area_document.writeln("<script type=\"text/javascript\">var wkn_onload_other = window.onload;\nfunction wkn_onload() { if(wkn_onload_other) wkn_onload_other(); top.wkn_onload_fix_links(window); }\nwindow.onload = wkn_onload; </script>");
 		}
 		view_area_document.writeln('</head><body><pre>');
@@ -238,6 +287,7 @@ function FileShow(file, text)
 		view_area_document.writeln('</pre></body></html>');
 		view_area_document.close();
 	}
+	return false;
 }
 
 function get_uuid()
@@ -288,7 +338,7 @@ function FileWrite(url, content)
 	}
 
 	var comment = top.document.getElementById("comment_text").value;
-	if(comment == null || comment == '')
+	if(checked_in_path != null && (comment == null || comment == ''))
 	{
 		top.document.getElementById("comment_span").style.visibility = 'visible';
 		alert('change comment required');
@@ -421,10 +471,33 @@ function FileExit()
 	top.document.location.replace(path);
 }
 
+function get_file_async(file, func)
+{
+	var req = new XMLHttpRequest();
+	req.onreadystatechange = function() { 
+		var content_type = req.getResponseHeader("Content-Type");
+		if (req.readyState==2)
+		{
+			if(!func(file, null, content_type, req.status))
+				req.abort();
+		}
+		else if(req.readyState==4)
+		{
+			//alert(" 4 " + req.responseText);
+			func(file, req.responseText, content_type, req.status);
+		}
+	}
+	req.open("GET", file, true);
+	req.setRequestHeader('Pragma', 'no-cache');
+	req.setRequestHeader('Cache-Control', 'no-cache');
+	req.send(null);
+}
+
 function get_file_data(file)
 {
 	var req = new XMLHttpRequest();
 	req.open("GET", file, false);
+	req.setRequestHeader('Pragma', 'no-cache');
 	req.setRequestHeader('Cache-Control', 'no-cache');
 	req.send(null);
 	var data;
@@ -469,8 +542,8 @@ function FileEditSave()
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	var path = get_filepath();
 	if(!FileWrite(path, text)) return;
-	top.frames['file_area'].history.back();
-//	top.frames['file_area'].location.replace(path);
+	top.frames['file_area'].history.go(-2);
+//	FileShow(path);
 }
 
 function FileEditClosePreview()
@@ -483,9 +556,8 @@ function FileEditSavePreview()
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	var path = get_filepath();
 	if(!FileWrite(path, text)) return;
-	top.frames['file_area'].history.go(-2);
-
-//	top.frames['file_area'].location.replace(path);
+	top.frames['file_area'].history.go(-3);
+//	FileShow(path);
 }
 
 function FileEditPreview()
@@ -589,14 +661,14 @@ function load_buttons(button_group)
 		if(button_group != prev_button_group)
 		{
 			button_area_document.getElementById(prev_button_group).style.visibility = 'hidden';
-			if(button_group != null)
+			if(button_group != null && is_edit_on())
 				button_area_document.getElementById(button_group).style.visibility = 'visible';
 			button_area_document.getElementById('prev_button_group').value = button_group;
 		}
 		return;
 	}
 
-	if(button_group != null)
+	if(button_group != null && is_edit_on())
 		button_area_document.getElementById(button_group).style.visibility = 'visible';
 	button_area_document.getElementById('prev_button_group').value = button_group;
 }
@@ -648,24 +720,25 @@ function load_preview_buttons()
 
 function OnFramesLoad()
 {
-	if(!top.frames['file_area'].document.body.childNodes.length)
-	{
-		var path = top.document.location.pathname;
-		if(path.match(/\/$/))
-			FileList(path);
-		else if (path.match(/(\/|^)(edit|view|wkn).html/))
-			FileList(dirname(path));
-		else
-			FileShow(path);
-	}
+	var path = top.document.location.pathname;
+	if(path.match(/\/$/))
+		FileList(path);
+	else if (path.match(/(\/|^)(edit|view|wkn).html/))
+		FileList(dirname(path));
+	else
+		FileShow(path);
 }
 
 function OnLoadPath(mode)
 {
-	OnFramesLoad();
-
-	if(null == top.frames['file_area'].document.body || !top.frames['file_area'].document.body.childNodes.length)
+	if(null == top.frames['file_area'].document.body)
 		return;
+
+	if(!top.frames['file_area'].document.body.childNodes.length)
+	{
+		OnFramesLoad();
+		return;
+	}
 
 	if(mode == null)
 		mode = get_buttonmode();
@@ -691,7 +764,6 @@ function ShowEditFramesNoTables()
 	document.body.innerHTML =
 	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px;"aaaa>' +
 	get_buttons_html() +
-//	'<iframe style="position:absolute;width:100%;height:100%;" name="button_area" id="button_area" frameborder="0"> </iframe>' +
 	'</span>' +
 	'<span id="file_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px">' +
 	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
@@ -707,7 +779,6 @@ function ShowEditFrames()
 	'<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>' +
 	'<span id="button_span">' +
 	get_buttons_html() +
-//	'<iframe style="with:100%;height:100%;" name="button_area" id="button_area" frameborder="0"> </iframe>' +
 	'</span>' +
 	'</td></tr><tr><td style="height:100%;">' +
 	'<div style="position:relative;width:100%;height:100%">' +
@@ -721,18 +792,19 @@ function ShowEditFrames()
 	'</td></tr></table>';
 }
 
-
 function ShowViewFrames()
 {
 	document.body.innerHTML =
-	'<span id="file_span" style="position:absolute;width:100%;height:100%;">' +
-	'<iframe style="width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
+	'<div style="position:relative;width:100%;height:100%">' +
+	'<spam id="file_span">' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
-	'<span id="preview_span" style="position:absolute;width:100%;height:100%;">' +
-	'<iframe style="width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	'<span id="preview_span">' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
 	'</span>' +
 	// buttons, hidden for view
-	'<span id="button_span" style="width:100%;visibility:hidden;">' +
+	'<span id="button_span" style="visibility:hidden;">' +
 	get_buttons_html() +
 	'</span>';
 }
+
