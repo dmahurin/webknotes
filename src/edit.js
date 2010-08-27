@@ -172,10 +172,6 @@ function do_link(file)
 
 function wkn_onload_show()
 {
-	if(get_buttonmode() == 'preview')
-		top.document.getElementById('preview_span').style.visibility ='visible';
-	else
-		top.document.getElementById('file_span').style.visibility='visible';
 }
 
 function wkn_onload_fix_links(win)
@@ -251,10 +247,7 @@ function FileShow(file, text, content_type, status_code)
 
 	if(file_type != null)
 	{
-		if(get_buttonmode() == 'preview')
-			top.document.getElementById('preview_span').style.visibility ='hidden';
-		else
-			top.document.getElementById('file_span').style.visibility='hidden';
+		top.document.getElementById('file_div').style.visibility = 'hidden';
 	}
 
 	if(content_type == 'text/html' || file_type == 'html' || file_type == 'htm')
@@ -340,7 +333,7 @@ function FileWrite(url, content)
 	var comment = top.document.getElementById("comment_text").value;
 	if(checked_in_path != null && (comment == null || comment == ''))
 	{
-		top.document.getElementById("comment_span").style.visibility = 'visible';
+		top.document.getElementById("comment_span").style.visibility = 'inherit';
 		alert('change comment required');
 		return;
 	}
@@ -461,7 +454,7 @@ function FileUpload()
 
 function FileEditCancel()
 {
-	top.frames['file_area'].history.back();
+	top.history.back();
 }
 
 function FileExit()
@@ -537,13 +530,13 @@ function FileEditSave()
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	var path = get_filepath();
 	if(!FileWrite(path, text)) return;
-	top.frames['file_area'].history.go(-2);
+	top.history.go(-1);
 //	FileShow(path);
 }
 
 function FileEditClosePreview()
 {
-	top.frames['file_area'].history.back();
+	top.history.back();
 }
 
 function FileEditSavePreview()
@@ -551,7 +544,7 @@ function FileEditSavePreview()
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	var path = get_filepath();
 	if(!FileWrite(path, text)) return;
-	top.frames['file_area'].history.go(-3);
+	top.history.go(-2);
 //	FileShow(path);
 }
 
@@ -559,7 +552,7 @@ function FileEditPreview()
 {
 	var text = top.frames['file_area'].document.getElementById("edit-text").value;
 	top.document.getElementById('file_span').style.visibility='hidden';
-	top.document.getElementById('preview_span').style.visibility='visible';
+	top.document.getElementById('preview_span').style.visibility='inherit';
 
 	var file = get_filepath();
 
@@ -712,25 +705,24 @@ function load_preview_buttons()
 	load_buttons('preview_buttons');
 }
 
-function OnFramesLoad()
-{
-	var path = top.document.location.pathname;
-	if(path.match(/\/$/))
-		FileList(path);
-	else if (path.match(/(\/|^)(edit|view|wkn).html/))
-		FileList(dirname(path));
-	else
-		FileShow(path);
-}
+var load_once = false;
 
 function OnLoadPath(mode)
 {
 	if(null == top.frames['file_area'].document.body)
 		return;
 
-	if(!top.frames['file_area'].document.body.childNodes.length)
+	if(load_once && !top.frames['file_area'].document.body.childNodes.length)
 	{
-		OnFramesLoad();
+		var path = top.document.location.pathname;
+		if(path.match(/\/$/))
+			FileList(path);
+		else if (path.match(/(\/|^)(edit|view|wkn).html/))
+			FileList(dirname(path));
+		else
+			FileShow(path);
+
+		load_once = false;
 		return;
 	}
 
@@ -741,20 +733,30 @@ function OnLoadPath(mode)
 	{
 		load_buttons(mode + "_buttons");
 	}
+
+	top.document.getElementById('file_div').style.visibility ='visible';
 }
 
-function OnPreviewLoad()
+function OnLoadPreview()
 {
-        if(!top.frames['preview_area'].document.body.childNodes.length)
+        if(top.frames['preview_area'].document.body != null && top.frames['preview_area'].document.body.childNodes.length)
+	{
+                top.document.getElementById('file_span').style.visibility='hidden';
+		top.document.getElementById('preview_span').style.visibility='inherit';
+	}
+	else
 	{
                 top.document.getElementById('preview_span').style.visibility='hidden';
-		top.document.getElementById('file_span').style.visibility='visible';
+		top.document.getElementById('file_span').style.visibility='inherit';
 	}
+//	top.document.getElementById('file_div').style.visibility ='visible';
 	OnLoadPath();
 }
 
 function ShowEditFramesNoTables()
 {
+	load_once = true;
+
 	document.body.innerHTML =
 	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px;"aaaa>' +
 	get_buttons_html() +
@@ -763,24 +765,26 @@ function ShowEditFramesNoTables()
 	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
 	'<span id="preview_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;visibility:hidden">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnLoadPreview()"></iframe>' +
 	'</span>';
 }
 
 function ShowEditFrames()
 {
+	load_once = true;
+
 	document.body.innerHTML =
 	'<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>' +
 	'<span id="button_span">' +
 	get_buttons_html() +
 	'</span>' +
 	'</td></tr><tr><td style="height:100%;">' +
-	'<div style="position:relative;width:100%;height:100%">' +
+	'<div id="file_div" style="position:relative;width:100%;height:100%">' +
 	'<span id="file_span">' +
 	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
 	'<span id="preview_span" style="visibility:hidden;">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnLoadPreview()"></iframe>' +
 	'</span>' +
 	'</div>' +
 	'</td></tr></table>';
@@ -788,17 +792,20 @@ function ShowEditFrames()
 
 function ShowViewFrames()
 {
+	load_once = true;
+
 	document.body.innerHTML =
-	'<div style="position:relative;width:100%;height:100%">' +
-	'<spam id="file_span">' +
+	'<div id="file_div="position:relative;width:100%;height:100%">' +
+	'<span id="file_span">' +
 	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
 	'<span id="preview_span">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnPreviewLoad()"></iframe>' +
+	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnLoadPreview()"></iframe>' +
 	'</span>' +
 	// buttons, hidden for view
 	'<span id="button_span" style="visibility:hidden;">' +
 	get_buttons_html() +
-	'</span>';
+	'</span>' +
+	'</div>';
 }
 
