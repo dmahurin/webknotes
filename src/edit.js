@@ -1,5 +1,10 @@
 // Client side only WebDav/SVN/HTTP File/Directory editor
 
+if(window != top)
+{
+	throw 'can only load from top window';
+}
+
 var ERR_Not_Found = '<html><body>404 Not Found</body></html>';
 
 var INDEX_ORDER = { null:999, 'index.html':1, 'index.htm':2, 'index.wiki':3, 'index.htxt':4};
@@ -92,12 +97,12 @@ function FileList(path)
 	if((!edit_on) && index_page != null)
 	{
 		FileShow(list[index_page]['href']);
-		return;
+		return false;
 	}
 
 	file_area_document.open("text/html");
-	file_area_document.writeln("<html><body>");
-	file_area_document.writeln("<h1>Index of " + path + "</h1><hr><pre>");
+	file_area_document.write("<html><body>" +
+		"<h1>Index of " + path + "</h1><hr><pre>");
 	file_area_document.writeln('<a href="javascript:top.FileList(\'' + parentdir(path) + '\')">Parent Directory</a><br>');
 
 	var sorted_keys = [];
@@ -133,25 +138,38 @@ function FileList(path)
 	file_area_document.write('<input type="hidden" id="filepath" value="' + path + '"/>');
 	file_area_document.writeln("</pre><hr></body></html>");
 	file_area_document.close();
+	return false;
 }
 
-function get_base_href_path()
+function get_top_href_base()
 {
-	return top.document.location.href.replace(/^([^\/]*:\/\/[^\/]*).*/, '$1');
+	return top.document.location.href.match(/^([^:\/]+:\/\/[^\/]*)/)[1];
+}
+
+function get_top_href_path()
+{
+	return top.document.location.href.match(/^[^:\/]+:\/\/[^\/]*(.*\/)/)[1];
+}
+
+function get_script_src()
+{
+        var script = top.document.getElementById("edit_script");
+	if(!script)
+	{
+		var head = top.document.getElementsByTagName("head")[0];
+		script = head.getElementsByTagName("script")[0]
+	}
+
+	return (script && script.src) ? script.src : null;
 }
 
 function get_script_href_path()
 {
 	var path;
-        var script = top.document.getElementById("edit_script");
-	if(!script)
-	{
-		var head = top.document.getElementsByTagName("head")[0];
-		script = script.getElementsByTagName("head")[0]
-	}
+	var script = get_script_src();
 
-	if(script && script.src && script.src.match(/:/))
-		path = script.src;
+	if(script && script.match(/:/))
+		path = script;
 	else
 		path = top.document.location.href;
 
@@ -160,39 +178,10 @@ function get_script_href_path()
 	return path;
 }
 
-function do_link(file)
+function wkn_fix_links(text, path)
 {
-	if(null != file.match(/\/$/))
-		FileList(file);
-	else
-		FileShow(file);
-
-	return false;
-}
-
-function wkn_onload_show()
-{
-}
-
-function wkn_onload_fix_links(win)
-{
-	var head = win.document.getElementsByTagName("head")[0];
-	var base = head.getElementsByTagName("base");
-	if(base && base[0])
-		base = base[0].href.replace(/^[^\/]*:\/\/[^\/]*(.*\/)[^\/]*/, '$1');
-	else
-		base = '';
-
 	// replace local references with internal function calls
-	win.document.body.innerHTML = win.document.body.innerHTML.replace(/<a href="([^":]*)"/g, '<a href="$1" onClick="return top.do_link(\'' + base + '$1\')"');
-/*
-	var links = win.document.links;
-	for(var i=0; i <links.length;i++)
-	{
-		links[i].setAttribute('onclick',"return top.on_link('" + links[i].href + "');");
-	}
-*/
-	wkn_onload_show();
+	return text.replace(/<a href="([^\/":]+(?:\/[^"\/]+)*(\/)?)"/g, function($0,$1,$2) { return ('<a href="' + $1 + '" onClick="return top.' + ($2 ? 'FileList' : 'FileShow') + '(\'' + path + $1 + '\'); return false;"'); });
 }
 
 function FileShow(file, text, content_type, status_code)
@@ -213,7 +202,7 @@ function FileShow(file, text, content_type, status_code)
 		file_type = matches[1];
 
 	// if file is not a text file, abort the request redirect to file
-	if(null==content_type.match(/^text/))
+	if(null==content_type.match(/^(text\/|application\/javascript$)/))
 	{
 		if(file_type.match(/^(html?|wiki|htxt|chopro)$/))
 			content_type = "text/plain";
@@ -231,10 +220,17 @@ function FileShow(file, text, content_type, status_code)
 	var matches;
 
 	var view_area_document;
+	var is_preview = false;
+
 	if(top.document.getElementById('file_span').style.visibility == 'hidden')
+	{
 		view_area_document = top.frames['preview_area'].document;
+		is_preview = true;
+	}
 	else
+	{
 		view_area_document = top.frames['file_area'].document;
+	}
 
 	if(is_edit_on() && status_code == 404)
 	{
@@ -242,9 +238,10 @@ function FileShow(file, text, content_type, status_code)
 		return false;
 	}
 
-	var href = get_base_href_path() + file;
+	var href = get_top_href_base() + file;
 	var win;
 
+	// hide the file/preview area until page is loaded
 	if(file_type != null)
 	{
 		top.document.getElementById('file_div').style.visibility = 'hidden';
@@ -253,13 +250,33 @@ function FileShow(file, text, content_type, status_code)
 	if(content_type == 'text/html' || file_type == 'html' || file_type == 'htm')
 	{
 		view_area_document.open("text/html");
-		var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
-		var base = head.getElementsByTagName("base")[0];
-		if(base == undefined)
+
+		if(null == text.match(/<head(?:\s+[^>]+)?>/i))
 		{
-			text = text.replace('<head>', '<head><base href="' + href + '">');
-			text = text.replace('</head>', "<script type=\"text/javascript\">var wkn_onload_other = window.onload;\nfunction wkn_onload() { if(wkn_onload_other) wkn_onload_other(); top.wkn_onload_show(); }\nwindow.onload = wkn_onload; </script></head>");
+			text = text.replace(/<html>/i, '<html><head></head>');
 		}
+		// modify page with base href such that relative links will work
+		// modify page target to use new window if preview
+		var reg = /<base(\s+[^>]+)?>/i;
+		if(null != (matches = reg.exec(text)))
+		{
+			var params = matches[1];
+			if(is_preview)
+			{
+				var params_reg = /\s+target=[^>\s]+/;
+				if(null != params_reg.exec(params))
+					params = params.substring(0,params_reg.index) + params.substring(params_reg.lastIndex);
+				params += ' target="preview_target"';
+			}
+			if(null == params.match(/\s+href=[^>\s]+/))
+				params += (' href="' + href + '"');
+			text = text.substring(0,reg.index) + '<base' + params + '>' + text.substring(reg.lastIndex);
+		}
+		else
+		{
+			text = text.replace(/<head>/i, '<head><base href="' + href + (is_preview ? '" target="preview_target' :'') + '">');
+		}
+
 		view_area_document.write(text);
 		view_area_document.close();
 	}
@@ -269,11 +286,10 @@ function FileShow(file, text, content_type, status_code)
 		text = text.replace(/</g, '&lt;');
 		text = text.replace(/>/g, '&gt;');
 		view_area_document.open("text/html");
-		view_area_document.writeln('<html><head><base href="' + href + '"/>');
+		view_area_document.writeln('<html><head><base href="' + href + (is_preview ? '" target="preview_target' :'') + '"/>');
 		if(file_type != null)
 		{
 			view_area_document.writeln('<script src="' + get_script_href_path() + file_type + '.js"></script>');
-			view_area_document.writeln("<script type=\"text/javascript\">var wkn_onload_other = window.onload;\nfunction wkn_onload() { if(wkn_onload_other) wkn_onload_other(); top.wkn_onload_fix_links(window); }\nwindow.onload = wkn_onload; </script>");
 		}
 		view_area_document.writeln('</head><body><pre>');
 		view_area_document.write(text);
@@ -621,7 +637,7 @@ function get_filepath()
 {
 	var path = top.frames['file_area'].document.getElementById('filepath');
 	var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
-	var base = head.getElementsByTagName("base");
+	var base = head ? head.getElementsByTagName("base") : null;
 
 	// non-file-preview/show windows will have filepath set
 	if(path)
@@ -705,36 +721,78 @@ function load_preview_buttons()
 	load_buttons('preview_buttons');
 }
 
-var load_once = false;
-
-function OnLoadPath(mode)
+function FirstLoad()
 {
-	if(null == top.frames['file_area'].document.body)
-		return;
+	var path = top.document.location.pathname;
+	var button_mode;
 
-	if(load_once && !top.frames['file_area'].document.body.childNodes.length)
+	if(path.match(/\/$/))
+		button_mode = 'dir';
+	else if (path.match(/(\/|^)(edit|view|wkn).html/))
 	{
-		var path = top.document.location.pathname;
-		if(path.match(/\/$/))
-			FileList(path);
-		else if (path.match(/(\/|^)(edit|view|wkn).html/))
-			FileList(dirname(path));
-		else
-			FileShow(path);
+		path = dirname(path);
+		button_mode = 'dir';
+	}
+	else
+		button_mode = 'file';
 
-		load_once = false;
+	// Firefox workaround. First FileList page is too slow(?) to trigger onload. Display blank page first.
+	top.frames['file_area'].document.open("text/html");
+	top.frames['file_area'].document.write(
+	'<html><body>' +
+	'<input type="hidden" id="button_mode" value="' + button_mode + '"/>' +
+	'<input type="hidden" id="filepath" value="' + path + '"/>' +
+	'</body></html>');
+	top.frames['file_area'].document.close();
+
+	if(button_mode == 'dir')
+		FileList(path);
+	else
+		FileShow(path);
+}
+
+var load_path_once = 0;
+
+function OnLoadPath()
+{
+	if(null == top.frames['file_area'].document.body || !top.frames['file_area'].document.body.childNodes.length)
+	{
+		if(++load_path_once == 1)
+		{
+			FirstLoad();
+		}
 		return;
 	}
 
-	if(mode == null)
-		mode = get_buttonmode();
+	var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
+
+	var base = head ? head.getElementsByTagName("base") : null;
+	var top_base = get_top_href_base();
+	if(base && base[0] && base[0].href)
+	{
+		base = base[0].href;
+		if(base && base.substring(0, top_base.length + 1) == top_base + '/')
+			base = base.substring(top_base.length, base.lastIndexOf('/') + 1);
+		else
+			base = null;
+	}
+	else
+	{
+		base = null;
+	}
+
+	if(base)
+		top.frames['file_area'].document.body.innerHTML = wkn_fix_links(top.frames['file_area'].document.body.innerHTML, base);
+//	alert(top.frames['file_area'].document.body.innerHTML);
+
+	mode = get_buttonmode();
 
 	if(mode != undefined && mode != '')
 	{
 		load_buttons(mode + "_buttons");
 	}
 
-	top.document.getElementById('file_div').style.visibility ='visible';
+	top.document.getElementById('file_div').style.visibility = 'visible';
 }
 
 function OnLoadPreview()
@@ -755,13 +813,11 @@ function OnLoadPreview()
 
 function ShowEditFramesNoTables()
 {
-	load_once = true;
-
 	document.body.innerHTML =
 	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px;"aaaa>' +
 	get_buttons_html() +
 	'</span>' +
-	'<span id="file_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px">' +
+	'<span id="file_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;">' +
 	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
 	'<span id="preview_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;visibility:hidden">' +
@@ -771,15 +827,13 @@ function ShowEditFramesNoTables()
 
 function ShowEditFrames()
 {
-	load_once = true;
-
 	document.body.innerHTML =
 	'<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>' +
 	'<span id="button_span">' +
 	get_buttons_html() +
 	'</span>' +
 	'</td></tr><tr><td style="height:100%;">' +
-	'<div id="file_div" style="position:relative;width:100%;height:100%">' +
+	'<div id="file_div" style="position:relative;width:100%;height:100%;">' +
 	'<span id="file_span">' +
 	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
@@ -792,10 +846,8 @@ function ShowEditFrames()
 
 function ShowViewFrames()
 {
-	load_once = true;
-
 	document.body.innerHTML =
-	'<div id="file_div="position:relative;width:100%;height:100%">' +
+	'<div id="file_div" style="position:relative;width:100%;height:100%;">' +
 	'<span id="file_span">' +
 	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
 	'</span>' +
