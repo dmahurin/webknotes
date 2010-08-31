@@ -813,6 +813,9 @@ function OnLoadPreview()
 
 function ShowEditFramesNoTables()
 {
+	if(window != top)
+		throw 'can only load from top window';
+
 	document.body.innerHTML =
 	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px;"aaaa>' +
 	get_buttons_html() +
@@ -827,6 +830,9 @@ function ShowEditFramesNoTables()
 
 function ShowEditFrames()
 {
+	if(window != top)
+		throw 'can only load from top window';
+
 	document.body.innerHTML =
 	'<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>' +
 	'<span id="button_span">' +
@@ -846,6 +852,9 @@ function ShowEditFrames()
 
 function ShowViewFrames()
 {
+	if(window != top)
+		throw 'can only load from top window';
+
 	document.body.innerHTML =
 	'<div id="file_div" style="position:relative;width:100%;height:100%;">' +
 	'<span id="file_span">' +
