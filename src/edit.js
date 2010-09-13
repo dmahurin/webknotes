@@ -1,28 +1,140 @@
 // Client side only WebDav/SVN/HTTP File/Directory editor
 
+var force_edit = false;
+
 if(window != top)
 {
 	throw 'can only load from top window';
 }
 
-var ERR_Not_Found = '<html><body>404 Not Found</body></html>';
-
 var INDEX_ORDER = { null:999, 'index.html':1, 'index.htm':2, 'index.wiki':3, 'index.htxt':4};
 
 function is_edit_on()
 {
-	return top.document.getElementById('button_span').style.visibility!='hidden';
+	return(null != document.getElementById('button_area') || force_edit);
+}
+
+// create tool document using toolbar html/element and document html/element
+function create_tool_doc(tool,main, other)
+{
+	if(other == null) other = '';
+
+	var script = get_script_src();
+	var href = get_top_href_base();
+
+	if(!is_edit_on())
+	{
+		document.open("text/html");
+		document.write('<html><head><base href="' + href +'"><script src="' + script + '"></script></head><body>');
+		document.write(main + other);
+		document.write('</body></html>');
+		document.close();
+		return;
+	}
+
+	var top = document.createElement('span');
+	var table = document.createElement('table');
+	table.style.border = 1;
+	table.cellpadding = 0;
+	table.cellspacing = 0;
+	table.style.width = '100%';
+	table.style.height = '100%';
+	var row = table.insertRow(-1);
+	var cell = row.insertCell(0);
+	button_span = document.createElement('span');
+	button_span.id = 'button_area';
+	cell.appendChild(button_span);
+	cell.appendChild(document.createElement('hr'));
+	row = table.insertRow(-1);
+	cell = row.insertCell(0);
+	cell.style.height = '100%';
+	var file_div = document.createElement('div');
+	file_div.style.position = 'relative';
+	file_div.style.width = '100%';
+	file_div.style.height = '100%';
+	var file_span = document.createElement('span');
+
+	file_div.appendChild(file_span);
+	cell.appendChild(file_div);
+	top.appendChild(table);
+
+	if(typeof(tool) == 'string')
+		button_span.innerHTML = tool;
+	else
+		button_span.appendChild(tool);
+
+	if(typeof(main) == 'string')
+		file_span.innerHTML = main;
+	else
+		file_span.appendChild(main);
+
+	document.open("text/html");
+	document.write('<html><head><base href="' + href +'"><script src="' + script + '"></script></head><body>');
+	document.write(top.innerHTML + other);
+	document.write('</body></html>');
+	document.close();
+}
+
+function frame_load()
+{
+	var file_doc = document.getElementById('file_area');
+	if(file_doc)
+	{
+		var path = document.getElementById('filepath').value;
+		file_doc = frame_document(file_doc);
+		file_doc.body.innerHTML = wkn_fix_links(file_doc.body.innerHTML, dirname(path));
+	}
+}
+
+function create_full_iframe(id, text)
+{
+	return '<iframe onload="frame_load();" id="' + id + '" style="position:absolute;width:100%;height:100%;border:0"></iframe><script>var doc = document.getElementById(\'' + id + '\'); doc = doc.contentDocument || doc.contentWindow.document; doc.open("text/html"); doc.write("'+ text.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/"/g, "\\\"").replace(/script/g, 'scr"+"ipt') +'"); doc.close();</script>';
+/*
+	var docfrag = document.createDocumentFragment();
+	var frame = document.createElement('iframe');
+	frame.style.position = 'absolute';
+	frame.style.width = '100%';
+	frame.style.height = '100%';
+	frame.frameborder = 0;
+	frame.style.border = 0;
+//	if(text) frame.src = "data:text/html;charset=utf-8,"+ text;
+	docfrag.appendChild(frame);
+	if(text)
+	{
+		var frame_text = document.createElement('input');
+		frame_text.type = 'hidden';
+		frame_text.value = text;
+		docfrag.appendChild(frame_text);
+		var script = document.createElement('script');
+		script.type = "text/javascript";
+		script.innerHTML = "load_iframe('" + id + "');";
+		docfrag.appendChild(script);
+	}
+	return docfrag;
+*/
+}
+
+function frame_document(frame)
+{
+	return frame.contentDocument? frame.contentDocument : frame.contentWindow.document;
 }
 
 function FileList(path)
 {
-	var edit_on = is_edit_on();
-
-	if(path == undefined)
-		path = get_filepath();
-
-	var file_area_document = top.frames['file_area'].document;
-
+	// if given a non-index/system file with known extention, pass to FileShow
+	if(null != path.match(/\.(html?|txt|wiki|chopro|htxt)$/))
+	{
+		if(null != path.match(/\/(edit|view|index).html$/))
+		{
+			path=dirname(path);
+		}
+		else
+		{
+			// Use ShowDirect to avoid deferred load (which would interfere with Back on initial sceen)
+			FileShowDirect(path);
+			return;
+		}
+	}
 	var responses = null;
 
 	// try PROPFIND and ignore for non-webdav, non-svn, or file
@@ -94,16 +206,16 @@ function FileList(path)
 		list[name] = values;
 	}
 
+	var edit_on = is_edit_on();
 	if((!edit_on) && index_page != null)
 	{
 		FileShow(list[index_page]['href']);
 		return false;
 	}
 
-	file_area_document.open("text/html");
-	file_area_document.write("<html><body>" +
-		"<h1>Index of " + path + "</h1><hr><pre>");
-	file_area_document.writeln('<a href="javascript:top.FileList(\'' + parentdir(path) + '\')">Parent Directory</a><br>');
+	var out = '';
+	out += ("<h1>Index of " + path + "</h1><hr>");
+	out += ('<a href="javascript:top.FileList(\'' + parentdir(path) + '\')">Parent Directory</a><br/>');
 
 	var sorted_keys = [];
 	for (var i in list) { sorted_keys.push(i); }
@@ -121,34 +233,44 @@ function FileList(path)
 			if(href == path)
 				continue;
 			else
-				file_area_document.writeln('<a href="javascript:top.FileList(\'' + href + '\')">' + name + '/</a>');
+				out +=('<a href="javascript:top.FileList(\'' + href + '\')">' + name + '/</a>');
 		}
-/*
-		else if(null != (href.match(/\.(txt|html?)$/)))
-		{
-			file_area_document.writeln('<a href="' + href + '">' + name + '</a>');
-		}
-*/
 		else
 		{
-			file_area_document.writeln('<a href="' + href + '" onclick="top.FileShow(' + "'" + href + "'" + '); return false;">' + name + '</a>');
+			out+=('<a href="' + href + '" onclick="top.FileShow(' + "'" + href + "'" + ');">' + name + '</a>');
 		}
+		out += "<br>\n";
 	}
-	file_area_document.write('<input type="hidden" id="button_mode" value="dir"/>');
-	file_area_document.write('<input type="hidden" id="filepath" value="' + path + '"/>');
-	file_area_document.writeln("</pre><hr></body></html>");
-	file_area_document.close();
+	out+=('<input type="hidden" id="button_mode" value="dir"/>');
+	out+=('<input type="hidden" id="filepath" value="' + path + '"/>');
+
+	var toolbar = '\
+<input type="button" value="Up" onClick="FileList(\'' + parentdir(path)  + '\');"/> \
+<input id="fileinput" type="file" /> \
+<input type="button" value="Add" onClick="FileUpload(\'' + path  + '\');"/> \
+<input type="button" value="Exit" onClick="FileExit(\'' + path  + '\');"/>';
+
+	var href = get_top_href_base() + path;
+	var frame = create_full_iframe(null, '<html><head><base href="' + href + '"/></head><body>' + out + '</body>' + '</html>');
+	var toolwin = create_tool_doc(toolbar, frame);
+
 	return false;
 }
 
 function get_top_href_base()
 {
-	return top.document.location.href.match(/^([^:\/]+:\/\/[^\/]*)/)[1];
+	var head = document.getElementsByTagName('head')[0];
+	var base = head ? head.getElementsByTagName('base')[0] : null;
+	var href = (base && base.href) ? base.href : document.location.href;
+	return href.match(/^([^:\/]+:\/\/[^\/]*)/)[1];
 }
 
 function get_top_href_path()
 {
-	return top.document.location.href.match(/^[^:\/]+:\/\/[^\/]*(.*\/)/)[1];
+	var head = document.getElementsByTagName('head')[0];
+	var base = head ? head.getElementsByTagName('base')[0] : null;
+	var href = (base && base.href) ? base.href : document.location.href;
+	return href.match(/^[^:\/]+:\/\/[^\/]*(.*\/)/)[1];
 }
 
 function get_script_src()
@@ -186,20 +308,16 @@ function wkn_fix_links(text, path)
 
 function FileShow(file, text, content_type, status_code)
 {
-	var file_type;
-
-	if(file == null)
-		file = get_filepath();
-
 	// first call. start get file request
-	if(status_code == null && content_type == null)
+	if(text == null && status_code == null && content_type == null)
 	{
 		get_file_async(file, FileShow);
 		return false;
 	}
 
-	if((matches = file.match(/\.([^\.]+)$/)))
-		file_type = matches[1];
+	var file_type;
+	if((file_type = file.match(/\.([^\.]+)$/)))
+		file_type = file_type[1];
 
 	// if file is not a text file, abort the request redirect to file
 	if(null==content_type.match(/^(text\/|application\/javascript$)/))
@@ -208,7 +326,11 @@ function FileShow(file, text, content_type, status_code)
 			content_type = "text/plain";
 		else
 		{
-			top.frames['file_area'].location.replace(file);
+			var toolbar = '<input type="button" value="Back" onClick="top.history.back()"/> \
+<input type="button" value="Delete" onClick="FileDelete(\'' + file  + '\');"/> \
+<input type="button" value="Exit" onClick="FileExit(\'' + file  + '\');"/>';
+			var doc = '<iframe src="' + file + '" style="position:absolute;width:100%;height:100%;border:0"></iframe>';
+			create_tool_doc(toolbar, doc);
 			return false;
 		}
 	}
@@ -217,40 +339,47 @@ function FileShow(file, text, content_type, status_code)
 	if(text == null)
 		return true;
 
-	var matches;
-
-	var view_area_document;
-	var is_preview = false;
-
-	if(top.document.getElementById('file_span').style.visibility == 'hidden')
-	{
-		view_area_document = top.frames['preview_area'].document;
-		is_preview = true;
-	}
-	else
-	{
-		view_area_document = top.frames['file_area'].document;
-	}
-
 	if(is_edit_on() && status_code == 404)
 	{
 		FileEdit(file);
 		return false;
 	}
 
+	var toolbar =
+'<input type="button" value="Up" onClick="FileList(\'' + parentdir(file)  + '\');"/> \
+<input type="button" value="Edit" onClick="FileEdit(\'' + file  + '\');"/> \
+<input type="button" value="Delete" onClick="FileDelete(\'' + file  + '\');"/> \
+<input type="button" value="Exit" onClick="FileExit(\'' + file  + '\');"/>';
+var other = '<input type="hidden" id="filepath" value="' + file + '"/>';
+	text = FileShowFilter(file, text, content_type);
+	var frame = create_full_iframe('file_area', text);
+
+	var toolwin = create_tool_doc(toolbar, frame, other);
+	return false;
+}
+
+function FileShowDirect(file)
+{
+	var text = get_file_data(file);
+	FileShow(file, text, "text/html");
+}
+
+function FileShowFilter(file, text, content_type)
+{
+	var matches;
+
+	var is_preview = false;
+
 	var href = get_top_href_base() + file;
 	var win;
 
-	// hide the file/preview area until page is loaded
-	if(file_type != null)
-	{
-		top.document.getElementById('file_div').style.visibility = 'hidden';
-	}
+	var file_type;
+	if((file_type = file.match(/\.([^\.]+)$/)))
+		file_type = file_type[1];
+
 
 	if(content_type == 'text/html' || file_type == 'html' || file_type == 'htm')
 	{
-		view_area_document.open("text/html");
-
 		if(null == text.match(/<head(?:\s+[^>]+)?>/i))
 		{
 			text = text.replace(/<html>/i, '<html><head></head>');
@@ -276,27 +405,18 @@ function FileShow(file, text, content_type, status_code)
 		{
 			text = text.replace(/<head>/i, '<head><base href="' + href + (is_preview ? '" target="preview_target' :'') + '">');
 		}
-
-		view_area_document.write(text);
-		view_area_document.close();
 	}
 	else
 	{
 		text = text.replace(/&/g, '&amp;');
 		text = text.replace(/</g, '&lt;');
 		text = text.replace(/>/g, '&gt;');
-		view_area_document.open("text/html");
-		view_area_document.writeln('<html><head><base href="' + href + (is_preview ? '" target="preview_target' :'') + '"/>');
-		if(file_type != null)
-		{
-			view_area_document.writeln('<script src="' + get_script_href_path() + file_type + '.js"></script>');
-		}
-		view_area_document.writeln('</head><body><pre>');
-		view_area_document.write(text);
-		view_area_document.writeln('</pre></body></html>');
-		view_area_document.close();
+		text = ('<html><head><base href="' + href + (is_preview ? '" target="preview_target' :'') + '"/>' + 
+		(file_type != null ? 
+			('<script src="' + get_script_href_path() + file_type + '.js"></script>') : '') + 
+		'</head><body><pre>' + text + '</pre></body></html>');
 	}
-	return false;
+	return text;
 }
 
 function get_uuid()
@@ -446,9 +566,9 @@ function FileWrite(url, content)
 	return true;
 }
 
-function FileUpload()
+function FileUpload(dir)
 {
-	var file = top..document.getElementById("fileinput");
+	var file = document.getElementById("fileinput");
 	if(file == null || file.files.length == 0)
 	{
 		alert("no file selected");
@@ -456,7 +576,6 @@ function FileUpload()
 	}
 	var content = file.files[0].getAsBinary();
 	var filename = file.value;
-	var dir = get_filepath();
 
 	if(!dir.match(/\/$/))
 	{
@@ -473,9 +592,8 @@ function FileEditCancel()
 	top.history.back();
 }
 
-function FileExit()
+function FileExit(path)
 {
-	var path = get_filepath();
 	if(path == null) path = '';
 	top.document.location.replace(path);
 }
@@ -509,41 +627,72 @@ function get_file_data(file)
 	req.setRequestHeader('Pragma', 'no-cache');
 	req.setRequestHeader('Cache-Control', 'no-cache');
 	req.send(null);
-	var data;
-	if(is_edit_on() && req.status == 404)
-		data = ERR_Not_Found;
+	return (req.status == 404) ? null : req.responseText;
+}
+
+function OnPreviewLoad()
+{
+	var edit_area = document.getElementById("edit-text");
+	var preview_frame = document.getElementById("preview_area");
+	var doc = frame_document(preview_frame);
+
+	if(doc.body && doc.body.childNodes.length)
+	{
+		var path = document.getElementById('filepath').value;
+		doc.body.innerHTML = wkn_fix_links(doc.body.innerHTML, dirname(path));
+		edit_area.style.visibility = 'hidden';
+		document.getElementById("edit-buttons").style.visibility = 'hidden';
+		preview_frame.style.visibility = 'visible';
+		document.getElementById("preview-buttons").style.visibility = 'visible';
+	}
 	else
-		data = req.responseText;
-	return data;
+	{
+		preview_frame.style.visibility = 'hidden';
+		document.getElementById("preview-buttons").style.visibility = 'hidden';
+		edit_area.style.visibility = 'visible';
+		document.getElementById("edit-buttons").style.visibility = 'visible';
+	}
 }
 
 function FileEdit(file)
 {
-	if(file == null)
-		file = get_filepath();
+	var text = get_file_data(file);
+	if(text == null) text = '';
 
-	var data = get_file_data(file);
-	if(data == ERR_Not_Found) data = '';
+	text = text.replace(/&/g, '&amp;');
+	text = text.replace(/</g, '&lt;');
+	text = text.replace(/>/g, '&gt;');
 
-	data = data.replace(/&/g, '&amp;');
-	data = data.replace(/</g, '&lt;');
-	data = data.replace(/>/g, '&gt;');
+	var toolbar =
+'<div style="position:relative"> \
+<span id="edit-buttons" style="position:absolute"> \
+ <input type="button" value="Save" onClick="top.FileEditSave();"/> \
+ <input type="button" value="Preview" onClick="top.FileEditPreview();"/> \
+ <input type="button" value="Cancel" onClick="top.FileEditCancel();"/> \
+ <span id="comment_span" style="visibility:hidden;"> \
+Change comment <input id="comment_text" size="40" type="text"/> \
+ </span> \
+</span> \
+<span id="preview-buttons" style="position:absolute;visibility:hidden;"> \
+ <input type="button" value="Save" onClick="top.FileEditSavePreview();"/> \
+ <input type="button" value="Close Preview" onClick="top.FileEditClosePreview();"/> \
+</span> \
+<input type="button" value="" style="visibility:hidden;/> \
+</div>';
 
-	var pagedata = '<html>' +
-	'<body><form id="edit-form">' +
-	'<textarea id="edit-text" style="width:100%;height:100%;">' + data + '</textarea></form>' +
-	'<input type="hidden" id="button_mode" value="edit"/>' + 
-	'<input type="hidden" id="filepath" value="' + file + '"/>' +
-	'</body></html>';
+	var pagedata = 
+	'<textarea id="edit-text" style="position:absolute;width:100%;height:100%;">' + text + '</textarea>' +
+	'<iframe onload="OnPreviewLoad()" id="preview_area" style="position:absolute;width:100%;height:100%;border:0;visibility:hidden"></iframe>' +
+	'<input type="hidden" id="filepath" value="' + file + '"/>';
 
-	top.frames['file_area'].document.open("text/html");
-	top.frames['file_area'].document.write(pagedata);
-	top.frames['file_area'].document.close();
+	var toolwin = create_tool_doc(toolbar, pagedata);
+
+	return false;
 }
 
 function FileEditSave()
 {
-	var text = top.frames['file_area'].document.getElementById("edit-text").value;
+	var text = document.getElementById("edit-text").value;
 	var path = get_filepath();
 	if(!FileWrite(path, text)) return;
 	top.history.go(-1);
@@ -557,7 +706,7 @@ function FileEditClosePreview()
 
 function FileEditSavePreview()
 {
-	var text = top.frames['file_area'].document.getElementById("edit-text").value;
+	var text = document.getElementById("edit-text").value;
 	var path = get_filepath();
 	if(!FileWrite(path, text)) return;
 	top.history.go(-2);
@@ -566,13 +715,18 @@ function FileEditSavePreview()
 
 function FileEditPreview()
 {
-	var text = top.frames['file_area'].document.getElementById("edit-text").value;
-	top.document.getElementById('file_span').style.visibility='hidden';
-	top.document.getElementById('preview_span').style.visibility='inherit';
+	var text = document.getElementById('edit-text').value;
 
 	var file = get_filepath();
 
-	FileShow(file, text, "text/plain", 200);
+	text = FileShowFilter(file, text);
+
+	var preview_frame = document.getElementById("preview_area");
+	var doc = frame_document(preview_frame);
+
+	doc.open("text/html");
+	doc.write(text);
+	doc.close();
 }
 
 function dirname(path)
@@ -585,14 +739,8 @@ function parentdir(path)
     return path.replace(/\\/g,'/').replace(/\/[^\/]*\/?$/, '/');
 }
 
-function DirUp()
+function FileDelete(file)
 {
-	FileList(parentdir(get_filepath()));
-}
-
-function FileDelete()
-{
-	var file = get_filepath();
 	var dir = dirname(file);
 
 	if(dir == file)
@@ -611,262 +759,18 @@ function FileDelete()
 	}
 }
 
-function get_buttonmode()
-{
-	var button_mode = top.frames['file_area'].document.getElementById('button_mode');
-
-	if(!top.frames['file_area'].document.body.childNodes.length)
-		return undefined;
-	else if(button_mode)
-	{
-		if(button_mode.value == 'edit' && top.document.getElementById('file_span').style.visibility == 'hidden')
-		{
-			return "preview"; 
-		}
-		return button_mode.value;
-	}
-/*
-	else if(null != top.frames['file_area'].document.location.href.match(/\/$/))
-		return "dir";
-*/
-	else
-		return "file";
-}
-
 function get_filepath()
 {
-	var path = top.frames['file_area'].document.getElementById('filepath');
-	var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
-	var base = head ? head.getElementsByTagName("base") : null;
-
-	// non-file-preview/show windows will have filepath set
-	if(path)
-		return path.value;
-	// if base href is specified and not directory, assume file path
-	else if(base && base[0] && base[0].href && null == base[0].href.match(/\/$/))
-		return base[0].href.replace(/^[^\/]*:\/\/[^\/]*/, '');
-	// otherwise it is a normal file show. use the location path
-	else
-		return top.frames['file_area'].document.location.pathname;
+	return document.getElementById('filepath').value;
 }
 
-function load_buttons(button_group)
+function ShowEdit()
 {
-	var button_area_document = top.document;
-	var prev_button_group = button_area_document.getElementById("prev_button_group");
-
-	// fixme. redo buttons in general
-	top.document.getElementById("comment_span").style.visibility = 'hidden';
-
-	if(prev_button_group != undefined && prev_button_group.value != '')
-	{
-		prev_button_group = prev_button_group.value;
-		if(button_group != prev_button_group)
-		{
-			button_area_document.getElementById(prev_button_group).style.visibility = 'hidden';
-			if(button_group != null && is_edit_on())
-				button_area_document.getElementById(button_group).style.visibility = 'visible';
-			button_area_document.getElementById('prev_button_group').value = button_group;
-		}
-		return;
-	}
-
-	if(button_group != null && is_edit_on())
-		button_area_document.getElementById(button_group).style.visibility = 'visible';
-	button_area_document.getElementById('prev_button_group').value = button_group;
+	force_edit = true;
+        FileList(document.location.pathname);
 }
 
-function get_buttons_html()
+function ShowView()
 {
-	return '<html><body> \
-<span> \
-<input type="button" value="" style="visibility:hidden;float:right;"/> \
-<span id="file_buttons" style="position:absolute;visibility:hidden;"> \
-<input type="button" value="Up" onClick="top.DirUp();"/> \
-<input type="button" value="Edit" onClick="top.FileEdit();"/> \
-<input type="button" value="Delete" onClick="top.FileDelete();"/> \
-<input type="button" value="Exit" onClick="top.FileExit();"/> \
-<input id="prev_button_group" type="hidden" /> \
-</span> \
-<span id="dir_buttons" style="position:absolute;visibility:hidden;"> \
-<input type="button" value="Up" onClick="top.DirUp();"/> \
-<input id="fileinput" type="file" /> \
-<input type="button" value="Add" onClick="top.FileUpload();"/> \
-<input type="button" value="Exit" onClick="top.FileExit();"/> \
-</span> \
-<span id="edit_buttons" style="position:absolute;visibility:hidden;"> \
-<input type="button" value="Save" onClick="top.FileEditSave();"/> \
-<input type="button" value="Preview" onClick="top.FileEditPreview();"/> \
-<input type="button" value="Cancel" onClick="top.FileEditCancel();"/> \
-<span id="comment_span" style="visibility:hidden;"> \
-Change comment <input id="comment_text" size="40" type="text"/> \
-</span> \
-</span> \
-<span id="preview_buttons" style="position:absolute;visibility:hidden;"> \
-<input type="button" value="Save" onClick="top.FileEditSavePreview();"/> \
-<input type="button" value="Close Preview" onClick="top.FileEditClosePreview();"/> \
-</span> \
-</span> \
-</body></html>';
-
+        FileList(document.location.pathname);
 }
-
-function load_file_buttons()
-{
-	load_buttons('file_buttons');
-}
-
-function load_preview_buttons()
-{
-	load_buttons('preview_buttons');
-}
-
-function FirstLoad()
-{
-	var path = top.document.location.pathname;
-	var button_mode;
-
-	if(path.match(/\/$/))
-		button_mode = 'dir';
-	else if (path.match(/(\/|^)(edit|view|wkn).html/))
-	{
-		path = dirname(path);
-		button_mode = 'dir';
-	}
-	else
-		button_mode = 'file';
-
-	// Firefox workaround. First FileList page is too slow(?) to trigger onload. Display blank page first.
-	top.frames['file_area'].document.open("text/html");
-	top.frames['file_area'].document.write(
-	'<html><body>' +
-	'<input type="hidden" id="button_mode" value="' + button_mode + '"/>' +
-	'<input type="hidden" id="filepath" value="' + path + '"/>' +
-	'</body></html>');
-	top.frames['file_area'].document.close();
-
-	if(button_mode == 'dir')
-		FileList(path);
-	else
-		FileShow(path);
-}
-
-var load_path_once = 0;
-
-function OnLoadPath()
-{
-	if(null == top.frames['file_area'].document.body || !top.frames['file_area'].document.body.childNodes.length)
-	{
-		if(++load_path_once == 1)
-		{
-			FirstLoad();
-		}
-		return;
-	}
-
-	var head = top.frames['file_area'].document.getElementsByTagName("head")[0];
-
-	var base = head ? head.getElementsByTagName("base") : null;
-	var top_base = get_top_href_base();
-	if(base && base[0] && base[0].href)
-	{
-		base = base[0].href;
-		if(base && base.substring(0, top_base.length + 1) == top_base + '/')
-			base = base.substring(top_base.length, base.lastIndexOf('/') + 1);
-		else
-			base = null;
-	}
-	else
-	{
-		base = null;
-	}
-
-	if(base)
-		top.frames['file_area'].document.body.innerHTML = wkn_fix_links(top.frames['file_area'].document.body.innerHTML, base);
-//	alert(top.frames['file_area'].document.body.innerHTML);
-
-	mode = get_buttonmode();
-
-	if(mode != undefined && mode != '')
-	{
-		load_buttons(mode + "_buttons");
-	}
-
-	top.document.getElementById('file_div').style.visibility = 'visible';
-}
-
-function OnLoadPreview()
-{
-        if(top.frames['preview_area'].document.body != null && top.frames['preview_area'].document.body.childNodes.length)
-	{
-                top.document.getElementById('file_span').style.visibility='hidden';
-		top.document.getElementById('preview_span').style.visibility='inherit';
-	}
-	else
-	{
-                top.document.getElementById('preview_span').style.visibility='hidden';
-		top.document.getElementById('file_span').style.visibility='inherit';
-	}
-//	top.document.getElementById('file_div').style.visibility ='visible';
-	OnLoadPath();
-}
-
-function ShowEditFramesNoTables()
-{
-	if(window != top)
-		throw 'can only load from top window';
-
-	document.body.innerHTML =
-	'<span id="button_span" style="position:absolute;left:0px;top:0px;width:100%;height:50px;"aaaa>' +
-	get_buttons_html() +
-	'</span>' +
-	'<span id="file_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
-	'</span>' +
-	'<span id="preview_span" style="position:absolute;left:0px;top:50px;right:0px;bottom:0px;visibility:hidden">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnLoadPreview()"></iframe>' +
-	'</span>';
-}
-
-function ShowEditFrames()
-{
-	if(window != top)
-		throw 'can only load from top window';
-
-	document.body.innerHTML =
-	'<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>' +
-	'<span id="button_span">' +
-	get_buttons_html() +
-	'</span>' +
-	'</td></tr><tr><td style="height:100%;">' +
-	'<div id="file_div" style="position:relative;width:100%;height:100%;">' +
-	'<span id="file_span">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
-	'</span>' +
-	'<span id="preview_span" style="visibility:hidden;">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnLoadPreview()"></iframe>' +
-	'</span>' +
-	'</div>' +
-	'</td></tr></table>';
-}
-
-function ShowViewFrames()
-{
-	if(window != top)
-		throw 'can only load from top window';
-
-	document.body.innerHTML =
-	'<div id="file_div" style="position:relative;width:100%;height:100%;">' +
-	'<span id="file_span">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="file_area" id="file_area" frameborder="0" onload="OnLoadPath()"></iframe>' +
-	'</span>' +
-	'<span id="preview_span">' +
-	'<iframe style="position:absolute;width:100%;height:100%;" name="preview_area" id="file_area" frameborder="0" onload="OnLoadPreview()"></iframe>' +
-	'</span>' +
-	// buttons, hidden for view
-	'<span id="button_span" style="visibility:hidden;">' +
-	get_buttons_html() +
-	'</span>' +
-	'</div>';
-}
-
