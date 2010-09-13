@@ -31,47 +31,18 @@ function create_tool_doc(tool,main, other)
 		document.close();
 		return;
 	}
-
-	var top = document.createElement('span');
-	var table = document.createElement('table');
-	table.style.border = 1;
-	table.cellpadding = 0;
-	table.cellspacing = 0;
-	table.style.width = '100%';
-	table.style.height = '100%';
-	var row = table.insertRow(-1);
-	var cell = row.insertCell(0);
-	button_span = document.createElement('span');
-	button_span.id = 'button_area';
-	cell.appendChild(button_span);
-	cell.appendChild(document.createElement('hr'));
-	row = table.insertRow(-1);
-	cell = row.insertCell(0);
-	cell.style.height = '100%';
-	var file_div = document.createElement('div');
-	file_div.style.position = 'relative';
-	file_div.style.width = '100%';
-	file_div.style.height = '100%';
-	var file_span = document.createElement('span');
-
-	file_div.appendChild(file_span);
-	cell.appendChild(file_div);
-	top.appendChild(table);
-
-	if(typeof(tool) == 'string')
-		button_span.innerHTML = tool;
-	else
-		button_span.appendChild(tool);
-
-	if(typeof(main) == 'string')
-		file_span.innerHTML = main;
-	else
-		file_span.appendChild(main);
-
 	document.open("text/html");
-	document.write('<html><head><base href="' + href +'"><script src="' + script + '"></script></head><body>');
-	document.write(top.innerHTML + other);
-	document.write('</body></html>');
+	document.write('<html><head><base href="' + href +'"><script src="' + script + '"></script></head><body>' +
+	'<table cellpadding="0" cellspacing="0" border="0" style="width:100%;height:100%;"><tr><td><span id="button_area">' +
+	tool +
+	'</span><hr/></td></tr>' +
+	'<tr><td style="height:100%;">' +
+	'<div style="position:relative;width:100%;height:100%;">' +
+	main +
+	'</div></td></tr>' +
+	'</table>' +
+	other +
+	'</body></html>');
 	document.close();
 }
 
@@ -88,30 +59,8 @@ function frame_load()
 
 function create_full_iframe(id, text)
 {
+	// perhaps consider using iframe src=data:text/html;charset=utf-8,'+ URLencode(text)
 	return '<iframe onload="frame_load();" id="' + id + '" style="position:absolute;width:100%;height:100%;border:0"></iframe><script>var doc = document.getElementById(\'' + id + '\'); doc = doc.contentDocument || doc.contentWindow.document; doc.open("text/html"); doc.write("'+ text.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/"/g, "\\\"").replace(/script/g, 'scr"+"ipt') +'"); doc.close();</script>';
-/*
-	var docfrag = document.createDocumentFragment();
-	var frame = document.createElement('iframe');
-	frame.style.position = 'absolute';
-	frame.style.width = '100%';
-	frame.style.height = '100%';
-	frame.frameborder = 0;
-	frame.style.border = 0;
-//	if(text) frame.src = "data:text/html;charset=utf-8,"+ text;
-	docfrag.appendChild(frame);
-	if(text)
-	{
-		var frame_text = document.createElement('input');
-		frame_text.type = 'hidden';
-		frame_text.value = text;
-		docfrag.appendChild(frame_text);
-		var script = document.createElement('script');
-		script.type = "text/javascript";
-		script.innerHTML = "load_iframe('" + id + "');";
-		docfrag.appendChild(script);
-	}
-	return docfrag;
-*/
 }
 
 function frame_document(frame)
@@ -677,7 +626,7 @@ Change comment <input id="comment_text" size="40" type="text"/> \
  <input type="button" value="Save" onClick="top.FileEditSavePreview();"/> \
  <input type="button" value="Close Preview" onClick="top.FileEditClosePreview();"/> \
 </span> \
-<input type="button" value="" style="visibility:hidden;/> \
+<input type="button" value="" style="visibility:hidden;"/> \
 </div>';
 
 	var pagedata = 
@@ -685,7 +634,7 @@ Change comment <input id="comment_text" size="40" type="text"/> \
 	'<iframe onload="OnPreviewLoad()" id="preview_area" style="position:absolute;width:100%;height:100%;border:0;visibility:hidden"></iframe>' +
 	'<input type="hidden" id="filepath" value="' + file + '"/>';
 
-	var toolwin = create_tool_doc(toolbar, pagedata);
+	create_tool_doc(toolbar, pagedata);
 
 	return false;
 }
