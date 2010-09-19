@@ -7,7 +7,7 @@ if(window != top)
 	throw 'can only load from top window';
 }
 
-var INDEX_ORDER = { null:999, 'index.html':1, 'index.htm':2, 'index.wiki':3, 'index.htxt':4};
+var INDEX_ORDER = { '':999, 'index.html':1, 'index.htm':2, 'index.wiki':3, 'index.htxt':4};
 
 function is_edit_on()
 {
@@ -15,25 +15,23 @@ function is_edit_on()
 }
 
 // create tool document using toolbar html/element and document html/element
-function create_tool_doc(tool,main, other)
+function create_tool_doc(tool,main)
 {
-	if(other == null) other = '';
-
 	var script = get_script_src();
-	var href = get_top_href_base();
+	var href = get_top_href();
 
 	if(!is_edit_on())
 	{
 		document.open("text/html");
-		document.write('<html><head><base href="' + href +'"><script src="' + script + '"></script></head><body>');
-		document.write(main + other);
-		document.write('</body></html>');
+		document.writeln('<html><head><base href="' + href +'"/><script type="text/javascript" src="' + script + '"></script></head><body>' +
+		main +
+		'</body></html>');
 		document.close();
 		return;
 	}
 	document.open("text/html");
-	document.write('<html><head><base href="' + href +'"><script src="' + script + '"></script></head><body>' +
-	'<table cellpadding="0" cellspacing="0" border="0" style="width:100%;height:100%;"><tr><td><span id="button_area">' +
+	document.writeln('<html><head><base href="' + href +'"/><script type="text/javascript" src="' + script + '"></script></head>');
+	document.write('<body><table cellpadding="0" cellspacing="0" border="0" style="width:100%;height:100%;"><tr><td><span id="button_area">' +
 	tool +
 	'</span><hr/></td></tr>' +
 	'<tr><td style="height:100%;">' +
@@ -41,7 +39,6 @@ function create_tool_doc(tool,main, other)
 	main +
 	'</div></td></tr>' +
 	'</table>' +
-	other +
 	'</body></html>');
 	document.close();
 }
@@ -50,9 +47,10 @@ function frame_load()
 {
 	var file_doc = document.getElementById('file_area');
 	if(file_doc)
-	{
-		var path = document.getElementById('filepath').value;
 		file_doc = frame_document(file_doc);
+	if(file_doc && file_doc.body)
+	{
+		var path = get_filepath();
 		file_doc.body.innerHTML = wkn_fix_links(file_doc.body.innerHTML, dirname(path));
 	}
 }
@@ -60,7 +58,7 @@ function frame_load()
 function create_full_iframe(id, text)
 {
 	// perhaps consider using iframe src=data:text/html;charset=utf-8,'+ URLencode(text)
-	return '<iframe onload="frame_load();" id="' + id + '" style="position:absolute;width:100%;height:100%;border:0"></iframe><script>var doc = document.getElementById(\'' + id + '\'); doc = doc.contentDocument || doc.contentWindow.document; doc.open("text/html"); doc.write("'+ text.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/"/g, "\\\"").replace(/script/g, 'scr"+"ipt') +'"); doc.close();</script>';
+	return '<iframe onload="frame_load();" id="' + id + '" style="position:absolute;width:100%;height:100%;border:0;" frameborder="0"></iframe><script>var doc = document.getElementById(\'' + id + '\'); doc = doc.contentDocument || doc.contentWindow.document; doc.open("text/html"); doc.write("'+ text.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/"/g, "\\\"").replace(/script/g, 'scr"+"ipt') +'"); doc.close();</script>';
 }
 
 function frame_document(frame)
@@ -101,7 +99,7 @@ function FileList(path)
 	{
 	}
 
-	var index_page = null;
+	var index_page = '';
 	var list = [];
 
 	// No WebDAV directory. Get and use the directory index.
@@ -114,13 +112,12 @@ function FileList(path)
 		req.send(null);
 		data = req.responseText;
 
-		var reg = /.*?<a href="(([^"\?\/]+)\/?)"[^>]*>([^>]*)<\/a>([^]*)/;
+		var reg = /<a\s+href="(([^>"\?\/]+)\/?)"[^>]*>([^>]*)<\/a>/gi;
 		while(null != (matches = reg.exec(data)))
 		{
 			var ref=matches[1];
 			var name=matches[2];
 			var text=matches[3];
-			data = matches[4];
 			var name=decodeURI(name);
 			ref = path + ref;
 			var values = {'name':name, 'href': ref};
@@ -129,7 +126,6 @@ function FileList(path)
 			{
 				index_page = name;
 			}
-			data = data.substr(reg.lastIndex);
 		}
 
 		responses = [];
@@ -156,15 +152,15 @@ function FileList(path)
 	}
 
 	var edit_on = is_edit_on();
-	if((!edit_on) && index_page != null)
+	if((!edit_on) && index_page != '')
 	{
 		FileShow(list[index_page]['href']);
 		return false;
 	}
 
 	var out = '';
-	out += ("<h1>Index of " + path + "</h1><hr>");
-	out += ('<a href="javascript:top.FileList(\'' + parentdir(path) + '\')">Parent Directory</a><br/>');
+	out += ('<h1>Index of ' + path + '</h1><hr/>');
+	out += ('<a href="javascript:top.FileList(\'' + parentdir(path) + '\');">Parent Directory</a><br/>');
 
 	var sorted_keys = [];
 	for (var i in list) { sorted_keys.push(i); }
@@ -182,7 +178,7 @@ function FileList(path)
 			if(href == path)
 				continue;
 			else
-				out +=('<a href="javascript:top.FileList(\'' + href + '\')">' + name + '/</a>');
+				out +=('<a href="javascript:top.FileList(\'' + href + '\');">' + name + '/</a>');
 		}
 		else
 		{
@@ -190,20 +186,27 @@ function FileList(path)
 		}
 		out += "<br>\n";
 	}
-	out+=('<input type="hidden" id="button_mode" value="dir"/>');
-	out+=('<input type="hidden" id="filepath" value="' + path + '"/>');
 
 	var toolbar = '\
 <input type="button" value="Up" onClick="FileList(\'' + parentdir(path)  + '\');"/> \
 <input id="fileinput" type="file" /> \
 <input type="button" value="Add" onClick="FileUpload(\'' + path  + '\');"/> \
-<input type="button" value="Exit" onClick="FileExit(\'' + path  + '\');"/>';
+<input type="button" value="Exit" onClick="FileExit(\'' + path  + '\');"/> \
+<input type="hidden" id="filepath" value="' + path + '"/>';
 
 	var href = get_top_href_base() + path;
 	var frame = create_full_iframe(null, '<html><head><base href="' + href + '"/></head><body>' + out + '</body>' + '</html>');
 	var toolwin = create_tool_doc(toolbar, frame);
 
 	return false;
+}
+
+function get_top_href()
+{
+	var head = document.getElementsByTagName('head')[0];
+	var base = head ? head.getElementsByTagName('base')[0] : null;
+	var href = (base && base.href) ? base.href : document.location.href;
+	return href;
 }
 
 function get_top_href_base()
@@ -249,10 +252,18 @@ function get_script_href_path()
 	return path;
 }
 
+RegExp.escape = function(str)
+{
+	var specials = new RegExp("[.*+?|()\\[\\]{}\\\\]", "g"); // .*+?|()[]{}\
+	return str.replace(specials, "\\$&");
+}
+
 function wkn_fix_links(text, path)
 {
+	var href_base = get_top_href_base();
 	// replace local references with internal function calls
-	return text.replace(/<a href="([^\/":]+(?:\/[^"\/]+)*(\/)?)"/g, function($0,$1,$2) { return ('<a href="' + $1 + '" onClick="return top.' + ($2 ? 'FileList' : 'FileShow') + '(\'' + path + $1 + '\'); return false;"'); });
+	var reg = new RegExp('<a\\s+href="(?:' + RegExp.escape(href_base + path) + ')?([^\\/":]+(?:\\/[^"\\/]+)*(\\/)?)"', 'gi');
+	return text.replace(reg, function($0,$1,$2) { return ('<a href="' + $1 + '" onClick="return top.' + ($2 ? 'FileList' : 'FileShow') + '(\'' + path + $1 + '\'); return false;"'); });
 }
 
 function FileShow(file, text, content_type, status_code)
@@ -269,7 +280,7 @@ function FileShow(file, text, content_type, status_code)
 		file_type = file_type[1];
 
 	// if file is not a text file, abort the request redirect to file
-	if(null==content_type.match(/^(text\/|application\/javascript$)/))
+	if(null == content_type || null==content_type.match(/^(text\/|application\/javascript$)/))
 	{
 		if(file_type.match(/^(html?|wiki|htxt|chopro)$/))
 			content_type = "text/plain";
@@ -278,7 +289,7 @@ function FileShow(file, text, content_type, status_code)
 			var toolbar = '<input type="button" value="Back" onClick="top.history.back()"/> \
 <input type="button" value="Delete" onClick="FileDelete(\'' + file  + '\');"/> \
 <input type="button" value="Exit" onClick="FileExit(\'' + file  + '\');"/>';
-			var doc = '<iframe src="' + file + '" style="position:absolute;width:100%;height:100%;border:0"></iframe>';
+			var doc = '<iframe src="' + file + '" style="position:absolute;width:100%;height:100%;border:0;" frameborder="0"></iframe>';
 			create_tool_doc(toolbar, doc);
 			return false;
 		}
@@ -298,12 +309,13 @@ function FileShow(file, text, content_type, status_code)
 '<input type="button" value="Up" onClick="FileList(\'' + parentdir(file)  + '\');"/> \
 <input type="button" value="Edit" onClick="FileEdit(\'' + file  + '\');"/> \
 <input type="button" value="Delete" onClick="FileDelete(\'' + file  + '\');"/> \
-<input type="button" value="Exit" onClick="FileExit(\'' + file  + '\');"/>';
-var other = '<input type="hidden" id="filepath" value="' + file + '"/>';
+<input type="button" value="Exit" onClick="FileExit(\'' + file  + '\');"/> \
+<input type="hidden" id="filepath" value="' + file + '"/>';
+
 	text = FileShowFilter(file, text, content_type);
 	var frame = create_full_iframe('file_area', text);
 
-	var toolwin = create_tool_doc(toolbar, frame, other);
+	var toolwin = create_tool_doc(toolbar, frame);
 	return false;
 }
 
@@ -362,7 +374,7 @@ function FileShowFilter(file, text, content_type)
 		text = text.replace(/>/g, '&gt;');
 		text = ('<html><head><base href="' + href + (is_preview ? '" target="preview_target' :'') + '"/>' + 
 		(file_type != null ? 
-			('<script src="' + get_script_href_path() + file_type + '.js"></script>') : '') + 
+			('<script type="text/javascript" src="' + get_script_href_path() + file_type + '.js"></script>') : '') + 
 		'</head><body><pre>' + text + '</pre></body></html>');
 	}
 	return text;
@@ -551,7 +563,9 @@ function get_file_async(file, func)
 {
 	var req = new XMLHttpRequest();
 	req.onreadystatechange = function() { 
-		var content_type = req.getResponseHeader("Content-Type");
+		var content_type;
+		if(req.readState >=2)
+			content_type = req.getResponseHeader("Content-Type");
 		if (req.readyState==2)
 		{
 			if(!func(file, null, content_type, req.status))
@@ -587,7 +601,7 @@ function OnPreviewLoad()
 
 	if(doc.body && doc.body.childNodes.length)
 	{
-		var path = document.getElementById('filepath').value;
+		var path = get_filepath();
 		doc.body.innerHTML = wkn_fix_links(doc.body.innerHTML, dirname(path));
 		edit_area.style.visibility = 'hidden';
 		document.getElementById("edit-buttons").style.visibility = 'hidden';
@@ -627,12 +641,12 @@ Change comment <input id="comment_text" size="40" type="text"/> \
  <input type="button" value="Close Preview" onClick="top.FileEditClosePreview();"/> \
 </span> \
 <input type="button" value="" style="visibility:hidden;"/> \
+<input type="hidden" id="filepath" value="' + file + '"/> \
 </div>';
 
 	var pagedata = 
 	'<textarea id="edit-text" style="position:absolute;width:100%;height:100%;">' + text + '</textarea>' +
-	'<iframe onload="OnPreviewLoad()" id="preview_area" style="position:absolute;width:100%;height:100%;border:0;visibility:hidden"></iframe>' +
-	'<input type="hidden" id="filepath" value="' + file + '"/>';
+	'<iframe onload="OnPreviewLoad()" id="preview_area" style="position:absolute;width:100%;height:100%;border:0;visibility:hidden;" frameborder="0"></iframe>';
 
 	create_tool_doc(toolbar, pagedata);
 
@@ -650,7 +664,9 @@ function FileEditSave()
 
 function FileEditClosePreview()
 {
-	top.history.back();
+	var edit_area = document.getElementById("edit-text");
+	var preview_frame = document.getElementById("preview_area");
+	preview_frame.contentWindow.history.back();
 }
 
 function FileEditSavePreview()
@@ -721,5 +737,5 @@ function ShowEdit()
 
 function ShowView()
 {
-        FileList(document.location.pathname);
+	FileList(document.location.pathname);
 }
