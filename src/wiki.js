@@ -383,9 +383,9 @@ function convert()
 {
 	var text = document.body.innerHTML;
  
-	text = text.replace(/^<pre>/,'');
-	text = text.replace(/<\/pre>$/,'');
-        document.body.innerHTML = Wiky.toHtml(text);
+	text = text.replace(/^<pre>/i,'');
+	text = text.replace(/<\/pre>$/i,'');
+	document.body.innerHTML = Wiky.toHtml(text);
 }
 
 window.onload = convert;
