@@ -304,10 +304,14 @@ function FileShow(file, text, content_type, status_code)
 	if(text == null)
 		return true;
 
-	if(is_edit_on() && status_code == 404)
+	if(status_code == 404)
 	{
-		FileEdit(file);
-		return false;
+		if(is_edit_on())
+		{
+			FileEdit(file);
+			return false;
+		}
+		content_type = "text/html";
 	}
 
 	var toolbar =
