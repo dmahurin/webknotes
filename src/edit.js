@@ -15,16 +15,20 @@ function is_edit_on()
 }
 
 // create tool document using toolbar html/element and document html/element
-function create_tool_doc(tool,main)
+function create_tool_doc(tool,main,other)
 {
 	var script = get_script_src();
 	var href = get_top_href();
+
+	// workaround for some browsers requiring input in div,span or form
+	other = other != null ? '<span>' + other + '</span>': '';
 
 	if(!is_edit_on())
 	{
 		document.open("text/html");
 		document.writeln('<html><head><base href="' + href +'"/><script type="text/javascript" src="' + script + '"></script></head><body>' +
 		main +
+		other +
 		'</body></html>');
 		document.close();
 		return;
@@ -39,6 +43,7 @@ function create_tool_doc(tool,main)
 	main +
 	'</div></td></tr>' +
 	'</table>' +
+	other +
 	'</body></html>');
 	document.close();
 }
@@ -309,13 +314,13 @@ function FileShow(file, text, content_type, status_code)
 '<input type="button" value="Up" onClick="FileList(\'' + parentdir(file)  + '\');"/> \
 <input type="button" value="Edit" onClick="FileEdit(\'' + file  + '\');"/> \
 <input type="button" value="Delete" onClick="FileDelete(\'' + file  + '\');"/> \
-<input type="button" value="Exit" onClick="FileExit(\'' + file  + '\');"/> \
-<input type="hidden" id="filepath" value="' + file + '"/>';
+<input type="button" value="Exit" onClick="FileExit(\'' + file  + '\');"/>';
+	var other = '<input type="hidden" id="filepath" value="' + file + '"/>';
 
 	text = FileShowFilter(file, text, content_type);
 	var frame = create_full_iframe('file_area', text);
 
-	var toolwin = create_tool_doc(toolbar, frame);
+	var toolwin = create_tool_doc(toolbar, frame, other);
 	return false;
 }
 
