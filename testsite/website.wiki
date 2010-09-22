@@ -1,4 +1,4 @@
 = website =
 
-A '''website''' (also spelled '''Web site''') is a collection of related [[web page]]s, images, videos or other digital assets that are addressed relative to a common [[Uniform Resource Locator]] (URL), often consisting of only the domain name, or the [[IP address]], and the root path ('/') in an [[Internet Protocol]]-based network. A web site is hosted on at least one [[web server]], accessible via a network such as the [[Internet]] or a private [[local area network]].
+A **website** (also spelled **Web site**) is a collection of related [[web page]]s, images, videos or other digital assets that are addressed relative to a common [[Uniform Resource Locator]] (URL), often consisting of only the domain name, or the [[IP address]], and the root path ('/') in an [[Internet Protocol]]-based network. A web site is hosted on at least one [[web server]], accessible via a network such as the [[Internet]] or a private [[local area network]].
 
