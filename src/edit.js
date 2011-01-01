@@ -56,7 +56,10 @@ function frame_load()
 	if(file_doc && file_doc.body)
 	{
 		var path = get_filepath();
-		file_doc.body.innerHTML = wkn_fix_links(file_doc.body.innerHTML, dirname(path));
+		if(path)
+		{
+			file_doc.body.innerHTML = wkn_fix_links(file_doc.body.innerHTML, dirname(path));
+		}
 	}
 }
 
@@ -164,7 +167,7 @@ function FileList(path)
 	}
 
 	var out = '';
-	out += ('<h1>Index of ' + path + '</h1><hr/>');
+	out += ('<h1>Index of ' + path + "</h1>\n<hr>\n");
 	out += ('<a href="javascript:top.FileList(\'' + parentdir(path) + '\');">Parent Directory</a><br/>');
 
 	var sorted_keys = [];
@@ -267,7 +270,7 @@ function wkn_fix_links(text, path)
 {
 	var href_base = get_top_href_base();
 	// replace local references with internal function calls
-	var reg = new RegExp('<a\\s+href="(?:' + RegExp.escape(href_base + path) + ')?([^\\/":]+(?:\\/[^"\\/]+)*(\\/)?)"', 'gi');
+	var reg = new RegExp('<a\\s+href="(?:' + RegExp.escape(href_base + path) + '|' + path + ')?([^\\/":]+(?:\\/[^"\\/]+)*(\\/)?)"', 'gi');
 	return text.replace(reg, function($0,$1,$2) { return ('<a href="' + $1 + '" onClick="return top.' + ($2 ? 'FileList' : 'FileShow') + '(\'' + path + $1 + '\'); return false;"'); });
 }
 
@@ -735,7 +738,8 @@ function FileDelete(file)
 
 function get_filepath()
 {
-	return document.getElementById('filepath').value;
+	var path = document.getElementById('filepath');
+	return path ? path.value : null;
 }
 
 function ShowEdit()
