@@ -60,8 +60,10 @@ function my_link_translate()
 
 function htxt2html(text)
 {
-	text = text.replace(/^<pre>/,'');
-	text = text.replace(/<\/pre>$/,'');
+	if(!text) return null;
+
+	text = text.replace(/^<pre>/i,'');
+	text = text.replace(/<\/pre>$/i,'');
 
 	// change "htxt" << >> markup to [[ ]]
 	text = text.replace(/<<([^>]+)>>/g, '[[$1]]');
@@ -80,12 +82,12 @@ function htxt2html(text)
 	var type;
 	var matches;
 
-	while(text != '')
+	while(text != null && text != '')
 	{
-		if(null != (matches = text.match(/([^]*?)(^|\n)(\s*)(\n|$)([^]*)$/)))
+		if(null != (matches = text.match(/(^|\r?\n)(\s*)(\r?\n|$)/)))
 		{
-			thistext = matches[1];
-			text = matches[5];
+			thistext = text.substring(0,matches.index);
+			text = text.substring(matches.index + 1);
 			if(thistext == '') continue; // leading blank
 		}
 		else
