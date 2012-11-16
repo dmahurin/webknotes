@@ -28,15 +28,15 @@ function convert_text(text) {
 	// blank line -> paragraph
 	[/^\s*(?=\n)/mg, '<p>'],
 	// *bold*
-	//[/([\W\s^])\*(.*?)\*(?=[\W\s$])/ig, function(m,p,t) { return p + '<b>' + t + '</b>' }],
-	[/\*([^\s\*]([^\*]|\S\*)*[^\s\*])\*/ig, function(m,t) { return '<b>' + t + '</b>' }],
-	[/__([a-z[\sa-z0-9]*[a-z])__/ig, function(m,t) { return '<b><i>' + t + '</b></i>' }],
-	[/_([a-z[\sa-z0-9]*[a-z])_/ig, function(m,t) { return '<i>' + t + '</i>' }],
-	[/==([a-z[\sa-z0-9]*[a-z])==/ig, function(m,t) { return '<b><span style="font-family: monospace">' + t + '</span></b>' }],
-	[/=([a-z[\sa-z0-9]*[a-z])=/ig, function(m,t) { return '<span style="font-family: monospace">' + t + '</span>' }],
+	[/(\s|^)\*([^\s\*].*?[^\s\*])\*(?!\w)/ig, function(m,s,t) { return s + '<b>' + t + '</b>' }],
+	[/(\s|^)__(\S.*\S)__(?!\S)/igm, function(m,s,t) { return s + '<b><i>' + t + '</b></i>' }],
+	[/(\s|^)_(\S.*\S)_(?!\S)/igm, function(m,s,t) { return s + '<i>' + t + '</i>' }],
+	[/(\s|^)==(\S.*\S)==(?!\S)/igm, function(m,s,t) { return s + '<b><span style="font-family: monospace">' + t + '</span></b>' }],
+	[/(\s|^)=(\S.*\S)=(?!\S)/igm, function(m,s,t) { return s + '<span style="font-family: monospace">' + t + '</span>' }],
 	[/\[\[(?:\%ATTACHURL\%\/)?([^\]]+)\](?:\[([^\]]+)\])?\]]/g, function(m,l,t) { if(t === undefined) { t = l }; return '<a href="files/' + l + '>' + t + '</a>'; }],
 	[/\[\[(?:[^/]*\/)?([^\]]+)\](?:\[([^\]]+)\])?\]/g, function(m,l,t) { if(t === undefined) { t = l }; return('<a href="files/' + l + '">' + t + '</a>'); }],
-	[/(\!?)([A-Z]+[a-z0-9]+[A-Z]+[A-Zaa-z0-9]*)/g, function(m,b,t) { if(b != '') { return t; } else { return '<a href="' + t + '.html">' + t + '</a>'; }}],
+	[/(\s|^)(\!?)([A-Z]+[a-z0-9]+[A-Z]+[A-Zaa-z0-9]*)/g, function(m,s,b,t) { if(b != '') { return s + t; } else { return s + '<a href="' + t + '.html">' + t + '</a>'; }}],
+	[/\b(https?\S+)/g, function(m,r) { return '<a href="' + r + '">' + r + '</a>'; }],
 	[/\%IMAGE\{\"([^\"]+)\"\}\%/g, function(m,t) { return ('<img src="files/' + t + '">'); }],
 	[/^%TOC%$/mg, ''],
 	[/%(?:END)?TWISTY(?:{.*})?%$/mg, ''],
@@ -50,7 +50,13 @@ function convert_text(text) {
 }
 
 function convert(text) {
-	return text.replace(/([\s\S]*?)(?:%CODE\{"[^"]*"\}%([\s\S]*?)%ENDCODE%|(?:\n|^)((?:(?:   )+\*.*(?:\n|$))+)|$)/g, function(m,a,b,c) { return convert_text(a) + (b !== undefined ? convert_code(b) : (c !== undefined ? convert_text(convert_list(c)): '')) ; });
+	return text.replace(/([\s\S]*?)(?:<verbatim>([\s\S]*?)<\/verbatim>|%CODE\{"[^"]*"\}%([\s\S]*?)%ENDCODE%|(?:\n|^)((?:(?:   )+\*.*(?:\n|$))+)|$)/g,
+		function(m,a,v,b,c) {
+			if(v !== undefined) b = v;
+			return convert_text(a) +
+				(b !== undefined ?
+					convert_code(b) :
+					(c !== undefined ? convert_text(convert_list(c)): '')) ; });
 }
 
 window.onload = function() {
