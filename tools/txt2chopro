@@ -1,102 +1,76 @@
-#!/usr/bin/perl
+#!/usr/bin/env python
 
-my @chords;
-my @chord_positions;
+import sys
+import re
 
-print '<html><head><script type="text/javascript" src="chopro.js"></script></head><body><pre>'."\n";
+print('<html><head><script type="text/javascript" src="chopro.js"></script></head><body><pre>')
 
-while(defined(my $line = <>))
-{
-	chomp($line);
-	my $textline = $line;
+chords = []
+chord_positions = []
+
+def get_chord_line(textline):
+	global chords
+	global chord_positions
+	chars = [x for x in textline]
+	textline = ''
+	pos = 0;
+	while(len(chords)):
+		chord = chords.pop(0)
+		chord_pos = chord_positions.pop(0)
+		while(pos < chord_pos):
+			c = chars.pop(0) if len(chars) else ' '
+			textline += c
+			pos += 1
+		textline += '['
+		textline += chord
+		textline += ']'
+	textline += ''.join(chars)
+	chords = []
+	chord_positions = []
+	return textline
+
+for line in sys.stdin:
+	line = line.rstrip()
 
 	# A B#m C(text) (text)D E#maj/F#min G7
-	my $is_chordline = ($line =~ /^(\s*(\([^\s\)]+\))?[ABCDEFG]#?(b|m|maj|min|sus)?[2-9]?([\/\-][ABCDEFG]#?(b|m|maj|min|sus)?[2-9]?)?(\([^\s\)]+\))?(?=\s|$))+\s*$/) ? 1 : 0;
-
-	# chords are processed on next line
-	# don't used chord line as text for previous chords.
-	$textline = '' if ($is_chordline);
-
-	# process previous chord line
-	if(defined(@chords))
-	{
-		my @chars = split(//, $textline);
-		$textline = '';
-		my $pos = 0;
-		while(@chords)
-		{
-			my $chord = shift(@chords);
-			my $chord_pos = shift(@chord_positions);
-			while($pos < $chord_pos)
-			{
-				my $c = shift(@chars);
-				$c = ' ' unless(defined($c));
-				$textline .= $c;
-				$pos++;
-			}
-			$textline .= '[';
-			$textline .= $chord;
-			$textline .= ']';
-		}
-		$textline .= join('', @chars);
-		print "$textline\n";
-		undef @chords;
-		undef @chord_positions;
-		# do not also print the line unless it is blank
-		$textline = ($line eq '') ? '' : undef;
-	}
+	is_chordline = re.match(r'^(\s*(\([^\s\)]+\))?[ABCDEFG]#?(b|m|maj|min|sus)?[2-9]?([\/\-][ABCDEFG]#?(b|m|maj|min|sus)?[2-9]?)?(\([^\s\)]+\))?(?=\s|$))+\s*$', line);
 
 	# store chord positions
-	if($is_chordline)
-	{
-		@chords = ();
-		@chord_positions = ();
-#		print "chord line $line\n";
-		my $pos = 0;
-		while($line ne '')
-		{
-			while($line =~ s/^\s//)
-			{
-				$pos++;
-			}
-			my $chord = '';
-			my $chord_pos = $pos;
-			while($line =~ s/^(\S)//)
-			{
-				$pos++;
-				$chord .= $1 ;
-			}
-			
-			if($chord ne '')
-			{
-				push(@chords, $chord);
-				push(@chord_positions, $chord_pos);
-			}
-		}
-	}
-	elsif(defined($textline))
-	{
-		print "$textline\n";
-	}
-}
-if(defined(@chords))
-{
-	$line = '';
-	while(@chords)
-	{
-		my $chord = shift(@chords);
-		my $chord_pos = shift(@chord_positions);
-		while($pos < $chord_pos)
-		{
-			$line .= ' ';
-			$pos++;
-		}
-		$line .= '[';
-		$line .= $chord;
-		$line .= ']';
-	}
-	print "$line\n";
-}
+	if(is_chordline):
+		if(len(chords)):
+			print(get_chord_line(''))
 
-print "</pre></body></html>\n";
+		chords = []
+		chord_positions = []
+		pos = 0
+		while(line != ''):
+			n = len(re.match(r'(\s*)', line).group(1))
+			pos += n
+			line = line[n:]
+
+			chord = ''
+			chord_pos = pos
+
+			m = re.match(r'(\S*)', line)
+			chord = m.group(1)
+			n = len(chord)
+			pos += n
+			line = line[n:]
+
+			if(chord != ''):
+				chords.append(chord);
+				chord_positions.append(chord_pos);
+	elif(len(chords)):
+		print(get_chord_line(line))
+
+		# add newline if original line was blank
+		if(line == ''):
+			print('')
+	else:
+		print(line)
+
+if(len(chords)):
+	print(get_chord_line(''))
+
+print ("</pre></body></html>")
 
